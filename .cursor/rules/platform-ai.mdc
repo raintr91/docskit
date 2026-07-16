@@ -1,0 +1,12 @@
+---
+description: MCP tooling lane — package + harness map; not FE/BE/docs implementation
+alwaysApply: true
+---
+
+# Platform AI (hubdocs / tooling)
+
+- **Repo này** = MCP package `hubdocs` + `platform-repos.json` harness map — không phải code product hay docs hub content.
+- **Harness SSOT:** `.cursor/` tại **hubdocs** (tooling); portal = code lane SSOT; `base-docs` / `base-tests` = hub SSOT.
+- **Một chat một lane:** implement app/spec/plans → mở workspace `code-fe` / `docs` / `tests`, không nhồi vào chat MCP.
+- **Sửa package:** `src/`, sync scripts, map — chi tiết `/platform-ai`.
+- **Docs SSOT:** MD trong `base-docs` — hubdocs chỉ index / validate / route, không thay Structurizr hay codegen.

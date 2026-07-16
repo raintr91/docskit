@@ -1,0 +1,28 @@
+---
+description: Hubdocs MCP — arc42/C4 docs index; opt-in skill use
+alwaysApply: false
+---
+# hubdocs
+
+MCP package: repo này · `/hubdocs` · `README.md` · `docs/INIT.md`
+
+**SSOT:** MD in the docs hub (`architecture/01`…`12` + `product/`). MCP indexes / validates / routes only.
+
+**Env:** `HUBDOCS_ROOT` → absolute docs hub path (must contain `architecture/`).
+
+## Prefer local MCP
+
+1. **`hubdocs_layout` / `hubdocs_route`** before dumping trees.
+2. **`hubdocs_get_element`** for one ID (canonical `primary` first).
+3. **`hubdocs_deps_of` / `hubdocs_dependents_of`** for ref impact.
+4. **`hubdocs_orphans` / `hubdocs_validate_links`** before claiming catalog complete.
+5. **`hubdocs_journeys`** before reading all journeys.
+
+Redirect stubs ignored: `landscape|context|containers|dynamics|deployments` · `product/shared/adr`.  
+Deprecated: `DYN-*` → `FLOW-*` + `/journey`.
+
+### If MCP missing
+
+Ask: *"Chưa wire. `install.sh` rồi `hubdocs init --docs-root=…`?"*
+
+Hooks: `.cursor/extracts/hubdocs-phase-hooks.md`
