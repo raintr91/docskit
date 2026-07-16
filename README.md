@@ -30,7 +30,8 @@ Indexes and validates Markdown only — does not replace Structurizr or diagram 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs version
-hubdocs init                    # ↑↓ · Space · Enter — Cursor / Claude / Kilo / …
+cd /path/to/your/docs-hub    # thư mục có architecture/
+hubdocs init --yes           # ↑↓ · Space nếu bỏ --yes
 ```
 
 **Windows**
@@ -41,16 +42,32 @@ irm https://raw.githubusercontent.com/raintr91/hubdocs/main/install.ps1 | iex
 
 Requires **Node ≥ 22**.
 
-Wire từ trong docs hub (khuyến nghị):
-
-```bash
-cd /path/to/your/docs-hub    # thư mục có architecture/
-hubdocs init --yes
-```
-
 `init` tự lấy `cwd` làm `HUBDOCS_ROOT`. Chỉ cần `--docs-root=…` khi chạy từ chỗ khác.
 
 Sau `init`: restart agent → thử tool `hubdocs_list_ids`.
+
+---
+
+## Update
+
+Cùng lệnh cài — ghi đè `~/.hubdocs` + symlink CLI:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
+hubdocs version
+```
+
+Pin bản cụ thể:
+
+```bash
+HUBDOCS_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v0.1.0/install.sh | bash
+```
+
+Windows: chạy lại `irm …/install.ps1 | iex`.
+
+Sau update: nếu đổi wire MCP thì `cd` docs hub → `hubdocs init --yes` rồi restart agent.
+
+Uninstall: `curl -fsSL …/install.sh | bash -s -- --uninstall`
 
 ---
 
@@ -58,6 +75,7 @@ Sau `init`: restart agent → thử tool `hubdocs_list_ids`.
 
 | Step | CLI |
 |------|-----|
+| Install / update package | `curl …/install.sh \| bash` |
 | Wire agents (global/local) | `hubdocs init` |
 | Print MCP snippet | `hubdocs init --print-config cursor` |
 | Version / paths | `hubdocs version` |

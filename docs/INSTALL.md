@@ -31,6 +31,17 @@ Defaults: tree → `~/.hubdocs`, link → `~/.local/bin/hubdocs`.
 
 Docs hub: **cd vào hub rồi `hubdocs init`** (ưu tiên). Tuỳ chọn: `--docs-root=…` hoặc `HUBDOCS_ROOT`.
 
+## Update
+
+Cùng lệnh install (ghi đè `~/.hubdocs`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
+hubdocs version
+```
+
+Pin tag: `HUBDOCS_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v0.1.0/install.sh | bash`
+
 ## Windows (PowerShell)
 
 ```powershell
