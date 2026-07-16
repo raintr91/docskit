@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 
 import path from 'node:path'
 import os from 'node:os'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
-import { packageRoot, defaultHubdocsRoot } from '../config/docs-root.js'
+import { packageRoot, defaultHubdocsRoot, looksLikeHub, writeDocsRootMarker } from '../config/docs-root.js'
 import { checkboxPrompt, selectPrompt } from './prompt.js'
 import { buildTomlTable, upsertTomlTable } from './toml.js'
 
@@ -100,6 +100,13 @@ export function buildMcpEntry(opts: { useWsl?: boolean; docsRoot?: string } = {}
   const mcpJs = path.join(root, 'bin', 'hubdocs-mcp.mjs')
   const nodeBin = process.execPath
   const hubRoot = opts.docsRoot ? path.resolve(opts.docsRoot) : defaultHubdocsRoot()
+  if (!hubRoot || !looksLikeHub(hubRoot)) {
+    throw new Error(
+      'No docs hub found. cd into your docs hub (folder with architecture/) then run: hubdocs init --yes\n' +
+        'Or: hubdocs init --docs-root=/absolute/path/to/docs-hub --yes',
+    )
+  }
+  writeDocsRootMarker(hubRoot)
   const env = { HUBDOCS_ROOT: hubRoot }
   const winMcp = detectWindowsCursorMcpPath()
   const forceWsl =

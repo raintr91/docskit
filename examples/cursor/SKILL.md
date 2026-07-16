@@ -16,7 +16,7 @@ Package: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs init
-# hubdocs init --docs-root=/absolute/path/to/your/docs-hub --yes
+# cd /path/to/your/docs-hub && hubdocs init --yes
 ```
 
 ## Tools

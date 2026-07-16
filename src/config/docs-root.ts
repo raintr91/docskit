@@ -1,6 +1,8 @@
 /**
  * Resolve docs hub root (any arc42 × C4 MD tree with architecture/).
- * Order: explicit → HUBDOCS_ROOT → docs-root.path → cwd / sibling heuristics.
+ *
+ * Order: explicit → HUBDOCS_ROOT → **cwd** (if hub) → docs-root.path → sibling heuristic.
+ * Prefer `cd <docs-hub> && hubdocs init` — no long --docs-root needed.
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -12,7 +14,7 @@ export function packageRoot(): string {
   return pkgRoot
 }
 
-function looksLikeHub(abs: string): boolean {
+export function looksLikeHub(abs: string): boolean {
   return fs.existsSync(path.join(abs, 'architecture'))
 }
 
@@ -23,14 +25,25 @@ function readDocsRootMarker(): string | undefined {
   return line || undefined
 }
 
-/** Best-effort path for MCP env (may be empty string if unknown). */
+/** Persist resolved hub root next to the installed package (for MCP env later). */
+export function writeDocsRootMarker(abs: string): void {
+  fs.writeFileSync(path.join(pkgRoot, 'docs-root.path'), `${path.resolve(abs)}\n`, 'utf8')
+}
+
+/**
+ * Best-effort path for MCP env / init.
+ * Empty string if unknown — caller should require --docs-root or cd into hub.
+ */
 export function defaultHubdocsRoot(): string {
   if (process.env.HUBDOCS_ROOT) return path.resolve(process.env.HUBDOCS_ROOT)
+  if (looksLikeHub(process.cwd())) return process.cwd()
   const marker = readDocsRootMarker()
-  if (marker) return path.resolve(marker)
+  if (marker) {
+    const abs = path.resolve(marker)
+    if (looksLikeHub(abs)) return abs
+  }
   const sibling = path.resolve(pkgRoot, '../base-docs')
   if (looksLikeHub(sibling)) return sibling
-  if (looksLikeHub(process.cwd())) return process.cwd()
   return ''
 }
 
@@ -51,20 +64,20 @@ export function resolveDocsRoot(explicit?: string): string {
     }
     return abs
   }
+  if (looksLikeHub(process.cwd())) return process.cwd()
   const marker = readDocsRootMarker()
   if (marker) {
     const abs = path.resolve(marker)
     if (!fs.existsSync(abs) || !looksLikeHub(abs)) {
       throw new Error(
-        `docs-root.path invalid (${marker}) — set HUBDOCS_ROOT or hubdocs init --docs-root=…`,
+        `docs-root.path invalid (${marker}) — cd into docs hub and run hubdocs init, or pass --docs-root=…`,
       )
     }
     return abs
   }
   const sibling = path.resolve(pkgRoot, '../base-docs')
   if (looksLikeHub(sibling)) return sibling
-  if (looksLikeHub(process.cwd())) return process.cwd()
   throw new Error(
-    'Cannot resolve docs root — set HUBDOCS_ROOT or pass docsRoot (hub must contain architecture/)',
+    'Cannot resolve docs root — cd into your docs hub (must contain architecture/) then hubdocs init, or pass --docs-root=…',
   )
 }

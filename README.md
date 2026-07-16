@@ -41,13 +41,14 @@ irm https://raw.githubusercontent.com/raintr91/hubdocs/main/install.ps1 | iex
 
 Requires **Node ≥ 22**.
 
-Chỉ định docs hub (path tuyệt đối trên máy bạn):
+Wire từ trong docs hub (khuyến nghị):
 
 ```bash
-export HUBDOCS_ROOT=/absolute/path/to/your/docs-hub
+cd /path/to/your/docs-hub    # thư mục có architecture/
 hubdocs init --yes
-# hoặc: hubdocs init --docs-root=/absolute/path/to/your/docs-hub --yes
 ```
+
+`init` tự lấy `cwd` làm `HUBDOCS_ROOT`. Chỉ cần `--docs-root=…` khi chạy từ chỗ khác.
 
 Sau `init`: restart agent → thử tool `hubdocs_list_ids`.
 

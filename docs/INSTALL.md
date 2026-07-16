@@ -16,8 +16,9 @@ Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs version
-hubdocs init                    # interactive agents
-# hubdocs init --yes --docs-root=/absolute/path/to/your/docs-hub
+cd /path/to/your/docs-hub    # must contain architecture/
+hubdocs init --yes           # uses cwd as HUBDOCS_ROOT
+# hubdocs init               # interactive agents
 ```
 
 Uninstall:
@@ -26,9 +27,9 @@ Uninstall:
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash -s -- --uninstall
 ```
 
-Defaults: tree → `~/.hubdocs`, link → `~/.local/bin/hubdocs` — **không** phụ thuộc layout workspace của người cài.
+Defaults: tree → `~/.hubdocs`, link → `~/.local/bin/hubdocs`.
 
-Docs hub: `export HUBDOCS_ROOT=…` hoặc `hubdocs init --docs-root=…` (path tuyệt đối tới docs hub của bạn).
+Docs hub: **cd vào hub rồi `hubdocs init`** (ưu tiên). Tuỳ chọn: `--docs-root=…` hoặc `HUBDOCS_ROOT`.
 
 ## Windows (PowerShell)
 

@@ -9,7 +9,8 @@ Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 | 1. Package trên PATH | `curl …/install.sh \| bash` | Máy | Clone + build CLI `hubdocs` |
 | 2. Wire **agents** | **`hubdocs init`** | Máy (global) hoặc cwd (local) | Ghi MCP vào Cursor / Claude / Kilo / … |
 
-Không có `init-project` — chỉ cần trỏ `HUBDOCS_ROOT` (hoặc `--docs-root`) tới docs hub của bạn.
+Không có `init-project` — **cd vào docs hub** (có `architecture/`) rồi `hubdocs init`. Tuỳ chọn `--docs-root` / `HUBDOCS_ROOT`.
+
 
 Alias cũ: `hubdocs install` → gọi `init`.
 
@@ -45,10 +46,11 @@ Which agents should get hubdocs MCP?
 ### Non-interactive
 
 ```bash
+cd /path/to/your/docs-hub
 hubdocs init --yes
 hubdocs init --target=cursor,claude,kilo --yes
 hubdocs init --target=auto --location=local --yes
-hubdocs init --docs-root=/absolute/path/to/your/docs-hub --yes
+hubdocs init --docs-root=/absolute/path/to/other/hub --yes   # khi không đứng trong hub
 hubdocs init --print-config cursor
 ```
 
@@ -56,7 +58,7 @@ hubdocs init --print-config cursor
 |------|---------|----------|
 | `--target` | `auto` · `all` · `none` · csv | prompt / với `--yes` = `auto` |
 | `--location` | `global` · `local` | interactive: **local**; `--yes`: `global` |
-| `--docs-root` | absolute path tới docs hub | `HUBDOCS_ROOT` env · hoặc heuristic sibling (không giả định layout máy) |
+| `--docs-root` | absolute path tới docs hub | **cwd** nếu có `architecture/` · rồi `HUBDOCS_ROOT` / `docs-root.path` |
 | `--yes` | bỏ prompt | — |
 | `--wsl` | Cursor Win → MCP qua `wsl.exe` | — |
 | `--print-config <id>` | in snippet, không ghi | — |

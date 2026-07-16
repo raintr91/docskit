@@ -41,7 +41,7 @@ Other:
 Docs: docs/INIT.md · docs/INSTALL.md · README.md
 
 Env:
-  HUBDOCS_ROOT   absolute path to your docs hub (required when layout is not sibling)
+  HUBDOCS_ROOT   optional — else cwd if it has architecture/, or docs-root.path
 `)
   process.exit(1)
 }

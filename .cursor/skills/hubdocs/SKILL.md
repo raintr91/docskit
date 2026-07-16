@@ -37,5 +37,5 @@ Env: `HUBDOCS_ROOT` → absolute path tới docs hub (`architecture/` required).
 ```bash
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs init
-# hubdocs init --docs-root=/absolute/path/to/your/docs-hub --yes
+# cd /path/to/your/docs-hub && hubdocs init --yes
 ```
