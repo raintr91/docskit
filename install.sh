@@ -81,8 +81,7 @@ case ":$PATH:" in
 esac
 
 echo ""
-echo "Done. Next (no cd required):"
+echo "Done. Next:"
 echo "  hubdocs version"
-echo "  hubdocs init                                 # agents (↑↓ · Space · Enter)"
 echo "  cd /path/to/your/docs-hub && hubdocs init --yes"
 echo "Docs: docs/INIT.md"
