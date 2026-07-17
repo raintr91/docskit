@@ -158,12 +158,53 @@ test('standalone package behavior', async (t) => {
     }
   })
 
-  await t.test('harness install is idempotent and protects customization', () => {
+  await t.test('harness install syncs architecture family and protects customization', () => {
     const project = tempDir('harness')
+    mkdirSync(path.join(project, '.cursor', 'extracts'), { recursive: true })
+    writeFileSync(
+      path.join(project, '.cursor', 'extracts', 'extract-registry.json'),
+      `${JSON.stringify(
+        {
+          version: 1,
+          bundles: {
+            'foreign-bundle': ['.cursor/extracts/foreign.md'],
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    )
     const first = installHarness({ projectRoot: project })
-    assert.equal(first.written.length, 3)
+    assert.ok(first.written.length >= 18, `expected architecture family sync, got ${first.written.length}`)
+    assert.ok(
+      first.written.some((file) => file.endsWith(`${path.sep}architecture${path.sep}SKILL.md`)),
+    )
+    assert.ok(first.written.some((file) => file.endsWith(`${path.sep}tpl-journey.md`)))
+    assert.ok(first.registry)
+    const registry = JSON.parse(readFileSync(first.registry, 'utf8'))
+    assert.ok(registry.bundles['architecture-core'])
+    assert.ok(first.platformRepos)
+    const platform = JSON.parse(readFileSync(first.platformRepos, 'utf8'))
+    for (const skill of [
+      'hubdocs',
+      'architecture',
+      'context',
+      'containers',
+      'component',
+      'journey',
+      'deployment',
+      'decision',
+      'cross-cutting',
+      'dynamics',
+    ]) {
+      assert.ok(platform.harness.profiles.docs.skills.includes(skill), skill)
+    }
+    assert.ok(registry.bundles.hubdocs)
+    assert.deepEqual(registry.bundles['foreign-bundle'], ['.cursor/extracts/foreign.md'])
+
     const second = installHarness({ projectRoot: project })
-    assert.equal(second.unchanged.length, 3)
+    assert.equal(second.written.length, 0)
+    assert.ok(second.unchanged.length >= 18)
 
     const skill = path.join(project, '.cursor', 'skills', 'hubdocs', 'SKILL.md')
     writeFileSync(skill, '# customized\n')
@@ -171,6 +212,26 @@ test('standalone package behavior', async (t) => {
     assert.deepEqual(protectedRun.skipped, [skill])
     installHarness({ projectRoot: project, force: true })
     assert.notEqual(readFileSync(skill, 'utf8'), '# customized\n')
+
+    for (const owned of [
+      'architecture',
+      'context',
+      'containers',
+      'component',
+      'journey',
+      'deployment',
+      'decision',
+      'cross-cutting',
+      'dynamics',
+      'hubdocs',
+    ]) {
+      const body = readFileSync(
+        path.join(project, '.cursor', 'skills', owned, 'SKILL.md'),
+        'utf8',
+      )
+      if (owned === 'dynamics') continue
+      assert.match(body, /Accelerators \(optional\)|never blocks|never requires ArtifactGraph/i)
+    }
   })
 
   await t.test('package tarball excludes platform topology and includes harness', () => {
@@ -185,5 +246,8 @@ test('standalone package behavior', async (t) => {
     assert.equal(names.includes('platform-repos.json'), false)
     assert.equal(names.some((name) => name.startsWith('docs/handoffs/')), false)
     assert.ok(names.includes('harness/cursor/skills/hubdocs/SKILL.md'))
+    assert.ok(names.includes('harness/cursor/skills/architecture/SKILL.md'))
+    assert.ok(names.includes('harness/cursor/extracts/architecture-core.md'))
+    assert.ok(names.includes('mcp-package.json'))
   })
 })

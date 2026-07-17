@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "package": "@platform/hubdocs",
+  "version": "1.0.0",
+  "types": ["docs"],
+  "requires": [],
+  "optional": ["@platform/artifactgraph"],
+  "tools": [
+    "hubdocs_list_ids",
+    "hubdocs_get_element",
+    "hubdocs_deps_of",
+    "hubdocs_dependents_of",
+    "hubdocs_orphans",
+    "hubdocs_validate_links",
+    "hubdocs_route",
+    "hubdocs_journeys",
+    "hubdocs_layout"
+  ],
+  "ownedSkills": [
+    "hubdocs",
+    "architecture",
+    "context",
+    "containers",
+    "component",
+    "journey",
+    "deployment",
+    "decision",
+    "cross-cutting",
+    "dynamics"
+  ],
+  "compatibility": {
+    "node": ">=22",
+    "toolApi": 1,
+    "harnessApi": 1
+  }
+}

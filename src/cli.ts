@@ -104,6 +104,8 @@ function runHarness(): void {
     for (const file of result.written) console.log(`  wrote: ${file}`)
     for (const file of result.unchanged) console.log(`  unchanged: ${file}`)
     for (const file of result.skipped) console.log(`  skip customized: ${file} (use --force)`)
+    if (result.platformRepos) console.log(`updated: ${result.platformRepos}`)
+    for (const warning of result.warnings ?? []) console.warn(`warning: ${warning}`)
     console.log(
       `Harness: ${result.written.length} written, ${result.unchanged.length} unchanged, ${result.skipped.length} skipped`,
     )

@@ -117,11 +117,25 @@ default bằng `--location=global --docs-root=/absolute/path/to/hub`, nhưng ent
 
 ## Optional Cursor harness
 
-Sau khi cài package, có thể cài skill, rule và phase hooks Hubdocs vào project:
+Sau khi cài package, cài architecture family + Hubdocs skill/rule/hooks:
 
 ```bash
 hubdocs harness install
 ```
 
+Syncs:
+
+- skills: `/hubdocs` `/architecture` `/context` `/containers` `/component`
+  `/journey` `/deployment` `/decision` `/cross-cutting` `/dynamics`
+- extracts: `architecture-core` templates + `hubdocs-phase-hooks`
+- rule: `hubdocs.mdc`
+- merges only Hubdocs-owned extract-registry bundle IDs
+
 Lệnh idempotent và không ghi đè file đã tùy chỉnh. Dùng `--force` nếu chủ động
 muốn thay bằng bản package; `--project-root` để chọn project khác cwd.
+
+### Accelerator boundary
+
+ArtifactGraph is optional and one-way: Hubdocs never requires it; ArtifactGraph
+must not own architecture Markdown. Architecture skills keep a direct Markdown
+fallback when Hubdocs MCP is offline.

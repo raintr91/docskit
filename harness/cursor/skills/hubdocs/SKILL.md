@@ -36,3 +36,21 @@ hubdocs harness install
 
 Every tool also accepts `docsRoot`, which is required for a rootless global MCP
 entry. The selected hub must contain `architecture/`.
+
+## Owned architecture family
+
+`harness install` also syncs `/architecture` `/context` `/containers`
+`/component` `/journey` `/deployment` `/decision` `/cross-cutting` and the
+deprecated `/dynamics` redirect, plus the `architecture-core` extract bundle.
+
+## Accelerators (optional)
+
+```text
+ArtifactGraph: optional registry/tag/parity hints only
+else: continue with Hubdocs tools + direct Markdown inspection
+
+Hubdocs never requires ArtifactGraph.
+ArtifactGraph must not index or own architecture Markdown.
+If this MCP is not connected: Glob/search under architecture/ and product/,
+then Read scoped Markdown. Authoring is never blocked.
+```

@@ -1,24 +1,30 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const check = process.argv.includes('--check')
-const mirrors = [
-  ['harness/cursor/skills/hubdocs/SKILL.md', 'examples/cursor/SKILL.md'],
-  ['harness/cursor/rules/hubdocs.mdc', 'examples/cursor/hubdocs.mdc'],
-  [
-    'harness/cursor/extracts/hubdocs-phase-hooks.md',
-    'examples/cursor/hubdocs-phase-hooks.md',
-  ],
-  ['harness/cursor/skills/hubdocs/SKILL.md', '.cursor/skills/hubdocs/SKILL.md'],
-  ['harness/cursor/rules/hubdocs.mdc', '.cursor/rules/hubdocs.mdc'],
-  [
-    'harness/cursor/extracts/hubdocs-phase-hooks.md',
-    '.cursor/extracts/hubdocs-phase-hooks.md',
-  ],
-]
+const sourceRoot = path.join(root, 'harness', 'cursor')
+
+function walk(dir) {
+  const out = []
+  for (const name of readdirSync(dir)) {
+    const file = path.join(dir, name)
+    if (statSync(file).isDirectory()) out.push(...walk(file))
+    else out.push(file)
+  }
+  return out
+}
+
+const mirrors = []
+for (const source of walk(sourceRoot)) {
+  const rel = path.relative(sourceRoot, source)
+  if (rel === path.join('extracts', 'extract-registry.hubdocs.json')) continue
+  const posix = rel.split(path.sep).join('/')
+  mirrors.push([`harness/cursor/${posix}`, `examples/cursor/${posix}`])
+  mirrors.push([`harness/cursor/${posix}`, `.cursor/${posix}`])
+}
 
 const drift = []
 for (const [sourceRel, targetRel] of mirrors) {
@@ -33,6 +39,7 @@ for (const [sourceRel, targetRel] of mirrors) {
     }
     if (current !== source) drift.push(targetRel)
   } else {
+    mkdirSync(path.dirname(target), { recursive: true })
     writeFileSync(target, source, 'utf8')
   }
 }
