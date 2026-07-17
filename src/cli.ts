@@ -10,7 +10,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { packageRoot, defaultHubdocsRoot } from './config/docs-root.js'
 import { installAgents, AGENT_IDS } from './install/agents.js'
-import { installHarness } from './install/harness.js'
+import { installHarness, pruneHarness, statusHarness } from './install/harness.js'
 
 const require = createRequire(import.meta.url)
 
@@ -37,6 +37,8 @@ Wire agents:
 
 Install Cursor harness into the current project:
   harness install [--project-root <path>] [--force]
+  status [--project-root <path>]
+  prune [--project-root <path>] [--yes]   # dry-run unless --yes
 
 Other:
   version
@@ -95,7 +97,16 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
 }
 
 function runHarness(): void {
-  if (process.argv[3] !== 'install') usage()
+  const action = process.argv[3]
+  if (action === 'status') {
+    runHarnessStatus()
+    return
+  }
+  if (action === 'prune') {
+    runHarnessPrune()
+    return
+  }
+  if (action !== 'install') usage()
   try {
     const result = installHarness({
       projectRoot: arg('--project-root'),
@@ -104,10 +115,54 @@ function runHarness(): void {
     for (const file of result.written) console.log(`  wrote: ${file}`)
     for (const file of result.unchanged) console.log(`  unchanged: ${file}`)
     for (const file of result.skipped) console.log(`  skip customized: ${file} (use --force)`)
+    for (const file of result.stale) console.log(`  stale: ${file}`)
+    console.log(`manifest: ${result.manifest}`)
     if (result.platformRepos) console.log(`updated: ${result.platformRepos}`)
     for (const warning of result.warnings ?? []) console.warn(`warning: ${warning}`)
     console.log(
       `Harness: ${result.written.length} written, ${result.unchanged.length} unchanged, ${result.skipped.length} skipped`,
+    )
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err)
+    process.exit(1)
+  }
+}
+
+function runHarnessStatus(): void {
+  try {
+    const result = statusHarness({ projectRoot: arg('--project-root') })
+    if (!result.installed) {
+      console.log(`Harness: not installed (${result.manifest})`)
+      return
+    }
+    for (const file of result.modified) console.log(`  modified: ${file}`)
+    for (const file of result.missing) console.log(`  missing: ${file}`)
+    for (const file of result.stale) console.log(`  stale: ${file}`)
+    for (const file of result.staleModified) console.log(`  stale modified: ${file}`)
+    for (const file of result.staleMissing) console.log(`  stale missing: ${file}`)
+    console.log(
+      `Harness ${result.version}: ${result.current.length} current, ${result.modified.length} modified, ${result.missing.length} missing, ${result.stale.length + result.staleModified.length + result.staleMissing.length} stale`,
+    )
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err)
+    process.exit(1)
+  }
+}
+
+function runHarnessPrune(): void {
+  try {
+    const result = pruneHarness({
+      projectRoot: arg('--project-root'),
+      yes: has('--yes'),
+    })
+    for (const file of result.wouldDelete) console.log(`  would delete: ${file}`)
+    for (const file of result.deleted) console.log(`  deleted: ${file}`)
+    for (const file of result.preservedModified) console.log(`  preserve modified: ${file}`)
+    for (const file of result.missing) console.log(`  already missing: ${file}`)
+    console.log(
+      result.dryRun
+        ? `Prune dry-run: ${result.wouldDelete.length} stale managed files (pass --yes to delete)`
+        : `Pruned: ${result.deleted.length} stale managed files`,
     )
   } catch (err) {
     console.error(err instanceof Error ? err.message : err)
@@ -138,6 +193,16 @@ async function main(): Promise<void> {
 
   if (cmd === 'harness') {
     runHarness()
+    return
+  }
+
+  if (cmd === 'status') {
+    runHarnessStatus()
+    return
+  }
+
+  if (cmd === 'prune') {
+    runHarnessPrune()
     return
   }
 

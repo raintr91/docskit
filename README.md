@@ -76,7 +76,7 @@ hubdocs version
 Pin bản cụ thể:
 
 ```bash
-HUBDOCS_REF=v1.0.0 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.0/install.sh | bash
+HUBDOCS_REF=v1.0.1 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.1/install.sh | bash
 ```
 
 Windows: chạy lại `irm …/install.ps1 | iex`.
@@ -97,9 +97,19 @@ Uninstall: `curl -fsSL …/install.sh | bash -s -- --uninstall`
 | Explicit rootless global MCP | `hubdocs init --location=global --yes` |
 | Print MCP snippet | `hubdocs init --print-config cursor` |
 | Install Cursor skill/rule/hooks | `hubdocs harness install` |
+| Inspect managed harness assets | `hubdocs status [--project-root <path>]` |
+| Preview/remove stale managed assets | `hubdocs prune [--project-root <path>] [--yes]` |
 | Version / paths | `hubdocs version` |
 
 `install` = deprecated alias của `init`.
+
+Harness installs record direct-copy Hubdocs assets in
+`.hubdocs/install-manifest.json`. Upgrades preserve locally modified managed
+files unless `--force` is passed. Assets removed from a newer package become
+stale; `prune` is a dry run, and `prune --yes` deletes only stale files whose
+hash still matches the installed copy. Shared merged
+`.cursor/extracts/extract-registry.json` and `platform-repos.json` are never
+claimed or pruned.
 
 Agents hỗ trợ: Claude · Cursor · Codex · opencode · Hermes · Gemini · Antigravity · Kiro · **Kilo**.
 

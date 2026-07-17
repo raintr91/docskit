@@ -1,6 +1,6 @@
 {
   "name": "@platform/hubdocs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Local MCP: arc42/C4 docs hub — list IDs, deps, orphans, validate links, route chapter",
   "type": "module",
   "main": "./dist/index.js",

@@ -1,5 +1,13 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -15,7 +23,12 @@ import {
   buildMcpEntry,
   installAgents,
 } from '../dist/install/agents.js'
-import { installHarness } from '../dist/install/harness.js'
+import {
+  INSTALL_MANIFEST_PATH,
+  installHarness,
+  pruneHarness,
+  statusHarness,
+} from '../dist/install/harness.js'
 import { indexIds, walkMdFiles, SCAN_MD_DIRS } from '../dist/scan/ids.js'
 import { depsFromFiles, validateMdLinks } from '../dist/scan/links.js'
 import { routeTopic } from '../dist/scan/route.js'
@@ -25,6 +38,10 @@ const originalRoot = process.env.HUBDOCS_ROOT
 
 function tempDir(name) {
   return mkdtempSync(path.join(os.tmpdir(), `hubdocs-${name}-`))
+}
+
+function hash(content) {
+  return `sha256:${createHash('sha256').update(content).digest('hex')}`
 }
 
 function makeHub(name) {
@@ -160,6 +177,8 @@ test('standalone package behavior', async (t) => {
 
   await t.test('harness install syncs architecture family and protects customization', () => {
     const project = tempDir('harness')
+    const manifestFile = path.join(project, ...INSTALL_MANIFEST_PATH.split('/'))
+    assert.equal(existsSync(manifestFile), false)
     mkdirSync(path.join(project, '.cursor', 'extracts'), { recursive: true })
     writeFileSync(
       path.join(project, '.cursor', 'extracts', 'extract-registry.json'),
@@ -181,6 +200,27 @@ test('standalone package behavior', async (t) => {
     )
     assert.ok(first.written.some((file) => file.endsWith(`${path.sep}tpl-journey.md`)))
     assert.ok(first.registry)
+    assert.equal(first.manifest, manifestFile)
+    const firstManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
+    assert.deepEqual(
+      {
+        package: firstManifest.package,
+        schema: firstManifest.schema,
+        toolApi: firstManifest.toolApi,
+        harnessApi: firstManifest.harnessApi,
+        version: firstManifest.version,
+      },
+      {
+        package: '@platform/hubdocs',
+        schema: 1,
+        toolApi: 1,
+        harnessApi: 1,
+        version: '1.0.1',
+      },
+    )
+    assert.ok(Object.keys(firstManifest.hashes).length >= 18)
+    assert.equal(firstManifest.hashes['.cursor/extracts/extract-registry.json'], undefined)
+    assert.equal(firstManifest.hashes['platform-repos.json'], undefined)
     const registry = JSON.parse(readFileSync(first.registry, 'utf8'))
     assert.ok(registry.bundles['architecture-core'])
     assert.ok(first.platformRepos)
@@ -207,9 +247,22 @@ test('standalone package behavior', async (t) => {
     assert.ok(second.unchanged.length >= 18)
 
     const skill = path.join(project, '.cursor', 'skills', 'hubdocs', 'SKILL.md')
+    const skillRel = '.cursor/skills/hubdocs/SKILL.md'
+    const packagedSkill = readFileSync(skill, 'utf8')
+    const oldPackagedSkill = '# previous package copy\n'
+    const upgradeLedger = JSON.parse(readFileSync(manifestFile, 'utf8'))
+    upgradeLedger.hashes[skillRel] = hash(oldPackagedSkill)
+    writeFileSync(manifestFile, `${JSON.stringify(upgradeLedger, null, 2)}\n`)
+    writeFileSync(skill, oldPackagedSkill)
+    const managedUpgrade = installHarness({ projectRoot: project })
+    assert.ok(managedUpgrade.written.includes(skill))
+    assert.equal(readFileSync(skill, 'utf8'), packagedSkill)
+
     writeFileSync(skill, '# customized\n')
     const protectedRun = installHarness({ projectRoot: project })
     assert.deepEqual(protectedRun.skipped, [skill])
+    assert.equal(readFileSync(skill, 'utf8'), '# customized\n')
+    assert.deepEqual(statusHarness({ projectRoot: project }).modified, [skill])
     installHarness({ projectRoot: project, force: true })
     assert.notEqual(readFileSync(skill, 'utf8'), '# customized\n')
 
@@ -232,6 +285,107 @@ test('standalone package behavior', async (t) => {
       if (owned === 'dynamics') continue
       assert.match(body, /Accelerators \(optional\)|never blocks|never requires ArtifactGraph/i)
     }
+
+    const retiredRel = '.cursor/skills/retired/SKILL.md'
+    const retiredModifiedRel = '.cursor/skills/retired-modified/SKILL.md'
+    const retired = path.join(project, ...retiredRel.split('/'))
+    const retiredModified = path.join(project, ...retiredModifiedRel.split('/'))
+    const retiredBody = '# retired package asset\n'
+    const modifiedBody = '# another retired package asset\n'
+    mkdirSync(path.dirname(retired), { recursive: true })
+    mkdirSync(path.dirname(retiredModified), { recursive: true })
+    writeFileSync(retired, retiredBody)
+    writeFileSync(retiredModified, modifiedBody)
+    const upgradeManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
+    upgradeManifest.hashes[retiredRel] = hash(retiredBody)
+    upgradeManifest.hashes[retiredModifiedRel] = hash(modifiedBody)
+    writeFileSync(manifestFile, `${JSON.stringify(upgradeManifest, null, 2)}\n`)
+
+    const upgraded = installHarness({ projectRoot: project })
+    assert.deepEqual(upgraded.stale.sort(), [retired, retiredModified].sort())
+    const staleManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
+    assert.equal(staleManifest.hashes[retiredRel], undefined)
+    assert.equal(staleManifest.stale[retiredRel].hash, hash(retiredBody))
+    assert.equal(staleManifest.stale[retiredRel].sinceVersion, '1.0.1')
+    installHarness({ projectRoot: project })
+    const retainedManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
+    assert.deepEqual(retainedManifest.stale, staleManifest.stale)
+
+    writeFileSync(retiredModified, '# locally modified after retirement\n')
+    const unmanaged = path.join(project, '.cursor', 'skills', 'unmanaged', 'SKILL.md')
+    mkdirSync(path.dirname(unmanaged), { recursive: true })
+    writeFileSync(unmanaged, '# unmanaged\n')
+    const registryBeforePrune = readFileSync(first.registry, 'utf8')
+    const platformBeforePrune = readFileSync(first.platformRepos, 'utf8')
+    const lifecycleStatus = statusHarness({ projectRoot: project })
+    assert.deepEqual(lifecycleStatus.stale, [retired])
+    assert.deepEqual(lifecycleStatus.staleModified, [retiredModified])
+
+    const preview = pruneHarness({ projectRoot: project })
+    assert.equal(preview.dryRun, true)
+    assert.deepEqual(preview.wouldDelete, [retired])
+    assert.deepEqual(preview.preservedModified, [retiredModified])
+    assert.equal(existsSync(retired), true)
+
+    const applied = pruneHarness({ projectRoot: project, yes: true })
+    assert.deepEqual(applied.deleted, [retired])
+    assert.deepEqual(applied.preservedModified, [retiredModified])
+    assert.equal(existsSync(retired), false)
+    assert.equal(readFileSync(retiredModified, 'utf8'), '# locally modified after retirement\n')
+    assert.equal(readFileSync(unmanaged, 'utf8'), '# unmanaged\n')
+    assert.equal(readFileSync(first.registry, 'utf8'), registryBeforePrune)
+    assert.equal(readFileSync(first.platformRepos, 'utf8'), platformBeforePrune)
+    const prunedManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
+    assert.equal(prunedManifest.stale[retiredRel], undefined)
+    assert.deepEqual(prunedManifest.stale[retiredModifiedRel], staleManifest.stale[retiredModifiedRel])
+
+    for (const args of [
+      ['status', '--project-root', project],
+      ['prune', '--project-root', project],
+      ['prune', '--project-root', project, '--yes'],
+      ['harness', 'status', '--project-root', project],
+    ]) {
+      const cli = spawnSync(process.execPath, [path.join(originalCwd, 'bin', 'hubdocs.mjs'), ...args], {
+        cwd: originalCwd,
+        encoding: 'utf8',
+      })
+      assert.equal(cli.status, 0, `${args.join(' ')}\n${cli.stderr}`)
+      assert.match(cli.stdout, /Harness|Prune|Pruned/)
+    }
+    assert.equal(existsSync(retiredModified), true)
+    assert.equal(readFileSync(unmanaged, 'utf8'), '# unmanaged\n')
+  })
+
+  await t.test('harness rejects incompatible and escaping manifests', () => {
+    const project = tempDir('harness-validation')
+    installHarness({ projectRoot: project })
+    const file = path.join(project, ...INSTALL_MANIFEST_PATH.split('/'))
+    const valid = JSON.parse(readFileSync(file, 'utf8'))
+
+    writeFileSync(file, `${JSON.stringify({ ...valid, package: '@other/package' }, null, 2)}\n`)
+    assert.throws(
+      () => statusHarness({ projectRoot: project }),
+      /Incompatible Hubdocs install manifest/,
+    )
+
+    const escaping = {
+      ...valid,
+      hashes: { ...valid.hashes, '../outside.md': hash('outside') },
+    }
+    writeFileSync(file, `${JSON.stringify(escaping, null, 2)}\n`)
+    assert.throws(
+      () => statusHarness({ projectRoot: project }),
+      /Invalid managed harness path/,
+    )
+
+    const linkedProject = tempDir('harness-symlink')
+    const outside = tempDir('harness-outside')
+    symlinkSync(outside, path.join(linkedProject, '.hubdocs'), 'dir')
+    assert.throws(
+      () => installHarness({ projectRoot: linkedProject }),
+      /escapes project root through a symlink/,
+    )
+    assert.equal(existsSync(path.join(outside, 'install-manifest.json')), false)
   })
 
   await t.test('package tarball excludes platform topology and includes harness', () => {
