@@ -65,7 +65,7 @@ hubdocs version
 Pin bản cụ thể:
 
 ```bash
-HUBDOCS_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v0.1.0/install.sh | bash
+HUBDOCS_REF=v1.0.0 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.0/install.sh | bash
 ```
 
 Windows: chạy lại `irm …/install.ps1 | iex`.
