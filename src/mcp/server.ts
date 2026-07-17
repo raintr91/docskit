@@ -1,7 +1,4 @@
-/**
- * MCP server — hubdocs (arc42 / C4 docs hub index).
- * Pattern mirrored from artifactgraph/src/mcp/server.ts
- */
+/** MCP server — Hubdocs arc42 / C4 documentation index. */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { registerTools } from './tools.js'

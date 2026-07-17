@@ -10,6 +10,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { packageRoot, defaultHubdocsRoot } from './config/docs-root.js'
 import { installAgents, AGENT_IDS } from './install/agents.js'
+import { installHarness } from './install/harness.js'
 
 const require = createRequire(import.meta.url)
 
@@ -25,14 +26,17 @@ function pkgVersion(): string {
 function usage(): void {
   console.log(`hubdocs ${pkgVersion()}
 
-Local MCP for base-docs (arc42 × C4) — index IDs, deps, orphans, links, route.
+Local MCP for arc42 × C4 docs hubs — index IDs, deps, orphans, links, route.
 
 Wire agents:
   init [--target=claude,cursor,codex,opencode,hermes,gemini,antigravity,kiro,kilo|auto|all]
-       [--location=global|local] [--yes] [--wsl]
+       [--location=local|global] [--yes] [--wsl]
        [--docs-root <path>] [--print-config <agent>] [--mcp-file <path>]
        # no flags → TTY multi-select (↑↓ · Space · Enter)
   install …   # deprecated alias → init
+
+Install Cursor harness into the current project:
+  harness install [--project-root <path>] [--force]
 
 Other:
   version
@@ -41,7 +45,10 @@ Other:
 Docs: docs/INIT.md · docs/INSTALL.md · README.md
 
 Env:
-  HUBDOCS_ROOT   optional — else cwd if it has architecture/, or docs-root.path
+  HUBDOCS_ROOT   project docs hub; otherwise cwd if it has architecture/
+
+Local wiring is the default. Global wiring is explicit and rootless unless
+--docs-root is supplied; pass docsRoot to each MCP tool in rootless mode.
 `)
   process.exit(1)
 }
@@ -78,8 +85,28 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
     }
     for (const s of result.skipped) console.log(`  skip: ${s}`)
     console.log(`Agents: ${AGENT_IDS.join(' | ')}`)
-    console.log(`HUBDOCS_ROOT: ${arg('--docs-root') ?? defaultHubdocsRoot()}`)
+    const configuredRoot = arg('--docs-root') ?? defaultHubdocsRoot()
+    console.log(`HUBDOCS_ROOT: ${configuredRoot || '(rootless global; use tool docsRoot)'}`)
     console.log('Restart agent(s), then try tool hubdocs_list_ids')
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err)
+    process.exit(1)
+  }
+}
+
+function runHarness(): void {
+  if (process.argv[3] !== 'install') usage()
+  try {
+    const result = installHarness({
+      projectRoot: arg('--project-root'),
+      force: has('--force'),
+    })
+    for (const file of result.written) console.log(`  wrote: ${file}`)
+    for (const file of result.unchanged) console.log(`  unchanged: ${file}`)
+    for (const file of result.skipped) console.log(`  skip customized: ${file} (use --force)`)
+    console.log(
+      `Harness: ${result.written.length} written, ${result.unchanged.length} unchanged, ${result.skipped.length} skipped`,
+    )
   } catch (err) {
     console.error(err instanceof Error ? err.message : err)
     process.exit(1)
@@ -104,6 +131,11 @@ async function main(): Promise<void> {
 
   if (cmd === 'install') {
     await runInitAgents({ deprecatedAlias: true })
+    return
+  }
+
+  if (cmd === 'harness') {
+    runHarness()
     return
   }
 

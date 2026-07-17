@@ -1,5 +1,5 @@
 /**
- * Wire hubdocs MCP into agent configs (parity with artifactgraph / CodeGraph-style init).
+ * Wire Hubdocs MCP into supported agent configurations.
  *
  * Agents: claude | cursor | codex | opencode | hermes | gemini | antigravity | kiro | kilo
  *
@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 
 import path from 'node:path'
 import os from 'node:os'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
-import { packageRoot, defaultHubdocsRoot, looksLikeHub, writeDocsRootMarker } from '../config/docs-root.js'
+import { packageRoot, defaultHubdocsRoot, looksLikeHub } from '../config/docs-root.js'
 import { checkboxPrompt, selectPrompt } from './prompt.js'
 import { buildTomlTable, upsertTomlTable } from './toml.js'
 
@@ -95,19 +95,26 @@ type StdioEntry = {
   env?: Record<string, string>
 }
 
-export function buildMcpEntry(opts: { useWsl?: boolean; docsRoot?: string } = {}): StdioEntry {
+export function buildMcpEntry(
+  opts: { useWsl?: boolean; docsRoot?: string; location?: InstallLocation } = {},
+): StdioEntry {
   const root = packageRoot()
   const mcpJs = path.join(root, 'bin', 'hubdocs-mcp.mjs')
   const nodeBin = process.execPath
-  const hubRoot = opts.docsRoot ? path.resolve(opts.docsRoot) : defaultHubdocsRoot()
-  if (!hubRoot || !looksLikeHub(hubRoot)) {
+  const location = opts.location ?? 'local'
+  const hubRoot =
+    opts.docsRoot ? path.resolve(opts.docsRoot) : location === 'local' ? defaultHubdocsRoot() : ''
+  if (hubRoot && !looksLikeHub(hubRoot)) {
+    throw new Error(`Docs hub missing architecture/: ${hubRoot}`)
+  }
+  if (location === 'local' && !hubRoot) {
     throw new Error(
-      'No docs hub found. cd into your docs hub (folder with architecture/) then run: hubdocs init --yes\n' +
-        'Or: hubdocs init --docs-root=/absolute/path/to/docs-hub --yes',
+      'No docs hub found. cd into a docs hub (folder with architecture/) and run:\n' +
+        '  hubdocs init --location=local --yes\n' +
+        'Or pass --docs-root=/absolute/path/to/docs-hub.',
     )
   }
-  writeDocsRootMarker(hubRoot)
-  const env = { HUBDOCS_ROOT: hubRoot }
+  const env = hubRoot ? { HUBDOCS_ROOT: hubRoot } : undefined
   const winMcp = detectWindowsCursorMcpPath()
   const forceWsl =
     opts.useWsl ||
@@ -349,12 +356,16 @@ export function parseTargets(raw: string | undefined, detected: AgentId[]): Agen
   return out
 }
 
-export function formatPrintConfig(agent: AgentId, location: InstallLocation): string {
+export function formatPrintConfig(
+  agent: AgentId,
+  location: InstallLocation,
+  docsRoot?: string,
+): string {
   if (!supportsLocation(agent, location)) {
     return `# ${AGENT_LABEL[agent]} has no project-local config — use --location=global.\n`
   }
   const file = agentConfigPath(agent, location)
-  const entry = mcpEntryForAgent(agent, buildMcpEntry())
+  const entry = mcpEntryForAgent(agent, buildMcpEntry({ docsRoot, location }))
 
   if (agent === 'codex') {
     const values: Record<string, string | string[]> = {
@@ -608,20 +619,26 @@ export async function installAgents(opts: InstallOptions = {}): Promise<InstallR
         `Unknown agent "${opts.printConfig}". Known: ${AGENT_IDS.join(', ')}, agy`,
       )
     }
-    process.stdout.write(formatPrintConfig(id, opts.location ?? 'global'))
-    return { targets: [id], location: opts.location ?? 'global', written: [], skipped: [] }
+    const location = opts.location ?? 'local'
+    process.stdout.write(formatPrintConfig(id, location, opts.docsRoot))
+    return { targets: [id], location, written: [], skipped: [] }
   }
 
   const detected = detectAgents()
-  let location: InstallLocation = opts.location ?? 'global'
+  let location: InstallLocation = opts.location ?? 'local'
   let targets: AgentId[]
 
   if (opts.mcpFile) {
-    const entry = buildMcpEntry({ useWsl: opts.useWsl, docsRoot: opts.docsRoot })
+    const location = opts.location ?? 'local'
+    const entry = buildMcpEntry({
+      useWsl: opts.useWsl,
+      docsRoot: opts.docsRoot,
+      location,
+    })
     const written = mergeMcpJson(opts.mcpFile, entry)
     return {
       targets: ['cursor'],
-      location: 'global',
+      location,
       written: [{ agent: 'cursor', path: written }],
       skipped: [],
     }
@@ -629,17 +646,21 @@ export async function installAgents(opts: InstallOptions = {}): Promise<InstallR
 
   if (opts.yes || opts.target) {
     targets = parseTargets(opts.target ?? 'auto', detected)
-    location = opts.location ?? 'global'
+    location = opts.location ?? 'local'
   } else if (!process.stdin.isTTY) {
     targets = parseTargets('auto', detected)
-    location = opts.location ?? 'global'
+    location = opts.location ?? 'local'
   } else {
     const picked = await promptInteractive(detected)
     targets = picked.targets
     location = opts.location ?? picked.location
   }
 
-  const baseEntry = buildMcpEntry({ useWsl: opts.useWsl, docsRoot: opts.docsRoot })
+  const baseEntry = buildMcpEntry({
+    useWsl: opts.useWsl,
+    docsRoot: opts.docsRoot,
+    location,
+  })
   const written: InstallResult['written'] = []
   const skipped: string[] = []
 

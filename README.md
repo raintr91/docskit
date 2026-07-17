@@ -31,7 +31,8 @@ Indexes and validates Markdown only — does not replace Structurizr or diagram 
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs version
 cd /path/to/your/docs-hub    # thư mục có architecture/
-hubdocs init --yes           # ↑↓ · Space nếu bỏ --yes
+hubdocs init --location=local --yes
+# hubdocs init               # interactive; local is the default
 ```
 
 **Windows**
@@ -42,7 +43,11 @@ irm https://raw.githubusercontent.com/raintr91/hubdocs/main/install.ps1 | iex
 
 Requires **Node ≥ 22**.
 
-`init` tự lấy `cwd` làm `HUBDOCS_ROOT`. Chỉ cần `--docs-root=…` khi chạy từ chỗ khác.
+Local `init` lấy docs root theo thứ tự `--docs-root` → `HUBDOCS_ROOT` → cwd có
+`architecture/`. Không có sibling fallback hay package-global root marker.
+
+Global wiring phải dùng `--location=global`. Không truyền `--docs-root` thì MCP
+global là rootless và mỗi tool call phải truyền `docsRoot`.
 
 Sau `init`: restart agent → thử tool `hubdocs_list_ids`.
 
@@ -65,7 +70,8 @@ HUBDOCS_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs
 
 Windows: chạy lại `irm …/install.ps1 | iex`.
 
-Sau update: nếu đổi wire MCP thì `cd` docs hub → `hubdocs init --yes` rồi restart agent.
+Sau update: nếu đổi wire MCP thì `cd` docs hub → `hubdocs init --location=local --yes`
+rồi restart agent.
 
 Uninstall: `curl -fsSL …/install.sh | bash -s -- --uninstall`
 
@@ -76,8 +82,10 @@ Uninstall: `curl -fsSL …/install.sh | bash -s -- --uninstall`
 | Step | CLI |
 |------|-----|
 | Install / update package | `curl …/install.sh \| bash` |
-| Wire agents (global/local) | `hubdocs init` |
+| Wire agents (local default) | `hubdocs init` |
+| Explicit rootless global MCP | `hubdocs init --location=global --yes` |
 | Print MCP snippet | `hubdocs init --print-config cursor` |
+| Install Cursor skill/rule/hooks | `hubdocs harness install` |
 | Version / paths | `hubdocs version` |
 
 `install` = deprecated alias của `init`.
@@ -102,7 +110,8 @@ Agents hỗ trợ: Claude · Cursor · Codex · opencode · Hermes · Gemini · 
 
 Manual Cursor snippet: [`mcp.cursor.example.json`](./mcp.cursor.example.json). **Ưu tiên `hubdocs init`** sau `install.sh`.
 
-Docs root: `HUBDOCS_ROOT` hoặc `--docs-root` (hub phải có `architecture/`).
+Docs root: tool `docsRoot` → project MCP `HUBDOCS_ROOT` → valid cwd → setup
+error. Hub phải có `architecture/`.
 
 Redirect stubs (old flat C4) bị bỏ qua khi index. `DYN-*` không còn được index — dùng `FLOW-*`.
 

@@ -10,7 +10,6 @@
 #   HUBDOCS_REPO          default: raintr91/hubdocs
 #   HUBDOCS_INSTALL_DIR   default: ~/.hubdocs
 #   HUBDOCS_BIN_DIR       default: ~/.local/bin
-#   HUBDOCS_ROOT          base-docs path (auto: ~/workspace/base-docs if present)
 #   HUBDOCS_REF           git ref (default: main)
 set -euo pipefail
 
@@ -58,12 +57,6 @@ else
   exit 1
 fi
 
-# Optional: remember HUBDOCS_ROOT if already set (do not assume a fixed workspace layout)
-if [ -n "${HUBDOCS_ROOT:-}" ]; then
-  printf '%s\n' "$HUBDOCS_ROOT" > "$INSTALL_DIR/docs-root.path"
-  echo "Wrote docs-root.path → $HUBDOCS_ROOT"
-fi
-
 mkdir -p "$BIN_DIR"
 ln -sf "$INSTALL_DIR/bin/hubdocs.mjs" "$BIN_DIR/hubdocs"
 ln -sf "$INSTALL_DIR/bin/hubdocs-mcp.mjs" "$BIN_DIR/hubdocs-mcp"
@@ -83,5 +76,5 @@ esac
 echo ""
 echo "Done. Next:"
 echo "  hubdocs version"
-echo "  cd /path/to/your/docs-hub && hubdocs init --yes"
+echo "  cd /path/to/your/docs-hub && hubdocs init --location=local --yes"
 echo "Docs: docs/INIT.md"

@@ -17,7 +17,7 @@ Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs version
 cd /path/to/your/docs-hub    # must contain architecture/
-hubdocs init --yes           # uses cwd as HUBDOCS_ROOT
+hubdocs init --location=local --yes
 # hubdocs init               # interactive agents
 ```
 
@@ -29,7 +29,9 @@ curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | 
 
 Defaults: tree → `~/.hubdocs`, link → `~/.local/bin/hubdocs`.
 
-Docs hub: **cd vào hub rồi `hubdocs init`** (ưu tiên). Tuỳ chọn: `--docs-root=…` hoặc `HUBDOCS_ROOT`.
+Docs hub: **cd vào hub rồi `hubdocs init`**. Local là mặc định; root resolve từ
+`--docs-root` → `HUBDOCS_ROOT` → valid cwd. Package không lưu target marker và
+không tìm sibling repo.
 
 ## Update
 
@@ -48,7 +50,8 @@ Pin tag: `HUBDOCS_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/raintr
 irm https://raw.githubusercontent.com/raintr91/hubdocs/main/install.ps1 | iex
 ```
 
-WSL có sẵn → chạy `install.sh` trong WSL rồi `hubdocs init`.
+WSL có sẵn → chạy `install.sh` trong WSL, cd vào docs hub rồi
+`hubdocs init --location=local --yes --wsl`.
 
 ## Alias
 

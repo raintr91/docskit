@@ -30,14 +30,9 @@ curl -fsSL https://raw.githubusercontent.com/$repo/$ref/install.sh | bash
   if ($LASTEXITCODE -ne 0) { throw "WSL install failed (exit $LASTEXITCODE)" }
 
   Write-Host ""
-  Write-Host "Configuring Cursor MCP to call WSL hubdocs..."
-  & wsl.exe -e bash -lc "hubdocs init --target=auto --yes --wsl --mcp-file `$(wslpath '$env:USERPROFILE')/.cursor/mcp.json"
-  if ($LASTEXITCODE -ne 0) {
-    Write-Warning "Could not auto-write mcp.json. From WSL run:"
-    Write-Warning "  hubdocs init --target=cursor --yes --wsl --mcp-file /mnt/c/Users/<you>/.cursor/mcp.json"
-  }
-
-  Write-Host "Done. Restart Cursor, then try MCP tool hubdocs_list_ids."
+  Write-Host "Package installed. From WSL, cd into a docs hub and run:"
+  Write-Host "  hubdocs init --location=local --yes --wsl"
+  Write-Host "Then restart the agent and try MCP tool hubdocs_list_ids."
   Write-Host "CLI (WSL): wsl hubdocs version"
   return
 }
@@ -89,5 +84,5 @@ node "%~dp0hubdocs.mjs" %*
 "@ | Set-Content -Path $cmdShim -Encoding ASCII
 
 Write-Host "Run: hubdocs version"
-Write-Host "Then: hubdocs init --target=auto --yes   # or cursor,claude,kilo  (docs/INIT.md)"
+Write-Host "Then cd into a docs hub and run: hubdocs init --location=local --yes"
 Write-Host "Or: npx --yes github:$repo"
