@@ -8,6 +8,17 @@ Indexes and validates Markdown only — does not replace Structurizr or diagram 
 - **Init (agents):** [docs/INIT.md](./docs/INIT.md)
 - **Package bootstrap:** [docs/INSTALL.md](./docs/INSTALL.md)
 
+## Independence
+
+Hubdocs owns the architecture authoring harness (`/architecture` family +
+`/hubdocs`) and the docs ID/graph tools. ArtifactGraph is an **optional**
+accelerator for registries/tags/parity only.
+
+- Hubdocs **never requires** ArtifactGraph.
+- ArtifactGraph must **not** index or own architecture Markdown.
+- Missing Hubdocs MCP never blocks Markdown authoring: use repository search
+  and targeted file reads.
+
 ---
 
 ## What it does

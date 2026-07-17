@@ -25,6 +25,7 @@
     "harness",
     "install.sh",
     "install.ps1",
+    "mcp-package.json",
     "mcp.cursor.example.json",
     "README.md"
   ],
