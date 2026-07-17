@@ -42,7 +42,7 @@ curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | 
 hubdocs version
 ```
 
-Pin tag: `HUBDOCS_REF=v1.0.1 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.1/install.sh | bash`
+Pin tag: `HUBDOCS_REF=v1.0.2 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.2/install.sh | bash`
 
 ## Windows (PowerShell)
 

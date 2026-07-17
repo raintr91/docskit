@@ -64,3 +64,7 @@ Missing Hubdocs never blocks authoring.
 Missing ArtifactGraph never blocks Hubdocs or architecture skills.
 ```
 
+When ArtifactGraph is missing, follow `/hubdocs` fallback evidence: continue
+targeted local reads, then emit one deduplicated `hubdocs.missing-optional`
+event per run and optional with actual `fileReads` and `contextBytes` only.
+

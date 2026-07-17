@@ -215,12 +215,24 @@ test('standalone package behavior', async (t) => {
         schema: 1,
         toolApi: 1,
         harnessApi: 1,
-        version: '1.0.1',
+        version: '1.0.2',
       },
     )
     assert.ok(Object.keys(firstManifest.hashes).length >= 18)
     assert.equal(firstManifest.hashes['.cursor/extracts/extract-registry.json'], undefined)
     assert.equal(firstManifest.hashes['platform-repos.json'], undefined)
+    const schemaRel = '.cursor/schemas/hubdocs/missing-optional-event.schema.json'
+    const schemaTargets = Object.keys(firstManifest.hashes).filter((rel) =>
+      rel.endsWith('/missing-optional-event.schema.json'),
+    )
+    assert.deepEqual(schemaTargets, [schemaRel])
+    const installedSchema = JSON.parse(
+      readFileSync(path.join(project, ...schemaRel.split('/')), 'utf8'),
+    )
+    assert.equal(installedSchema.properties.event.const, 'hubdocs.missing-optional')
+    assert.equal(installedSchema.properties.package.const, '@platform/hubdocs')
+    assert.deepEqual(installedSchema.properties.metrics.required, ['fileReads', 'contextBytes'])
+    assert.equal(installedSchema.properties.metrics.additionalProperties, false)
     const registry = JSON.parse(readFileSync(first.registry, 'utf8'))
     assert.ok(registry.bundles['architecture-core'])
     assert.ok(first.platformRepos)
@@ -285,6 +297,21 @@ test('standalone package behavior', async (t) => {
       if (owned === 'dynamics') continue
       assert.match(body, /Accelerators \(optional\)|never blocks|never requires ArtifactGraph/i)
     }
+    const installedRule = readFileSync(
+      path.join(project, '.cursor', 'rules', 'hubdocs.mdc'),
+      'utf8',
+    )
+    const installedHubdocsSkill = readFileSync(
+      path.join(project, '.cursor', 'skills', 'hubdocs', 'SKILL.md'),
+      'utf8',
+    )
+    for (const body of [installedRule, installedHubdocsSkill]) {
+      assert.match(body, /hubdocs\.missing-optional/)
+      assert.match(body, /exactly one/)
+      assert.match(body, /deduplicate\s+retries/i)
+      assert.match(body, /actual `fileReads` and `contextBytes`/)
+      assert.match(body, /never\s+(?:estimate\s+)?tokens|never\s+token estimates/i)
+    }
 
     const retiredRel = '.cursor/skills/retired/SKILL.md'
     const retiredModifiedRel = '.cursor/skills/retired-modified/SKILL.md'
@@ -306,7 +333,7 @@ test('standalone package behavior', async (t) => {
     const staleManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
     assert.equal(staleManifest.hashes[retiredRel], undefined)
     assert.equal(staleManifest.stale[retiredRel].hash, hash(retiredBody))
-    assert.equal(staleManifest.stale[retiredRel].sinceVersion, '1.0.1')
+    assert.equal(staleManifest.stale[retiredRel].sinceVersion, '1.0.2')
     installHarness({ projectRoot: project })
     const retainedManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
     assert.deepEqual(retainedManifest.stale, staleManifest.stale)
@@ -388,6 +415,23 @@ test('standalone package behavior', async (t) => {
     assert.equal(existsSync(path.join(outside, 'install-manifest.json')), false)
   })
 
+  await t.test('missing ArtifactGraph keeps targeted local Hubdocs behavior available', () => {
+    const pkg = JSON.parse(readFileSync(path.join(originalCwd, 'package.json'), 'utf8'))
+    const mcpPackage = JSON.parse(readFileSync(path.join(originalCwd, 'mcp-package.json'), 'utf8'))
+    assert.ok(mcpPackage.optional.includes('@platform/artifactgraph'))
+    assert.equal(pkg.dependencies?.['@platform/artifactgraph'], undefined)
+
+    const hub = makeHub('without-artifactgraph')
+    const installed = installHarness({ projectRoot: hub })
+    assert.ok(
+      installed.written.includes(
+        path.join(hub, '.cursor', 'schemas', 'hubdocs', 'missing-optional-event.schema.json'),
+      ),
+    )
+    assert.ok(indexIds(hub).has('FLOW-login'))
+    assert.equal(routeTopic('login sequence')[0].path, 'architecture/06-runtime/journeys/')
+  })
+
   await t.test('package tarball excludes platform topology and includes harness', () => {
     const packed = spawnSync(
       'npm',
@@ -402,6 +446,13 @@ test('standalone package behavior', async (t) => {
     assert.ok(names.includes('harness/cursor/skills/hubdocs/SKILL.md'))
     assert.ok(names.includes('harness/cursor/skills/architecture/SKILL.md'))
     assert.ok(names.includes('harness/cursor/extracts/architecture-core.md'))
+    assert.equal(
+      names.filter(
+        (name) =>
+          name === 'harness/cursor/schemas/hubdocs/missing-optional-event.schema.json',
+      ).length,
+      1,
+    )
     assert.ok(names.includes('mcp-package.json'))
   })
 })

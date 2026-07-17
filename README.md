@@ -16,6 +16,9 @@ accelerator for registries/tags/parity only.
 
 - Hubdocs **never requires** ArtifactGraph.
 - ArtifactGraph must **not** index or own architecture Markdown.
+- Missing ArtifactGraph falls back to targeted local reads and emits one
+  deduplicated `hubdocs.missing-optional` event per run/optional with measured
+  `fileReads` and `contextBytes`; token usage is not estimated.
 - Missing Hubdocs MCP never blocks Markdown authoring: use repository search
   and targeted file reads.
 
@@ -76,7 +79,7 @@ hubdocs version
 Pin bản cụ thể:
 
 ```bash
-HUBDOCS_REF=v1.0.1 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.1/install.sh | bash
+HUBDOCS_REF=v1.0.2 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.2/install.sh | bash
 ```
 
 Windows: chạy lại `irm …/install.ps1 | iex`.
@@ -109,7 +112,9 @@ files unless `--force` is passed. Assets removed from a newer package become
 stale; `prune` is a dry run, and `prune --yes` deletes only stale files whose
 hash still matches the installed copy. Shared merged
 `.cursor/extracts/extract-registry.json` and `platform-repos.json` are never
-claimed or pruned.
+claimed or pruned. The Hubdocs-owned optional fallback schema is installed at
+`.cursor/schemas/hubdocs/missing-optional-event.schema.json` and follows the
+same managed lifecycle.
 
 Agents hỗ trợ: Claude · Cursor · Codex · opencode · Hermes · Gemini · Antigravity · Kiro · **Kilo**.
 

@@ -138,4 +138,8 @@ muốn thay bằng bản package; `--project-root` để chọn project khác cw
 
 ArtifactGraph is optional and one-way: Hubdocs never requires it; ArtifactGraph
 must not own architecture Markdown. Architecture skills keep a direct Markdown
-fallback when Hubdocs MCP is offline.
+fallback when Hubdocs MCP is offline. If ArtifactGraph is missing, Hubdocs
+continues targeted local reads and emits one deduplicated
+`hubdocs.missing-optional` event per run/optional after fallback. The event uses
+`.cursor/schemas/hubdocs/missing-optional-event.schema.json` and reports only
+measured `fileReads` and `contextBytes`, never token estimates.

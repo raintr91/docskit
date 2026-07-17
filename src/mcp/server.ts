@@ -6,7 +6,7 @@ import { registerTools } from './tools.js'
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'hubdocs',
-    version: '1.0.1',
+    version: '1.0.2',
   })
   registerTools(server)
   return server

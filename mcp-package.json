@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "package": "@platform/hubdocs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "types": ["docs"],
   "requires": [],
   "optional": ["@platform/artifactgraph"],

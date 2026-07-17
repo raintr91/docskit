@@ -17,3 +17,12 @@ Project-local MCP wiring should set `HUBDOCS_ROOT` to the current docs hub.
 
 Do not require Hubdocs for architecture work: if the MCP is unavailable, inspect
 the repository Markdown directly or explain how to run project-local setup.
+
+ArtifactGraph is optional. If `@platform/artifactgraph` is not configured,
+unavailable, or fails, Hubdocs must continue with targeted local search and
+scoped Markdown reads; the missing optional must never abort the run. Assign one
+stable `runId` per run. Count each successful fallback file read and its exact
+raw byte length. After the fallback completes, emit exactly one
+`hubdocs.missing-optional` JSON event per `runId` + optional pair conforming to
+`.cursor/schemas/hubdocs/missing-optional-event.schema.json`; deduplicate
+retries. Report only actual `fileReads` and `contextBytes`, never token estimates.

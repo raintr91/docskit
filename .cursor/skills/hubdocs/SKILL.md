@@ -54,3 +54,12 @@ ArtifactGraph must not index or own architecture Markdown.
 If this MCP is not connected: Glob/search under architecture/ and product/,
 then Read scoped Markdown. Authoring is never blocked.
 ```
+
+At run start, assign one stable `runId`. If `@platform/artifactgraph` is not
+configured, unavailable, or its invocation fails, continue with targeted local
+search and scoped Markdown reads. Count each successful fallback file read and
+its exact raw byte length. After the fallback completes, emit exactly one
+`hubdocs.missing-optional` JSON event for the `runId` + optional pair using
+`.cursor/schemas/hubdocs/missing-optional-event.schema.json`. Deduplicate
+retries. Report only actual `fileReads` and `contextBytes`; never estimate
+tokens or token savings.
