@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { packageRoot } from '../config/docs-root.js'
+import { mergePlatformRepos } from './platform-repos.js'
 
 export const HUBDOCS_OWNED_SKILLS = [
   'hubdocs',
@@ -20,6 +21,9 @@ export interface HarnessInstallResult {
   unchanged: string[]
   skipped: string[]
   registry?: string
+  platformRepos?: string
+  mergedSkills?: string[]
+  warnings?: string[]
 }
 
 function walk(root: string): string[] {
@@ -99,5 +103,9 @@ export function installHarness(opts: {
   }
 
   result.registry = mergeExtractRegistry(projectRoot)
+  const maps = mergePlatformRepos(projectRoot)
+  result.platformRepos = maps.path
+  result.mergedSkills = maps.mergedSkills
+  result.warnings = maps.warnings
   return result
 }

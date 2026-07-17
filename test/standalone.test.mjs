@@ -183,6 +183,22 @@ test('standalone package behavior', async (t) => {
     assert.ok(first.registry)
     const registry = JSON.parse(readFileSync(first.registry, 'utf8'))
     assert.ok(registry.bundles['architecture-core'])
+    assert.ok(first.platformRepos)
+    const platform = JSON.parse(readFileSync(first.platformRepos, 'utf8'))
+    for (const skill of [
+      'hubdocs',
+      'architecture',
+      'context',
+      'containers',
+      'component',
+      'journey',
+      'deployment',
+      'decision',
+      'cross-cutting',
+      'dynamics',
+    ]) {
+      assert.ok(platform.harness.profiles.docs.skills.includes(skill), skill)
+    }
     assert.ok(registry.bundles.hubdocs)
     assert.deepEqual(registry.bundles['foreign-bundle'], ['.cursor/extracts/foreign.md'])
 
