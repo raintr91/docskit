@@ -1,23 +1,110 @@
 {
-  "version": 1,
-  "description": "Workspace map for artifactgraph — roots relative to workspaceRoot (or ARTIFACTGRAPH_WORKSPACE).",
-  "workspaceRoot": "..",
   "defaultGroup": "platform-bases",
   "harness": {
     "defaultByRole": {
       "frontend": "full",
-      "client": "shared",
+      "client": "full",
       "backend": "shared",
       "fullstack": "full",
       "docs": "docs",
       "tests": "tests",
       "tooling": "tooling"
+    },
+    "syncPolicy": {
+      "mode": "propose",
+      "description": "Resolve profile per project → compare .cursor/skills to profiles.*.skills; propose add/remove. Do not bulk-sync all lanes. platform-bases = open cluster only, not a sync target."
+    },
+    "profiles": {
+      "full": {
+        "groups": [
+          "code-fe",
+          "code-fullstack"
+        ],
+        "skills": [
+          "platform-ai",
+          "platform-base",
+          "platform-mark",
+          "artifactgraph",
+          "prototype",
+          "grill-prototype",
+          "api",
+          "grill-api",
+          "wire",
+          "test",
+          "grill-test",
+          "unit",
+          "grill-unit",
+          "model"
+        ],
+        "note": "FE + monorepo — DNA + code lane (prototype / wire / test / unit / api)"
+      },
+      "shared": {
+        "groups": [
+          "code-be"
+        ],
+        "skills": [
+          "platform-ai",
+          "platform-base",
+          "platform-mark",
+          "artifactgraph",
+          "api",
+          "grill-api",
+          "wire",
+          "unit",
+          "grill-unit"
+        ],
+        "note": "BE only — DNA + api / wire / unit; no prototype / FE e2e"
+      },
+      "docs": {
+        "groups": [
+          "docs"
+        ],
+        "skills": [
+          "platform-ai",
+          "platform-mark",
+          "artifactgraph",
+          "spec",
+          "legacy-spec",
+          "update-spec",
+          "update-spec-legacy",
+          "bqa-grill-docs",
+          "dev-grill-docs",
+          "grill-with-docs",
+          "dynamics",
+          "flow-trace"
+        ],
+        "note": "base-docs hub — spec / grill / dynamics only"
+      },
+      "tests": {
+        "groups": [
+          "tests"
+        ],
+        "skills": [
+          "platform-ai",
+          "platform-mark",
+          "artifactgraph",
+          "testcase",
+          "grill-testcase"
+        ],
+        "note": "base-tests hub — testcase / grill-testcase only"
+      },
+      "tooling": {
+        "groups": [
+          "mcp"
+        ],
+        "skills": [
+          "platform-ai",
+          "platform-mark",
+          "artifactgraph"
+        ],
+        "note": "MCP packages — harness DNA only; no FE/BE/docs skills"
+      }
     }
   },
   "groups": {
     "platform-bases": {
-      "description": "Full cluster — cross-repo edits only when needed",
-      "primary": "portal",
+      "description": "Full cluster — open all bases; not a harness sync target",
+      "primary": "hubdocs",
       "projects": [
         "portal",
         "nextjs",
@@ -34,7 +121,7 @@
       ]
     },
     "code-fe": {
-      "description": "Frontend bases — prototype / wire / test / unit",
+      "description": "FE — portal, nextjs, line (profile full)",
       "primary": "portal",
       "projects": [
         "portal",
@@ -43,7 +130,7 @@
       ]
     },
     "code-be": {
-      "description": "Backend bases — api / wire / unit",
+      "description": "BE — api, fast-api-base, integration (profile shared)",
       "primary": "api",
       "projects": [
         "api",
@@ -52,7 +139,7 @@
       ]
     },
     "code-fullstack": {
-      "description": "Monorepo FE + BE",
+      "description": "Monorepo FE+BE — nuxt_nest, next_nest (profile full)",
       "primary": "nuxt-nest",
       "projects": [
         "nuxt-nest",
@@ -60,21 +147,21 @@
       ]
     },
     "docs": {
-      "description": "Docs hub — spec / legacy / grill / dynamics only",
+      "description": "Docs hub — base-docs only (profile docs)",
       "primary": "base-docs",
       "projects": [
         "base-docs"
       ]
     },
     "tests": {
-      "description": "E2E plans hub — testcase / grill-testcase only",
+      "description": "E2E plans hub — base-tests only (profile tests)",
       "primary": "base-tests",
       "projects": [
         "base-tests"
       ]
     },
     "mcp": {
-      "description": "MCP tooling — harness DNA + artifactgraph only",
+      "description": "MCP tooling — artifactgraph, hubdocs (profile tooling)",
       "primary": "artifactgraph",
       "projects": [
         "artifactgraph",
@@ -84,67 +171,85 @@
   },
   "projects": {
     "portal": {
-      "root": "portal",
+      "root": "../portal",
       "role": "frontend",
       "stack": "nuxt4",
       "repo": "portal",
-      "description": "Base Nuxt 4 (FE)"
+      "skill": "platform-base",
+      "description": "Base Nuxt 4 (FE)",
+      "write": true
     },
     "nextjs": {
-      "root": "nextjs",
+      "root": "../nextjs",
       "role": "frontend",
       "stack": "nextjs",
       "repo": "nextjs",
-      "description": "Base Next.js (FE)"
+      "skill": "platform-base",
+      "description": "Base Next.js (FE)",
+      "write": true
     },
     "nuxt-nest": {
-      "root": "nuxt_nest",
+      "root": "../nuxt_nest",
       "role": "fullstack",
       "stack": "nuxt4-nest",
       "repo": "nuxt_nest",
-      "description": "Base Nuxt 4 + NestJS monorepo"
+      "skill": "platform-base",
+      "description": "Base Nuxt 4 + NestJS monorepo",
+      "write": true
     },
     "next-nest": {
-      "root": "next_nest",
+      "root": "../next_nest",
       "role": "fullstack",
       "stack": "nextjs-nest",
       "repo": "next_nest",
-      "description": "Base Next.js + NestJS monorepo"
+      "skill": "platform-base",
+      "description": "Base Next.js + NestJS monorepo",
+      "write": true
     },
     "fast-api-base": {
-      "root": "fast-api-base",
+      "root": "../fast-api-base",
       "role": "backend",
       "stack": "fastapi",
       "repo": "fast-api-base",
-      "description": "Base FastAPI (BE)"
+      "skill": "platform-base",
+      "description": "Base FastAPI (BE)",
+      "write": true
     },
     "api": {
-      "root": "api",
+      "root": "../api",
       "role": "backend",
       "stack": "laravel",
       "repo": "api",
-      "description": "Base Laravel 12 (BE)"
+      "skill": "api-base",
+      "description": "Base Laravel 12 (BE)",
+      "write": true
     },
     "integration": {
-      "root": "integration",
+      "root": "../integration",
       "role": "backend",
       "stack": "dotnet-integration",
       "repo": "integration",
-      "description": "Base .NET (BE)"
+      "skill": "platform-base",
+      "description": "Base .NET (BE)",
+      "write": true
     },
     "line": {
-      "root": "line",
+      "root": "../line",
       "role": "client",
       "stack": "dotnet-line",
       "repo": "line",
-      "description": "Base WinForms — override in platform-repos.local.json for D:/workspace/line"
+      "skill": "platform-base",
+      "description": "Base WinForms — override in platform-repos.local.json for D:/workspace/line",
+      "write": true
     },
     "base-docs": {
-      "root": "base-docs",
+      "root": "../base-docs",
       "role": "docs",
       "stack": "docs-c4",
       "repo": "base-docs",
+      "skill": "platform-ai",
       "description": "Base docs hub (R2) — C4 + product Code/common",
+      "write": true,
       "specRoots": {
         "architecture": "architecture",
         "components": "product/components",
@@ -157,11 +262,13 @@
       }
     },
     "base-tests": {
-      "root": "base-tests",
+      "root": "../base-tests",
       "role": "tests",
       "stack": "e2e-plans",
       "repo": "base-tests",
+      "skill": "platform-ai",
       "description": "Base tests hub (R3) — E2E yaml/md plans only",
+      "write": true,
       "testRoots": {
         "landscape": "landscape",
         "scenarios": "scenarios",
@@ -170,20 +277,24 @@
       }
     },
     "artifactgraph": {
-      "root": "artifactgraph",
+      "root": "../artifactgraph",
       "role": "tooling",
       "stack": "mcp",
       "repo": "artifactgraph",
-      "harnessProfile": "tooling",
-      "description": "Local MCP artifactgraph — gaps/tags/gen allowlist (raintr91/artifactgraph)"
+      "skill": "platform-ai",
+      "description": "Local MCP artifactgraph — gaps/tags/gen allowlist (raintr91/artifactgraph)",
+      "write": true,
+      "harnessProfile": "tooling"
     },
     "hubdocs": {
       "root": ".",
       "role": "tooling",
       "stack": "mcp-docs",
       "repo": "hubdocs",
-      "harnessProfile": "tooling",
-      "description": "MCP hubdocs — docs index / hub tooling (optional sibling repo)"
+      "skill": "platform-ai",
+      "description": "MCP hubdocs — docs index / hub tooling (optional sibling repo)",
+      "write": true,
+      "harnessProfile": "tooling"
     }
   }
 }

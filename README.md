@@ -7,6 +7,7 @@ Indexes and validates Markdown only — does not replace Structurizr or diagram 
 - GitHub: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 - **Init (agents):** [docs/INIT.md](./docs/INIT.md)
 - **Package bootstrap:** [docs/INSTALL.md](./docs/INSTALL.md)
+- **Standalone consolidation plan:** [CONSOLIDATION-TODO.md](./CONSOLIDATION-TODO.md)
 
 ---
 
