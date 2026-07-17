@@ -4,5 +4,3 @@ dist/
 .DS_Store
 *.log
 workspace.path
-# Generated — node scripts/platform-workspace-from-repos.mjs --group=<lane>
-platform-*.code-workspace

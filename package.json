@@ -37,8 +37,7 @@
     "dev": "tsx src/mcp/server.ts",
     "test": "npm run build && node --test test/*.test.mjs",
     "harness:sync": "node scripts/sync-harness-examples.mjs",
-    "harness:check": "node scripts/sync-harness-examples.mjs --check",
-    "platform:workspace": "node scripts/platform-workspace-from-repos.mjs --group=mcp --out=platform-mcp.code-workspace"
+    "harness:check": "node scripts/sync-harness-examples.mjs --check"
   },
   "engines": {
     "node": ">=22"

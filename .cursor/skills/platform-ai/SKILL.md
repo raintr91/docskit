@@ -1,51 +1,48 @@
 ---
 name: platform-ai
 extractBundle: platform-ai
-description: /platform-ai — maintain MCP package + harness map (hubdocs tooling lane).
+description: /platform-ai — build and maintain the independent Hubdocs MCP package.
 disable-model-invocation: true
 ---
 
-# /platform-ai — MCP tooling harness
+# /platform-ai — build Hubdocs MCP
 
-Chỉ khi **sửa** package MCP, `platform-repos.json`, sync scripts, hoặc `.cursor/` **trong repo này** — không implement feature app / spec / E2E plans.
+Use this skill to design, implement, test, package, and release **Hubdocs as an
+independent MCP**. Do not implement product features, specs, or E2E plans here.
 
-## Phạm vi repo này
+## Scope
 
-| Giữ tại **hubdocs** | Không làm chính tại đây |
-|---------------------|-------------------------|
-| `src/`, `bin/`, `README.md` | `/prototype` `/wire` `/test` (portal) |
-| `platform-repos.json` + `harness` + lane groups | `/spec` grill `/dynamics` (`base-docs`) |
-| `scripts/sync-platform-repos-bases.py` (map only) | `/testcase` (`base-tests`) |
-| `scripts/platform-workspace-from-repos.mjs` | `platform-base` (Nuxt — chỉ portal) |
-| Skills: `platform-ai`, `hubdocs` | Bulk copy `.cursor/` từ repo tooling khác |
+| Own here | Do not own here |
+|----------|-----------------|
+| MCP server/tools, CLI, package API | Product application implementation |
+| Hubdocs installers and managed harness | Docs/spec content belonging to a product hub |
+| Hubdocs-owned architecture skills/assets | Cross-repository workspace topology |
+| Standalone tests, packaging, release docs | Platform DNA or another MCP's harness |
 
-**SSOT:** map = `platform-repos.json` · harness `.cursor/` = chỉnh **tại repo này**.
+There is no `platform-repos.json` in an MCP repository. Product maps are
+created in destination docs/code hubs; Hubdocs may merge only its owned skill
+IDs during destination `init`.
 
-## Scripts
+## Workflow
 
-```bash
-python3 scripts/sync-platform-repos-bases.py          # propagate map → sibling bases
-node scripts/platform-workspace-from-repos.mjs --group=mcp   # local workspace (gitignored)
-./scripts/cursor-export-kilo                        # optional Kilo mirror
-```
+1. Freeze the tool/input/output and ownership contract in `mcp-package.json`.
+2. Implement deterministic behavior in `src/`; keep agent-facing orchestration
+   in the packaged `harness/`.
+3. Make `init` safe: explicit target root, managed hashes, conflict protection,
+   no sibling checkout assumptions.
+4. Update tests and public docs together with behavior.
+5. Run build, standalone tests, and package-content checks before release.
 
 ## Commands
 
-| Command | Khi nào |
-|---------|---------|
-| `/platform-ai` | this — MCP package + harness |
-| `/hubdocs` | MCP tools, docs index, validate links |
-
-Feature / spec / plans → workspace lane đúng (`--group=docs`, `code-fe`, …) — **một chat một lane**.
-
-## Shared tooling conventions
-
-`artifactgraph` là sibling MCP độc lập. Chỉ tham khảo các convention tooling dùng chung; Hubdocs tự sở hữu Cursor DNA, hooks, extracts và skill của mình. Không dùng ArtifactGraph làm copy source.
-
-Giữ lane **tooling**: không nhét skill code (`api`, `prototype`, …) hay docs (`spec`, `testcase`, …). Map workspace: `platform-repos.json` · group `mcp`.
+```bash
+pnpm test
+pnpm pack --dry-run
+```
 
 ## Done
 
-- [x] Chỉ 2 skill folders; rules = `platform-ai`, `hubdocs`, `platform-code-size`, `team-flow-harness-state`
-- [x] `platform-repos.json` harness khớp lane groups
-- [x] Không copy `.cursor/` từ portal vào hubdocs
+- Package installs and runs without sibling repositories.
+- Shipped files contain only Hubdocs-owned tools and harness assets.
+- Destination edits are managed, conflict-safe, and uninstallable.
+- Docs, package version, manifest compatibility, and tests agree.
