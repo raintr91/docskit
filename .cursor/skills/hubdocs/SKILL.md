@@ -1,41 +1,38 @@
 ---
 name: hubdocs
 extractBundle: hubdocs
-description: /hubdocs — local MCP for arc42/C4 docs hub ID index (this package).
+description: /hubdocs — MCP index for a conforming arc42 × C4 documentation hub.
 disable-model-invocation: true
 ---
 
 # /hubdocs
 
-Package root: repo này · GitHub: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
+Package: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 
-**Docs trong package:** `README.md` · `docs/INIT.md` · `mcp.cursor.example.json`  
-**Rule:** `hubdocs.mdc` · hooks: `.cursor/extracts/hubdocs-phase-hooks.md`
+The target repository owns its Markdown. Hubdocs only indexes, validates, and
+routes content from the configured docs root.
 
-## Local-first (docs index)
+## Protocol
 
 ```text
-hubdocs_list_ids / hubdocs_route  →  hubdocs_get_element (targeted slice)
-  → hubdocs_deps_of / hubdocs_dependents_of (impact)
-  → hubdocs_orphans / hubdocs_validate_links (catalog health)
+hubdocs_layout / hubdocs_route / hubdocs_list_ids
+  → hubdocs_get_element
+  → hubdocs_deps_of / hubdocs_dependents_of
+  → hubdocs_orphans / hubdocs_validate_links
 ```
 
-| Local | Không dump context |
-|-------|-------------------|
-| One ID via `hubdocs_get_element` | Whole `architecture/**` |
-| `hubdocs_route` topic → chapter | All arc42 chapters |
-| `hubdocs_journeys` list | Every journey file |
+Use `hubdocs_journeys` before reading every journey file. Prefer targeted tool
+results over dumping `architecture/**`.
 
-## Tools (MCP)
+## Root and setup
 
-`hubdocs_list_ids` · `hubdocs_get_element` · `hubdocs_deps_of` · `hubdocs_dependents_of` · `hubdocs_orphans` · `hubdocs_validate_links` · `hubdocs_route` · `hubdocs_journeys` · `hubdocs_layout`
-
-Env: `HUBDOCS_ROOT` → absolute path tới docs hub (`architecture/` required).
-
-## Install / wire
+Project-local MCP wiring should set `HUBDOCS_ROOT` to this docs hub:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
-hubdocs init
-# cd /path/to/your/docs-hub && hubdocs init --yes
+cd /path/to/docs-hub
+hubdocs init --location=local --yes
+hubdocs harness install
 ```
+
+Every tool also accepts `docsRoot`, which is required for a rootless global MCP
+entry. The selected hub must contain `architecture/`.

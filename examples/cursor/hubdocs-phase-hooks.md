@@ -1,34 +1,21 @@
-# Hubdocs — phase hooks (docs hub MCP)
+# Hubdocs — phase hooks
 
-> Skill `/hubdocs`. SSOT = MD in the docs hub — MCP only **indexes** + validates.
-> Layout: arc42 `architecture/01`…`12` + `product/` (not old flat C4 folders).
-
-## Protocol
+Hubdocs is an optional index over Markdown owned by the current docs hub.
 
 ```text
-(1) hubdocs_layout / hubdocs_route / hubdocs_list_ids  — narrow scope
-(2) hubdocs_get_element  — primary + excerpts (canonical first)
-(3) hubdocs_deps_of / hubdocs_dependents_of  — ref impact
-(4) hubdocs_orphans / hubdocs_validate_links  — before claiming complete
+(1) hubdocs_layout / hubdocs_route / hubdocs_list_ids — narrow scope
+(2) hubdocs_get_element — canonical file and targeted excerpt
+(3) hubdocs_deps_of / hubdocs_dependents_of — reference impact
+(4) hubdocs_orphans / hubdocs_validate_links — catalog health
 ```
 
-| Do locally | Do NOT |
-|------------|--------|
-| Query by ID / kind / prefix | Dump whole `architecture/**` |
-| Use `FLOW-*` + `/journey` | Write new `DYN-*` or `architecture/dynamics/` |
-| ADR under `09-decisions/` | Put ADRs under `product/shared/adr` |
-| Code under `product/**/code/` | Duplicate Code under `05-building-blocks` |
+Use `FLOW-*` and `hubdocs_journeys` for journeys. Keep ADRs in the configured
+arc42 decision home and code-level IDs in the target hub's product tree.
 
-## Wire MCP
+If Hubdocs is not connected, continue with direct Markdown inspection. To wire
+it locally:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
-cd /path/to/your/docs-hub && hubdocs init --yes
+cd /path/to/docs-hub
+hubdocs init --location=local --yes
 ```
-
-## Per skill
-
-### `/architecture` — `hubdocs_route` → targeted chapter
-### `/journey` — `hubdocs_journeys` → `FLOW-*`
-### `/context` `/containers` `/component` `/decision` `/deployment` `/cross-cutting`
-— `hubdocs_list_ids` filtered by kind → `hubdocs_get_element`

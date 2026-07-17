@@ -56,7 +56,7 @@ export function registerTools(server: McpServer): void {
       docsRoot: z
         .string()
         .optional()
-        .describe('Override hub root; default HUBDOCS_ROOT / docs-root.path'),
+        .describe('Hub root; defaults to project MCP HUBDOCS_ROOT or a valid cwd'),
       kind: z
         .enum(['LND', 'CTX', 'CTR', 'CMP', 'FLOW', 'DEP', 'ADR', 'W', 'API', 'UI', 'OTHER', 'ALL'])
         .optional(),

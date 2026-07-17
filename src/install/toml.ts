@@ -1,6 +1,6 @@
 /**
  * Narrow TOML helpers for Codex `~/.codex/config.toml`
- * (`[mcp_servers.artifactgraph]` only — not a general parser).
+ * MCP server tables only — not a general parser.
  */
 
 export function serializeTomlTableBody(values: Record<string, string | string[]>): string {
