@@ -71,5 +71,6 @@ directly into `.cursor/`. Install preserves modified managed files unless
 `--force` is explicit and records package files that disappear on upgrade as
 stale. Prune removes only stale files that still match their recorded hash;
 modified and unmanaged files remain. The shared merged
-`.cursor/extracts/extract-registry.json` and `platform-repos.json` are outside
-the ownership manifest and are never pruned.
+`.cursor/extracts/extract-registry.json` is outside the ownership manifest and
+is never pruned. Hubdocs does not write `platform-repos*.json`; project maps
+are Platform DNA-owned and optional.

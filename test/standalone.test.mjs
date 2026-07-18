@@ -235,22 +235,9 @@ test('standalone package behavior', async (t) => {
     assert.equal(installedSchema.properties.metrics.additionalProperties, false)
     const registry = JSON.parse(readFileSync(first.registry, 'utf8'))
     assert.ok(registry.bundles['architecture-core'])
-    assert.ok(first.platformRepos)
-    const platform = JSON.parse(readFileSync(first.platformRepos, 'utf8'))
-    for (const skill of [
-      'hubdocs',
-      'architecture',
-      'context',
-      'containers',
-      'component',
-      'journey',
-      'deployment',
-      'decision',
-      'cross-cutting',
-      'dynamics',
-    ]) {
-      assert.ok(platform.harness.profiles.docs.skills.includes(skill), skill)
-    }
+    // Hubdocs never writes Platform DNA-owned project maps.
+    assert.equal(first.platformRepos, undefined)
+    assert.equal(existsSync(path.join(project, 'platform-repos.json')), false)
     assert.ok(registry.bundles.hubdocs)
     assert.deepEqual(registry.bundles['foreign-bundle'], ['.cursor/extracts/foreign.md'])
 
@@ -343,7 +330,6 @@ test('standalone package behavior', async (t) => {
     mkdirSync(path.dirname(unmanaged), { recursive: true })
     writeFileSync(unmanaged, '# unmanaged\n')
     const registryBeforePrune = readFileSync(first.registry, 'utf8')
-    const platformBeforePrune = readFileSync(first.platformRepos, 'utf8')
     const lifecycleStatus = statusHarness({ projectRoot: project })
     assert.deepEqual(lifecycleStatus.stale, [retired])
     assert.deepEqual(lifecycleStatus.staleModified, [retiredModified])
@@ -361,7 +347,7 @@ test('standalone package behavior', async (t) => {
     assert.equal(readFileSync(retiredModified, 'utf8'), '# locally modified after retirement\n')
     assert.equal(readFileSync(unmanaged, 'utf8'), '# unmanaged\n')
     assert.equal(readFileSync(first.registry, 'utf8'), registryBeforePrune)
-    assert.equal(readFileSync(first.platformRepos, 'utf8'), platformBeforePrune)
+    assert.equal(existsSync(path.join(project, 'platform-repos.json')), false)
     const prunedManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
     assert.equal(prunedManifest.stale[retiredRel], undefined)
     assert.deepEqual(prunedManifest.stale[retiredModifiedRel], staleManifest.stale[retiredModifiedRel])

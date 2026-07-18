@@ -13,8 +13,6 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 import { packageRoot } from '../config/docs-root.js'
-import { mergePlatformRepos } from './platform-repos.js'
-
 export const INSTALL_MANIFEST_PATH = '.hubdocs/install-manifest.json'
 export const INSTALL_MANIFEST_SCHEMA = 1
 
@@ -53,9 +51,6 @@ export interface HarnessInstallResult {
   stale: string[]
   manifest: string
   registry?: string
-  platformRepos?: string
-  mergedSkills?: string[]
-  warnings?: string[]
 }
 
 export interface HarnessStatusResult {
@@ -355,7 +350,6 @@ export function installHarness(opts: {
     '.cursor/extracts/extract-registry.json',
     'Shared extract registry',
   )
-  resolveContainedPath(root, realRoot, 'platform-repos.json', 'Shared platform repository map')
   for (const rel of assets.keys()) resolveManagedPath(root, realRoot, rel)
   const hashes = Object.fromEntries([...assets].map(([rel, asset]) => [rel, asset.hash]))
   const stale: Record<string, StaleHarnessAsset> = { ...(previous?.stale ?? {}) }
@@ -408,10 +402,6 @@ export function installHarness(opts: {
   }
   result.manifest = writeManifest(root, realRoot, nextManifest)
   result.registry = mergeExtractRegistry(root, realRoot)
-  const maps = mergePlatformRepos(root)
-  result.platformRepos = maps.path
-  result.mergedSkills = maps.mergedSkills
-  result.warnings = maps.warnings
   return result
 }
 

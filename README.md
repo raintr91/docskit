@@ -110,9 +110,9 @@ Harness installs record direct-copy Hubdocs assets in
 `.hubdocs/install-manifest.json`. Upgrades preserve locally modified managed
 files unless `--force` is passed. Assets removed from a newer package become
 stale; `prune` is a dry run, and `prune --yes` deletes only stale files whose
-hash still matches the installed copy. Shared merged
-`.cursor/extracts/extract-registry.json` and `platform-repos.json` are never
-claimed or pruned. The Hubdocs-owned optional fallback schema is installed at
+hash still matches the installed copy. The shared merged
+`.cursor/extracts/extract-registry.json` is never claimed or pruned. Hubdocs
+never writes `platform-repos*.json` (Platform DNA-owned, optional). The Hubdocs-owned optional fallback schema is installed at
 `.cursor/schemas/hubdocs/missing-optional-event.schema.json` and follows the
 same managed lifecycle.
 
