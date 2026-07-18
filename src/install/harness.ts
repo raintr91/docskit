@@ -15,6 +15,7 @@ import path from 'node:path'
 import { packageRoot } from '../config/docs-root.js'
 export const INSTALL_MANIFEST_PATH = '.hubdocs/install-manifest.json'
 export const INSTALL_MANIFEST_SCHEMA = 1
+export type HubdocsHarnessType = 'docs' | 'consumer'
 
 export const HUBDOCS_OWNED_SKILLS = [
   'hubdocs',
@@ -285,19 +286,33 @@ function writeManifest(
   return file
 }
 
-function currentAssetHashes(): Map<string, { source: string; hash: string }> {
+const CONSUMER_ASSETS = new Set([
+  path.join('skills', 'hubdocs', 'SKILL.md'),
+  path.join('rules', 'hubdocs.mdc'),
+  path.join('schemas', 'hubdocs', 'missing-optional-event.schema.json'),
+  path.join('extracts', 'hubdocs-phase-hooks.md'),
+])
+
+function currentAssetHashes(
+  type: HubdocsHarnessType,
+): Map<string, { source: string; hash: string }> {
   const sourceRoot = path.join(packageRoot(), 'harness', 'cursor')
   const assets = new Map<string, { source: string; hash: string }>()
   for (const source of walk(sourceRoot)) {
     const sourceRel = path.relative(sourceRoot, source)
     if (sourceRel === path.join('extracts', 'extract-registry.hubdocs.json')) continue
+    if (type === 'consumer' && !CONSUMER_ASSETS.has(sourceRel)) continue
     const rel = ['.cursor', ...sourceRel.split(path.sep)].join('/')
     assets.set(rel, { source, hash: sha256(readFileSync(source)) })
   }
   return assets
 }
 
-function mergeExtractRegistry(projectRoot: string, realRoot: string): string {
+function mergeExtractRegistry(
+  projectRoot: string,
+  realRoot: string,
+  type: HubdocsHarnessType,
+): string {
   const source = path.join(
     packageRoot(),
     'harness',
@@ -321,10 +336,15 @@ function mergeExtractRegistry(projectRoot: string, realRoot: string): string {
         bundles: Record<string, string[]>
       })
     : { version: 1, bundles: {} }
+  const bundles =
+    type === 'consumer'
+      ? { hubdocs: owned.bundles.hubdocs }
+      : owned.bundles
   current.version = Math.max(current.version ?? 1, owned.version ?? 1)
+  if (type === 'consumer') delete current.bundles['architecture-core']
   current.bundles = {
     ...current.bundles,
-    ...owned.bundles,
+    ...bundles,
   }
   mkdirSync(path.dirname(target), { recursive: true })
   writeFileSync(target, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
@@ -338,11 +358,13 @@ function mergeExtractRegistry(projectRoot: string, realRoot: string): string {
 export function installHarness(opts: {
   projectRoot?: string
   force?: boolean
+  type?: HubdocsHarnessType
 } = {}): HarnessInstallResult {
   const { root, realRoot } = resolveProjectRoot(opts.projectRoot)
+  const type = opts.type ?? 'docs'
   const metadata = packageMetadata()
   const previous = readManifest(root, realRoot, metadata)
-  const assets = currentAssetHashes()
+  const assets = currentAssetHashes(type)
   resolveContainedPath(root, realRoot, INSTALL_MANIFEST_PATH, 'Hubdocs install manifest')
   resolveContainedPath(
     root,
@@ -401,7 +423,7 @@ export function installHarness(opts: {
     stale,
   }
   result.manifest = writeManifest(root, realRoot, nextManifest)
-  result.registry = mergeExtractRegistry(root, realRoot)
+  result.registry = mergeExtractRegistry(root, realRoot, type)
   return result
 }
 

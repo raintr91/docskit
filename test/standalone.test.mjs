@@ -401,6 +401,25 @@ test('standalone package behavior', async (t) => {
     assert.equal(existsSync(path.join(outside, 'install-manifest.json')), false)
   })
 
+  await t.test('consumer harness syncs only lightweight Hubdocs assets', () => {
+    const project = tempDir('harness-consumer')
+    const installed = installHarness({ projectRoot: project, type: 'consumer' })
+
+    assert.ok(existsSync(path.join(project, '.cursor', 'skills', 'hubdocs', 'SKILL.md')))
+    assert.ok(existsSync(path.join(project, '.cursor', 'rules', 'hubdocs.mdc')))
+    assert.ok(
+      existsSync(
+        path.join(project, '.cursor', 'schemas', 'hubdocs', 'missing-optional-event.schema.json'),
+      ),
+    )
+    assert.equal(
+      existsSync(path.join(project, '.cursor', 'skills', 'architecture', 'SKILL.md')),
+      false,
+    )
+    const registry = JSON.parse(readFileSync(installed.registry, 'utf8'))
+    assert.deepEqual(Object.keys(registry.bundles), ['hubdocs'])
+  })
+
   await t.test('missing ArtifactGraph keeps targeted local Hubdocs behavior available', () => {
     const pkg = JSON.parse(readFileSync(path.join(originalCwd, 'package.json'), 'utf8'))
     const mcpPackage = JSON.parse(readFileSync(path.join(originalCwd, 'mcp-package.json'), 'utf8'))

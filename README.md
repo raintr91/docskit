@@ -99,7 +99,8 @@ Uninstall: `curl -fsSL …/install.sh | bash -s -- --uninstall`
 | Wire agents (local default) | `hubdocs init` |
 | Explicit rootless global MCP | `hubdocs init --location=global --yes` |
 | Print MCP snippet | `hubdocs init --print-config cursor` |
-| Install Cursor skill/rule/hooks | `hubdocs harness install` |
+| Install docs authoring harness | `hubdocs harness install --type=docs` |
+| Install lightweight FE/BE/tests lookup harness | `hubdocs harness install --type=consumer` |
 | Inspect managed harness assets | `hubdocs status [--project-root <path>]` |
 | Preview/remove stale managed assets | `hubdocs prune [--project-root <path>] [--yes]` |
 | Version / paths | `hubdocs version` |

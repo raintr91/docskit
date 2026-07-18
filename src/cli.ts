@@ -36,7 +36,7 @@ Wire agents:
   install …   # deprecated alias → init
 
 Install Cursor harness into the current project:
-  harness install [--project-root <path>] [--force]
+  harness install [--type=docs|consumer] [--project-root <path>] [--force]
   status [--project-root <path>]
   prune [--project-root <path>] [--yes]   # dry-run unless --yes
 
@@ -108,9 +108,14 @@ function runHarness(): void {
   }
   if (action !== 'install') usage()
   try {
+    const type = arg('--type') ?? 'docs'
+    if (type !== 'docs' && type !== 'consumer') {
+      throw new Error('--type must be docs | consumer')
+    }
     const result = installHarness({
       projectRoot: arg('--project-root'),
       force: has('--force'),
+      type,
     })
     for (const file of result.written) console.log(`  wrote: ${file}`)
     for (const file of result.unchanged) console.log(`  unchanged: ${file}`)

@@ -115,12 +115,12 @@ có root cố định; truyền `docsRoot` cho mỗi tool. Có thể tạo một
 default bằng `--location=global --docs-root=/absolute/path/to/hub`, nhưng entry
 đó chỉ dành cho hub đã chỉ định.
 
-## Optional Cursor harness
+## Cursor harness profiles
 
-Sau khi cài package, cài architecture family + Hubdocs skill/rule/hooks:
+Docs repo — cài architecture family + Hubdocs skill/rule/hooks:
 
 ```bash
-hubdocs harness install
+hubdocs harness install --type=docs
 ```
 
 Syncs:
@@ -130,6 +130,16 @@ Syncs:
 - extracts: `architecture-core` templates + `hubdocs-phase-hooks`
 - rule: `hubdocs.mdc`
 - merges only Hubdocs-owned extract-registry bundle IDs
+
+FE/BE/tests consumer repo — chỉ cài `/hubdocs` + rule/schema/hook nhẹ:
+
+```bash
+hubdocs init --location=local --docs-root=/absolute/path/to/docs-hub --yes
+hubdocs harness install --type=consumer
+```
+
+Consumer mode không sync architecture authoring family. `HUBDOCS_ROOT` là
+machine-local pointer do member chọn; không đoán sibling checkout.
 
 Lệnh idempotent và không ghi đè file đã tùy chỉnh. Dùng `--force` nếu chủ động
 muốn thay bằng bản package; `--project-root` để chọn project khác cwd.

@@ -60,11 +60,17 @@ WSL có sẵn → chạy `install.sh` trong WSL, cd vào docs hub rồi
 ## Managed Cursor harness
 
 ```bash
-hubdocs harness install [--project-root /path/to/docs] [--force]
+hubdocs harness install --type=docs [--project-root /path/to/docs] [--force]
+hubdocs harness install --type=consumer [--project-root /path/to/fe-or-be] [--force]
 hubdocs status [--project-root /path/to/docs]
 hubdocs prune [--project-root /path/to/docs]        # preview only
 hubdocs prune [--project-root /path/to/docs] --yes  # apply safe deletions
 ```
+
+`docs` syncs the complete architecture-authoring family. `consumer` syncs only
+the lightweight `/hubdocs` lookup skill/rule/schema/hook; wire its local MCP
+entry with an explicit `--docs-root` so `HUBDOCS_ROOT` points to the
+member-selected docs repo.
 
 `.hubdocs/install-manifest.json` tracks only Hubdocs-owned files copied
 directly into `.cursor/`. Install preserves modified managed files unless

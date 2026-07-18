@@ -6,8 +6,14 @@ alwaysApply: false
 
 Use `/hubdocs` for targeted ID, dependency, link, journey, and chapter queries.
 
-The target repository owns its Markdown. Hubdocs indexes and validates only.
-Project-local MCP wiring should set `HUBDOCS_ROOT` to the current docs hub.
+The docs repo owns architecture/product Markdown. Hubdocs indexes and validates
+only.
+
+- In docs: `HUBDOCS_ROOT` points to the current docs repo.
+- In FE/BE/tests consumer installs: `HUBDOCS_ROOT` points to an explicit docs
+  checkout selected by the member. Never infer `../base-docs`.
+- Consumer installs sync only `/hubdocs` + this lightweight rule; architecture
+  authoring skills stay in docs.
 
 1. Use `hubdocs_layout`, `hubdocs_route`, or `hubdocs_list_ids` to narrow scope.
 2. Use `hubdocs_get_element` for one ID.
