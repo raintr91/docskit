@@ -741,9 +741,9 @@ export function uninstallAgents(opts: UninstallAgentsOptions = {}): UninstallAge
   return { targets, location, dryRun, removed, absent }
 }
 
-async function promptInteractive(detected: AgentId[]): Promise<{
-  targets: AgentId[]
-}> {
+export async function promptInstallAgents(
+  detected: AgentId[] = detectAgents(),
+): Promise<AgentId[]> {
   console.log('hubdocs init — choose agents\n')
   const pre = detected.length > 0 ? detected : (['cursor'] as AgentId[])
 
@@ -758,7 +758,7 @@ async function promptInteractive(detected: AgentId[]): Promise<{
     })),
   })
 
-  return { targets }
+  return targets
 }
 
 export async function installAgents(opts: InstallOptions = {}): Promise<InstallResult> {
@@ -802,8 +802,7 @@ export async function installAgents(opts: InstallOptions = {}): Promise<InstallR
     targets = parseTargets('auto', detected)
     location = opts.location ?? 'local'
   } else {
-    const picked = await promptInteractive(detected)
-    targets = picked.targets
+    targets = await promptInstallAgents(detected)
     location = opts.location ?? 'local'
   }
 

@@ -9,8 +9,10 @@ disable-model-invocation: true
 
 Package: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 
-The target repository owns its Markdown. Hubdocs only indexes, validates, and
-routes content from the configured docs root.
+The docs repo owns architecture/product Markdown. Hubdocs only indexes,
+validates, and routes content from the configured docs root. This skill may be
+installed as a lightweight consumer in FE/BE/tests; it must still read the
+member-selected docs repo, never the current code repo.
 
 ## Protocol
 
@@ -26,22 +28,31 @@ results over dumping `architecture/**`.
 
 ## Root and setup
 
-Project-local MCP wiring should set `HUBDOCS_ROOT` to this docs hub:
+Docs install:
 
 ```bash
 cd /path/to/docs-hub
 hubdocs init --location=local --yes
-hubdocs harness install
+hubdocs harness install --type=docs
 ```
 
-Every tool also accepts `docsRoot`, which is required for a rootless global MCP
-entry. The selected hub must contain `architecture/`.
+Consumer install from FE/BE/tests:
+
+```bash
+cd /path/to/code-or-tests-repo
+hubdocs init --location=local --docs-root=/absolute/path/to/docs-hub --yes
+hubdocs harness install --type=consumer
+```
+
+The local MCP entry stores `HUBDOCS_ROOT`; every tool also accepts `docsRoot`.
+The selected hub must contain `architecture/`. Never infer a sibling checkout.
 
 ## Owned architecture family
 
-`harness install` also syncs `/architecture` `/context` `/containers`
+Docs `harness install --type=docs` also syncs `/architecture` `/context` `/containers`
 `/component` `/journey` `/deployment` `/decision` `/cross-cutting` and the
 deprecated `/dynamics` redirect, plus the `architecture-core` extract bundle.
+Consumer mode syncs only `/hubdocs`, its rule/schema, and targeted phase hook.
 
 ## Accelerators (optional)
 

@@ -11,7 +11,7 @@ import { lstatSync, realpathSync, rmSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { packageRoot, defaultHubdocsRoot, looksLikeHub } from './config/docs-root.js'
-import { installAgents, uninstallAgents } from './install/agents.js'
+import { installAgents, promptInstallAgents, uninstallAgents } from './install/agents.js'
 import {
   installHarness,
   pruneHarness,
@@ -140,9 +140,17 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
       return
     }
 
+    let target = arg('--target')
+    const interactiveAgents =
+      !has('--yes') && !target && Boolean(process.stdin.isTTY && process.stdout.isTTY)
+    if (interactiveAgents) {
+      const targets = await promptInstallAgents()
+      target = targets.length > 0 ? targets.join(',') : 'none'
+    }
+
     const lane = await resolveInitLane()
     const result = await installAgents({
-      target: arg('--target'),
+      target,
       location: (arg('--location') as 'global' | 'local' | undefined) ?? 'local',
       yes: has('--yes'),
       useWsl: has('--wsl'),
