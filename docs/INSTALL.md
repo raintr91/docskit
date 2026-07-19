@@ -24,14 +24,15 @@ hubdocs init --location=local --yes
 Uninstall:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash -s -- --uninstall
+hubdocs uninstall              # preview + confirm: all repos, MCP and CLI
+hubdocs uninstall --yes        # non-interactive
 ```
 
 Defaults: tree → `~/.hubdocs`, link → `~/.local/bin/hubdocs`.
 
 Docs hub: **cd vào hub rồi `hubdocs init`**. Local là mặc định; root resolve từ
-`--docs-root` → `HUBDOCS_ROOT` → valid cwd. Package không lưu target marker và
-không tìm sibling repo.
+`--docs-root` → `HUBDOCS_ROOT` → valid cwd. Package không tự tìm sibling repo;
+install ledger chỉ phục vụ `hubdocs uninstall`, không tham gia resolve docs root.
 
 ## Update
 
@@ -70,10 +71,11 @@ hubdocs prune [--project-root /path/to/docs] --yes  # apply safe deletions
 ## Uninstall
 
 ```bash
-hubdocs uninstall                     # TTY scope menu (repo / all-repos / mcp / cli / all)
-hubdocs uninstall --yes               # this repo: harness + local MCP
-hubdocs uninstall --all --yes         # all ledger repos + MCP local/global + CLI
-hubdocs uninstall --scope=all-repos --discover ~/workspace --yes
+hubdocs deinit                         # this repo: harness + local MCP
+hubdocs uninstall                      # global: all ledger repos + MCP + CLI
+hubdocs deinit --yes                   # non-interactive apply
+hubdocs uninstall --yes                # non-interactive global apply
+hubdocs uninstall --discover ~/workspace --yes  # recover older ledger-less installs
 ```
 
 Dry-run unless `--yes`. Owned harness files matching their recorded hash are
@@ -81,11 +83,10 @@ deleted; **member-modified files are preserved and reported**. Only the
 Hubdocs-owned bundle keys are removed from the shared
 `.cursor/extracts/extract-registry.json` (the file is deleted only if no other
 toolkit's bundles remain). `harness install` records each repo in an install
-ledger (`$XDG_STATE_HOME/hubdocs/installs.json`) so `--all`/`all-repos` can clean
+ledger (`$XDG_STATE_HOME/hubdocs/installs.json`) so `hubdocs uninstall` cleans
 every location without a manual `cd`; use `--discover <dir>` to rebuild the list
-for older ledger-less installs. `--scope=cli` removes just the CLI
-(`~/.hubdocs` + `~/.local/bin` symlinks), equivalent to
-`install.sh -- --uninstall`.
+for older ledger-less installs. Advanced `--scope` filters remain supported but
+are not needed for the normal install/init lifecycle.
 
 `docs` syncs the complete architecture-authoring family. `consumer` syncs only
 the lightweight `/hubdocs` lookup skill/rule/schema/hook; wire its local MCP

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import {
   existsSync,
   mkdtempSync,
@@ -115,6 +116,39 @@ test('discoverInstalls finds repos carrying a hubdocs manifest', () => {
     found.some((p) => p === repo || existsSync(path.join(p, ...INSTALL_MANIFEST_PATH.split('/')))),
     'discover should locate the nested manifest',
   )
+})
+
+test('CLI contract: deinit is repo-local; uninstall defaults to global all', () => {
+  const cli = path.resolve('bin', 'hubdocs.mjs')
+  const root = tempDir('cli-deinit')
+  const state = tempDir('cli-state')
+  installHarness({ projectRoot: root, type: 'docs' })
+
+  const deinit = spawnSync(
+    process.execPath,
+    [cli, 'deinit', '--project-root', root, '--yes'],
+    {
+      encoding: 'utf8',
+      env: { ...process.env, HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR },
+    },
+  )
+  assert.equal(deinit.status, 0, deinit.stderr)
+  assert.match(deinit.stdout, /Uninstalled \(repo\)/)
+  assert.equal(existsSync(path.join(root, ...INSTALL_MANIFEST_PATH.split('/'))), false)
+
+  const fakeHome = tempDir('cli-home')
+  const globalUninstall = spawnSync(process.execPath, [cli, 'uninstall'], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      HOME: fakeHome,
+      HUBDOCS_STATE_DIR: state,
+      HUBDOCS_INSTALL_DIR: path.join(fakeHome, '.hubdocs'),
+      HUBDOCS_BIN_DIR: path.join(fakeHome, '.local', 'bin'),
+    },
+  })
+  assert.equal(globalUninstall.status, 0, globalUninstall.stderr)
+  assert.match(globalUninstall.stdout, /Dry-run \(all\)/)
 })
 
 test('uninstallAgents strips the hubdocs MCP entry (cursor local)', () => {

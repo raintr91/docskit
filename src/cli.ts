@@ -44,20 +44,18 @@ Wire agents:
        # no flags → TTY multi-select (↑↓ · Space · Enter)
   install …   # deprecated alias → init
 
-Install Cursor harness into the current project:
+Repo lifecycle:
   harness install [--type=docs|consumer] [--project-root <path>] [--force]
   status [--project-root <path>]
   prune [--project-root <path>] [--yes]   # dry-run unless --yes
+  deinit [--project-root <path>] [--yes]  # remove this repo's harness + local MCP
 
-Uninstall (dry-run unless --yes; no flags → interactive scope menu):
-  uninstall [--scope=repo|all-repos|mcp-local|mcp-global|cli|all] [--all]
-            [--project-root <path>] [--discover <dir>]
-            [--target=<agents>] [--location=local|global] [--keep-mcp] [--yes]
-       # repo       current folder harness + local MCP
-       # all-repos  every repo in the install ledger (+ --discover <dir>)
-       # mcp-local / mcp-global   just the MCP entry
-       # cli        CLI toolkit (~/.hubdocs + ~/.local/bin symlinks)
-       # all        everything above, then the ledger
+Global uninstall (run anywhere; removes all repo installs + MCP + CLI):
+  uninstall [--discover <dir>] [--yes]     # dry-run/confirm unless --yes
+
+Advanced/backward-compatible uninstall filters:
+  uninstall --scope=all-repos|mcp-local|mcp-global|cli|all
+            [--project-root <path>] [--target=<agents>] [--location=local|global]
 
 Other:
   version
@@ -350,7 +348,7 @@ function runScope(scope: UninstallScope, flags: UninstallFlags): void {
   }
 }
 
-async function runUninstall(): Promise<void> {
+async function runUninstall(defaultScope: 'repo' | 'all'): Promise<void> {
   const flags: UninstallFlags = {
     yes: has('--yes'),
     keepMcp: has('--keep-mcp'),
@@ -363,34 +361,17 @@ async function runUninstall(): Promise<void> {
   try {
     let scope: UninstallScope
     const scopeArg = arg('--scope')
-    if (has('--all')) {
+    if (defaultScope === 'repo') {
+      scope = 'repo'
+    } else if (has('--all')) {
       scope = 'all'
     } else if (scopeArg) {
       if (!UNINSTALL_SCOPES.includes(scopeArg as UninstallScope)) {
         throw new Error(`--scope must be one of: ${UNINSTALL_SCOPES.join(', ')}`)
       }
       scope = scopeArg as UninstallScope
-    } else if (
-      process.stdin.isTTY &&
-      !flags.yes &&
-      !flags.projectRoot &&
-      !arg('--target') &&
-      !arg('--location')
-    ) {
-      scope = await selectPrompt<UninstallScope>({
-        message: 'hubdocs uninstall — what to remove?',
-        defaultIndex: 0,
-        choices: [
-          { value: 'repo', name: 'Current repo harness + MCP (this folder)' },
-          { value: 'all-repos', name: 'All registered repo harnesses (ledger)' },
-          { value: 'mcp-local', name: 'Local MCP wiring (this folder’s agents)' },
-          { value: 'mcp-global', name: 'Global MCP wiring (home agents)' },
-          { value: 'cli', name: 'CLI toolkit (~/.hubdocs + ~/.local/bin)' },
-          { value: 'all', name: 'All — remove everything' },
-        ],
-      })
     } else {
-      scope = 'repo'
+      scope = defaultScope
     }
 
     const interactive = process.stdin.isTTY && !flags.yes
@@ -398,7 +379,10 @@ async function runUninstall(): Promise<void> {
       console.log(`\nPreview (${scope}):`)
       runScope(scope, { ...flags, yes: false })
       const confirm = await selectPrompt<'yes' | 'no'>({
-        message: `Apply uninstall (${scope})? This cannot be undone.`,
+        message:
+          defaultScope === 'repo'
+            ? 'Apply hubdocs deinit for this repo?'
+            : 'Apply global hubdocs uninstall (all repos + MCP + CLI)?',
         defaultIndex: 1,
         choices: [
           { value: 'no', name: 'No — cancel' },
@@ -467,8 +451,13 @@ async function main(): Promise<void> {
     return
   }
 
+  if (cmd === 'deinit') {
+    await runUninstall('repo')
+    return
+  }
+
   if (cmd === 'uninstall') {
-    await runUninstall()
+    await runUninstall('all')
     return
   }
 

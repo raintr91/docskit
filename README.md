@@ -91,25 +91,25 @@ rồi restart agent.
 
 ## Uninstall
 
-`hubdocs uninstall` gỡ harness (`.cursor/…`, `install-manifest.json`) và MCP wiring.
-Mặc định **dry-run** — thêm `--yes` để xoá thật. File member đã sửa được **giữ lại +
-báo**. Chạy không cờ trong TTY sẽ hiện **menu chọn phạm vi** (có mục *All*).
+Hai cấp lifecycle tương ứng:
 
 ```bash
-hubdocs uninstall                     # menu: repo / all-repos / mcp / cli / all
-hubdocs uninstall --yes               # repo hiện tại: harness + MCP local
-hubdocs uninstall --all --yes         # tất cả repo (ledger) + MCP local/global + CLI
-hubdocs uninstall --scope=all-repos --discover ~/workspace --yes
+hubdocs deinit                         # repo hiện tại: harness + MCP local
+hubdocs uninstall                      # global: mọi repo + MCP local/global + CLI
 ```
 
-Phạm vi (`--scope`): `repo` · `all-repos` · `mcp-local` · `mcp-global` · `cli` · `all`.
-`harness install` ghi lại repo vào **install ledger** (`$XDG_STATE_HOME/hubdocs/installs.json`)
-để `--all` / `all-repos` dọn mọi nơi mà không cần `cd`; bản cài cũ chưa có ledger dùng
-`--discover <dir>` để quét lại. Cờ khác: `--keep-mcp` (giữ MCP), `--project-root <path>`,
-`--target=<agents>`, `--location=local|global`.
+Mặc định lệnh sẽ preview và hỏi xác nhận trong TTY; thêm `--yes` cho automation.
+File member đã sửa được **giữ lại + báo**.
 
-Gỡ **chỉ CLI** khỏi máy (không đụng repo): `hubdocs uninstall --scope=cli --yes`
-hoặc `curl -fsSL …/install.sh | bash -s -- --uninstall`.
+`harness install` ghi lại repo vào **install ledger** (`$XDG_STATE_HOME/hubdocs/installs.json`)
+để `hubdocs uninstall` dọn mọi nơi mà không cần `cd`. Với bản cài cũ chưa có ledger:
+
+```bash
+hubdocs uninstall --discover ~/workspace --yes
+```
+
+Các cờ `--scope`, `--project-root`, `--target` và `--location` vẫn giữ cho nhu cầu
+advanced/backward compatibility, không cần trong luồng thông thường.
 
 ---
 
@@ -125,8 +125,8 @@ hoặc `curl -fsSL …/install.sh | bash -s -- --uninstall`.
 | Install lightweight FE/BE/tests lookup harness | `hubdocs harness install --type=consumer` |
 | Inspect managed harness assets | `hubdocs status [--project-root <path>]` |
 | Preview/remove stale managed assets | `hubdocs prune [--project-root <path>] [--yes]` |
-| Remove harness + MCP (interactive scope menu) | `hubdocs uninstall` |
-| Remove everything (all repos + MCP + CLI) | `hubdocs uninstall --all --yes` |
+| Remove this repo's harness + local MCP | `hubdocs deinit [--yes]` |
+| Remove everything globally | `hubdocs uninstall [--yes]` |
 | Version / paths | `hubdocs version` |
 
 `install` = deprecated alias của `init`.
