@@ -9,8 +9,13 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { packageRoot, defaultHubdocsRoot } from './config/docs-root.js'
-import { installAgents, AGENT_IDS } from './install/agents.js'
-import { installHarness, pruneHarness, statusHarness } from './install/harness.js'
+import { installAgents, uninstallAgents, AGENT_IDS } from './install/agents.js'
+import {
+  installHarness,
+  pruneHarness,
+  statusHarness,
+  uninstallHarness,
+} from './install/harness.js'
 
 const require = createRequire(import.meta.url)
 
@@ -39,6 +44,10 @@ Install Cursor harness into the current project:
   harness install [--type=docs|consumer] [--project-root <path>] [--force]
   status [--project-root <path>]
   prune [--project-root <path>] [--yes]   # dry-run unless --yes
+
+Remove the Cursor harness + MCP wiring:
+  uninstall [--project-root <path>] [--target=<agents>] [--location=local|global]
+            [--keep-mcp] [--yes]   # dry-run unless --yes
 
 Other:
   version
@@ -173,6 +182,41 @@ function runHarnessPrune(): void {
   }
 }
 
+function runUninstall(): void {
+  const yes = has('--yes')
+  const keepMcp = has('--keep-mcp')
+  try {
+    const harness = uninstallHarness({ projectRoot: arg('--project-root'), yes })
+    for (const file of harness.wouldDelete) console.log(`  would delete: ${file}`)
+    for (const file of harness.deleted) console.log(`  deleted: ${file}`)
+    for (const file of harness.preservedModified) console.log(`  preserve modified: ${file}`)
+    for (const file of harness.missing) console.log(`  already missing: ${file}`)
+    if (harness.registry) console.log(`  registry: ${harness.registry}`)
+    if (harness.manifestRemoved) console.log(`  manifest removed: ${harness.manifest}`)
+
+    if (!keepMcp) {
+      const agents = uninstallAgents({
+        target: arg('--target'),
+        location: arg('--location') as 'global' | 'local' | undefined,
+        yes,
+      })
+      for (const entry of agents.removed) {
+        console.log(`  ${yes ? 'unwired' : 'would unwire'}: ${entry}`)
+      }
+      for (const entry of agents.absent) console.log(`  mcp: ${entry}`)
+    }
+
+    console.log(
+      yes
+        ? `Uninstalled hubdocs harness${keepMcp ? '' : ' + MCP wiring'}`
+        : `Uninstall dry-run: pass --yes to apply${keepMcp ? '' : ' (--keep-mcp leaves MCP wiring)'}`,
+    )
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err)
+    process.exit(1)
+  }
+}
+
 async function main(): Promise<void> {
   const cmd = process.argv[2]
   if (!cmd || cmd === 'help' || cmd === '--help' || cmd === '-h') usage()
@@ -206,6 +250,11 @@ async function main(): Promise<void> {
 
   if (cmd === 'prune') {
     runHarnessPrune()
+    return
+  }
+
+  if (cmd === 'uninstall') {
+    runUninstall()
     return
   }
 

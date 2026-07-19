@@ -13,7 +13,7 @@ import os from 'node:os'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { packageRoot, defaultHubdocsRoot, looksLikeHub } from '../config/docs-root.js'
 import { checkboxPrompt, selectPrompt } from './prompt.js'
-import { buildTomlTable, upsertTomlTable } from './toml.js'
+import { buildTomlTable, upsertTomlTable, removeTomlTable } from './toml.js'
 
 export type AgentId =
   | 'claude'
@@ -572,6 +572,174 @@ export function mergeClaudePermissions(
     return settings
   }
   return null
+}
+
+function removeMcpJson(file: string, dryRun: boolean): boolean {
+  if (!existsSync(file)) return false
+  const raw = readFileSync(file, 'utf8').trim()
+  if (!raw) return false
+  let doc: { mcpServers?: Record<string, unknown> }
+  try {
+    doc = JSON.parse(raw) as typeof doc
+  } catch {
+    return false
+  }
+  if (!doc.mcpServers || !(MCP_NAME in doc.mcpServers)) return false
+  if (!dryRun) {
+    delete doc.mcpServers[MCP_NAME]
+    writeFileSync(file, `${JSON.stringify(doc, null, 2)}\n`, 'utf8')
+  }
+  return true
+}
+
+function removeCodexToml(file: string, dryRun: boolean): boolean {
+  if (!existsSync(file)) return false
+  const existing = readFileSync(file, 'utf8')
+  const server = removeTomlTable(existing, `mcp_servers.${MCP_NAME}`)
+  const env = removeTomlTable(server.content, `mcp_servers.${MCP_NAME}.env`)
+  const removed = server.removed || env.removed
+  if (removed && !dryRun) {
+    const content = env.content
+    writeFileSync(file, content.endsWith('\n') ? content : `${content}\n`, 'utf8')
+  }
+  return removed
+}
+
+function removeOpencodeConfig(file: string, dryRun: boolean): boolean {
+  if (!existsSync(file)) return false
+  const raw = readFileSync(file, 'utf8')
+  if (!raw.trim()) return false
+  let doc: Record<string, unknown>
+  try {
+    doc = parseJsonLoose(raw)
+  } catch {
+    return false
+  }
+  const mcp = doc.mcp as Record<string, unknown> | undefined
+  if (!mcp || !(MCP_NAME in mcp)) return false
+  if (!dryRun) {
+    delete mcp[MCP_NAME]
+    doc.mcp = mcp
+    writeFileSync(file, `${JSON.stringify(doc, null, 2)}\n`, 'utf8')
+  }
+  return true
+}
+
+function removeHermesYaml(file: string, dryRun: boolean): boolean {
+  if (!existsSync(file)) return false
+  const raw = readFileSync(file, 'utf8')
+  if (!raw.trim()) return false
+  let doc: Record<string, unknown>
+  try {
+    doc = (parseYaml(raw) as Record<string, unknown>) ?? {}
+  } catch {
+    return false
+  }
+  const servers = doc.mcp_servers as Record<string, unknown> | undefined
+  const toolsets = doc.platform_toolsets as Record<string, unknown> | undefined
+  const tool = `mcp-${MCP_NAME}`
+  const cli = toolsets && Array.isArray(toolsets.cli) ? (toolsets.cli as unknown[]) : []
+  const hasServer = Boolean(servers && MCP_NAME in servers)
+  const hasTool = cli.includes(tool)
+  if (!hasServer && !hasTool) return false
+  if (!dryRun) {
+    if (hasServer) delete servers![MCP_NAME]
+    if (hasTool) toolsets!.cli = cli.filter((x) => x !== tool)
+    writeFileSync(file, stringifyYaml(doc), 'utf8')
+  }
+  return true
+}
+
+export function removeClaudePermissions(
+  location: InstallLocation,
+  dryRun: boolean,
+  cwd = process.cwd(),
+): string | null {
+  const settings =
+    location === 'local'
+      ? path.join(cwd, '.claude', 'settings.json')
+      : path.join(os.homedir(), '.claude', 'settings.json')
+  if (!existsSync(settings)) return null
+  let doc: { permissions?: { allow?: string[] } }
+  try {
+    doc = JSON.parse(readFileSync(settings, 'utf8')) as typeof doc
+  } catch {
+    return null
+  }
+  const allow = doc.permissions?.allow
+  const wild = `mcp__${MCP_NAME}__*`
+  if (!allow || !allow.includes(wild)) return null
+  if (!dryRun) {
+    doc.permissions!.allow = allow.filter((a) => a !== wild)
+    writeFileSync(settings, `${JSON.stringify(doc, null, 2)}\n`, 'utf8')
+  }
+  return settings
+}
+
+function removeAgentConfig(
+  agent: AgentId,
+  location: InstallLocation,
+  dryRun: boolean,
+): string | null {
+  const file = agentConfigPath(agent, location)
+  let removed: boolean
+  switch (agent) {
+    case 'codex':
+      removed = removeCodexToml(file, dryRun)
+      break
+    case 'opencode':
+      removed = removeOpencodeConfig(file, dryRun)
+      break
+    case 'hermes':
+      removed = removeHermesYaml(file, dryRun)
+      break
+    default:
+      removed = removeMcpJson(file, dryRun)
+  }
+  return removed ? file : null
+}
+
+export interface UninstallAgentsOptions {
+  target?: string
+  location?: InstallLocation
+  yes?: boolean
+}
+
+export interface UninstallAgentsResult {
+  targets: AgentId[]
+  location: InstallLocation
+  dryRun: boolean
+  removed: string[]
+  absent: string[]
+}
+
+/** Reverse of installAgents — strip the hubdocs MCP entry from targeted agent configs. */
+export function uninstallAgents(opts: UninstallAgentsOptions = {}): UninstallAgentsResult {
+  const dryRun = !opts.yes
+  const detected = detectAgents()
+  const location: InstallLocation = opts.location ?? 'local'
+  const targets = parseTargets(opts.target ?? 'auto', detected)
+  const removed: string[] = []
+  const absent: string[] = []
+
+  for (const agent of targets) {
+    if (!supportsLocation(agent, location)) {
+      absent.push(`${agent}: no ${location} config`)
+      continue
+    }
+    const file = removeAgentConfig(agent, location, dryRun)
+    if (file) {
+      removed.push(`${agent}: ${file}`)
+      if (agent === 'claude') {
+        const perm = removeClaudePermissions(location, dryRun)
+        if (perm) removed.push(`claude: ${perm} (permissions)`)
+      }
+    } else {
+      absent.push(`${agent}: no ${MCP_NAME} entry`)
+    }
+  }
+
+  return { targets, location, dryRun, removed, absent }
 }
 
 async function promptInteractive(detected: AgentId[]): Promise<{

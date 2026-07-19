@@ -7,6 +7,7 @@ import {
   readdirSync,
   realpathSync,
   renameSync,
+  rmdirSync,
   statSync,
   unlinkSync,
   writeFileSync,
@@ -500,5 +501,150 @@ export function pruneHarness(opts: {
   if (opts.yes && Object.keys(retained).length !== Object.keys(manifest.stale).length) {
     writeManifest(root, realRoot, { ...manifest, stale: retained })
   }
+  return result
+}
+
+export interface HarnessUninstallResult {
+  manifest: string
+  dryRun: boolean
+  deleted: string[]
+  wouldDelete: string[]
+  preservedModified: string[]
+  missing: string[]
+  manifestRemoved: boolean
+  registry?: string
+}
+
+function pruneEmptyDirs(root: string, files: string[]): void {
+  const dirs = new Set<string>()
+  for (const file of files) {
+    let dir = path.dirname(file)
+    while (isWithin(root, dir) && dir !== root) {
+      dirs.add(dir)
+      dir = path.dirname(dir)
+    }
+  }
+  for (const dir of [...dirs].sort((a, b) => b.length - a.length)) {
+    try {
+      if (existsSync(dir) && readdirSync(dir).length === 0) rmdirSync(dir)
+    } catch {
+      /* leave non-empty or busy dirs */
+    }
+  }
+}
+
+/**
+ * Remove the hubdocs-owned bundle keys from the shared extract registry.
+ * Deletes the file only when no other toolkit's bundles remain.
+ */
+function uninstallExtractRegistry(
+  projectRoot: string,
+  realRoot: string,
+  dryRun: boolean,
+): string | undefined {
+  const source = path.join(
+    packageRoot(),
+    'harness',
+    'cursor',
+    'extracts',
+    'extract-registry.hubdocs.json',
+  )
+  const target = resolveContainedPath(
+    projectRoot,
+    realRoot,
+    '.cursor/extracts/extract-registry.json',
+    'Shared extract registry',
+  )
+  if (!existsSync(source) || !existsSync(target)) return undefined
+  const owned = JSON.parse(readFileSync(source, 'utf8')) as {
+    bundles?: Record<string, string[]>
+  }
+  const current = JSON.parse(readFileSync(target, 'utf8')) as {
+    version?: number
+    bundles?: Record<string, string[]>
+  }
+  const ownedKeys = Object.keys(owned.bundles ?? {})
+  const currentBundles = current.bundles ?? {}
+  const present = ownedKeys.filter((key) => key in currentBundles)
+  if (present.length === 0) return undefined
+  if (dryRun) {
+    return `${target} (would remove ${present.length} hubdocs bundle key(s))`
+  }
+  for (const key of present) delete currentBundles[key]
+  current.bundles = currentBundles
+  if (Object.keys(currentBundles).length === 0) {
+    unlinkSync(target)
+    return `${target} (removed; no bundles left)`
+  }
+  writeFileSync(target, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
+  return `${target} (removed ${present.length} hubdocs bundle key(s))`
+}
+
+/**
+ * Full removal: delete every hubdocs-owned harness file recorded in the manifest
+ * (current + stale), preserve and report member-modified files, un-merge the
+ * shared extract registry, then drop the manifest. Dry-run unless `yes`.
+ */
+export function uninstallHarness(opts: {
+  projectRoot?: string
+  yes?: boolean
+} = {}): HarnessUninstallResult {
+  const { root, realRoot } = resolveProjectRoot(opts.projectRoot)
+  const metadata = packageMetadata()
+  const manifest = readManifest(root, realRoot, metadata)
+  const dryRun = !opts.yes
+  const result: HarnessUninstallResult = {
+    manifest: manifestPath(root),
+    dryRun,
+    deleted: [],
+    wouldDelete: [],
+    preservedModified: [],
+    missing: [],
+    manifestRemoved: false,
+  }
+  if (!manifest) return result
+
+  const owned: Array<[string, string]> = [
+    ...Object.entries(manifest.hashes),
+    ...Object.entries(manifest.stale).map(
+      ([rel, asset]) => [rel, asset.hash] as [string, string],
+    ),
+  ]
+  for (const [rel, expectedHash] of owned) {
+    const target = resolveManagedPath(root, realRoot, rel)
+    if (!existsSync(target)) {
+      result.missing.push(target)
+      continue
+    }
+    if (sha256(readFileSync(target)) !== expectedHash) {
+      result.preservedModified.push(target)
+      continue
+    }
+    if (dryRun) {
+      result.wouldDelete.push(target)
+      continue
+    }
+    unlinkSync(target)
+    result.deleted.push(target)
+  }
+
+  const registry = uninstallExtractRegistry(root, realRoot, dryRun)
+  if (registry) result.registry = registry
+
+  const manifestFile = resolveContainedPath(
+    root,
+    realRoot,
+    INSTALL_MANIFEST_PATH,
+    'Hubdocs install manifest',
+  )
+  if (dryRun) {
+    result.wouldDelete.push(manifestFile)
+    return result
+  }
+  if (existsSync(manifestFile)) {
+    unlinkSync(manifestFile)
+    result.manifestRemoved = true
+  }
+  pruneEmptyDirs(root, [...result.deleted, manifestFile])
   return result
 }

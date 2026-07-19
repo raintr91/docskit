@@ -55,6 +55,18 @@ export function upsertTomlTable(
   }
 }
 
+export function removeTomlTable(
+  fileContent: string,
+  header: string,
+): { content: string; removed: boolean } {
+  const headerIdx = findHeaderIndex(fileContent, `[${header}]`)
+  if (headerIdx === -1) return { content: fileContent, removed: false }
+  const endIdx = findBlockEnd(fileContent, headerIdx)
+  const next = fileContent.slice(0, headerIdx) + fileContent.slice(endIdx)
+  const content = next.replace(/\n{3,}/g, '\n\n').replace(/^\n+/, '')
+  return { content, removed: true }
+}
+
 function findHeaderIndex(content: string, headerLine: string): number {
   const re = new RegExp(`^${escapeRegExp(headerLine)}\\s*(?:#.*)?$`, 'm')
   const m = re.exec(content)
