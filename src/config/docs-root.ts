@@ -51,6 +51,6 @@ export function resolveDocsRoot(explicit?: string): string {
   if (looksLikeHub(process.cwd())) return process.cwd()
   throw new Error(
     'Cannot resolve docs root. Pass docsRoot to the tool, configure a project-local HUBDOCS_ROOT, ' +
-      'or cd into a docs hub (must contain architecture/). Setup: hubdocs init --location=local',
+      'or cd into a docs hub (must contain architecture/). Setup: hubdocs init',
   )
 }

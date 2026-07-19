@@ -1,31 +1,36 @@
-# hubdocs init — wire MCP into agents
+# hubdocs init — agents → lane → MCP + harness
 
 Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 
-## Hai bước
+## Member UX
 
-| Bước | Lệnh | Phạm vi | Việc làm |
-|------|------|---------|----------|
-| 1. Package trên PATH | `curl …/install.sh \| bash` | Máy | Clone + build CLI `hubdocs` |
-| 2. Wire **agents** | **`hubdocs init`** | cwd (**local mặc định**) | Ghi MCP vào Cursor / Claude / Kilo / … |
+```bash
+curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
+cd /path/to/your/docs-hub    # folder with architecture/
+hubdocs init
+```
 
-Không có `init-project` — **cd vào docs hub** (có `architecture/`) rồi `hubdocs init`. Tuỳ chọn `--docs-root` / `HUBDOCS_ROOT`.
+TTY wizard:
 
+1. Choose agents (checkbox)
+2. Choose lane (`docs` authoring hub or `consumer` lookup)
+3. Wire **project-local** MCP configs into the current repo and install the harness
+
+No location prompt. Every selected agent gets a config under the repo cwd
+(including Codex / Hermes / Antigravity).
 
 Alias cũ: `hubdocs install` → gọi `init`.
 
 ---
 
-## `hubdocs init` (agents)
-
-### Interactive
+## Interactive
 
 ```bash
 hubdocs init
 ```
 
 ```text
-hubdocs init — wire MCP into agents
+hubdocs init — choose agents
 
 Which agents should get hubdocs MCP?
   (↑↓ move · Space toggle · a all · Enter confirm)
@@ -33,7 +38,14 @@ Which agents should get hubdocs MCP?
    ◉ Cursor  (detected)
    ◯ Codex CLI
    …
+
+Which Hubdocs lane?
+  (↑↓ move · Enter confirm)
+ ❯ ● docs — architecture authoring hub
+   ○ consumer — FE/BE/tests lookup only
 ```
+
+Consumer lane outside a docs hub asks for the docs hub path used as `HUBDOCS_ROOT`.
 
 | Phím | Việc |
 |------|------|
@@ -43,62 +55,54 @@ Which agents should get hubdocs MCP?
 | **Enter** | Xác nhận |
 | Ctrl+C | Huỷ |
 
-### Non-interactive
+---
+
+## Non-interactive (CI)
 
 ```bash
 cd /path/to/your/docs-hub
 hubdocs init --yes
-hubdocs init --target=cursor,claude,kilo --yes
-hubdocs init --target=auto --location=local --yes
-hubdocs init --docs-root=/absolute/path/to/other/hub --yes   # khi không đứng trong hub
+hubdocs init --target=cursor,claude --type=docs --yes
+hubdocs init --type=consumer --docs-root=/absolute/path/to/docs-hub --yes
 hubdocs init --print-config cursor
-hubdocs init --location=global --yes                         # rootless global
 ```
 
 | Flag | Giá trị | Mặc định |
 |------|---------|----------|
 | `--target` | `auto` · `all` · `none` · csv | prompt / với `--yes` = `auto` |
-| `--location` | `local` · `global` | **local** cho interactive, `--yes`, non-TTY |
-| `--docs-root` | absolute path tới docs hub | local: `HUBDOCS_ROOT` → cwd có `architecture/`; global: không root nếu bỏ flag |
+| `--type` | `docs` · `consumer` | prompt / với `--yes` = `docs` |
+| `--docs-root` | absolute path tới docs hub | `HUBDOCS_ROOT` → cwd có `architecture/` |
 | `--yes` | bỏ prompt | — |
 | `--wsl` | Cursor Win → MCP qua `wsl.exe` | — |
+| `--location` | `local` · `global` | **local** (advanced/CI) |
 | `--print-config <id>` | in snippet, không ghi | — |
 | `--mcp-file <path>` | ghi thẳng 1 file (cursor) | — |
 
-### File được ghi
+---
 
-| Agent | `--location=global` | `--location=local` |
-|-------|---------------------|--------------------|
-| Claude Code | `~/.claude.json` (+ allow `mcp__hubdocs__*`) | `./.claude.json` |
-| Cursor | `~/.cursor/mcp.json` | `./.cursor/mcp.json` |
-| Codex CLI | `~/.codex/config.toml` | — (global only) |
-| opencode | `~/.config/opencode/opencode.jsonc` | `./opencode.jsonc` |
-| Hermes | `$HERMES_HOME/config.yaml` | — (global only) |
-| Gemini CLI | `~/.gemini/settings.json` | `./.gemini/settings.json` |
-| Antigravity | `~/.gemini/config/mcp_config.json` | — (global only) |
-| Kiro | `~/.kiro/settings/mcp.json` | `./.kiro/settings/mcp.json` |
-| Kilo Code | `~/.kilocode/mcp.json` | `./.kilocode/mcp.json` |
+## File MCP local (mặc định)
 
-Entry MCP (Cursor / Claude / …):
+| Agent | Path trong repo |
+|-------|-----------------|
+| Claude Code | `./.claude.json` (+ `./.claude/settings.json` permissions) |
+| Cursor | `./.cursor/mcp.json` |
+| Codex CLI | `./.codex/config.toml` |
+| opencode | `./opencode.jsonc` |
+| Hermes | `./.hermes/config.yaml` |
+| Gemini CLI | `./.gemini/settings.json` |
+| Antigravity | `./.gemini/config/mcp_config.json` |
+| Kiro | `./.kiro/settings/mcp.json` |
+| Kilo Code | `./.kilocode/mcp.json` |
 
-```json
-{
-  "mcpServers": {
-    "hubdocs": {
-      "type": "stdio",
-      "command": "/path/to/node",
-      "args": ["/path/to/hubdocs/bin/hubdocs-mcp.mjs"],
-      "env": {
-        "HUBDOCS_ROOT": "/path/to/your/docs-hub"
-      }
-    }
-  }
-}
-```
+`--location=global` vẫn ghi home configs cho CI/rootless wiring.
 
-Sau khi ghi: **restart** agent → thử `hubdocs_list_ids`.
+Harness assets land under `.cursor/` and are tracked in
+`.hubdocs/install-manifest.json`. Use `hubdocs deinit` to remove this repo and
+`hubdocs uninstall` to remove everything globally.
 
-## Root semantics
+---
+
+## Docs root resolution
 
 Mỗi tool resolve theo thứ tự:
 
@@ -110,46 +114,19 @@ Mỗi tool resolve theo thứ tự:
 Package không tạo `docs-root.path`, không tìm sibling repository và không giữ
 target dùng chung giữa các project.
 
-Global mode chỉ được bật bằng `--location=global`. Mặc định entry global không
-có root cố định; truyền `docsRoot` cho mỗi tool. Có thể tạo một named global
-default bằng `--location=global --docs-root=/absolute/path/to/hub`, nhưng entry
-đó chỉ dành cho hub đã chỉ định.
+---
 
 ## Cursor harness profiles
 
-Docs repo — cài architecture family + Hubdocs skill/rule/hooks:
+`hubdocs init` installs the harness for the chosen lane. You can still run harness
+alone when needed:
 
 ```bash
 hubdocs harness install --type=docs
-```
-
-Syncs:
-
-- skills: `/hubdocs` `/architecture` `/context` `/containers` `/component`
-  `/journey` `/deployment` `/decision` `/cross-cutting` `/dynamics`
-- extracts: `architecture-core` templates + `hubdocs-phase-hooks`
-- rule: `hubdocs.mdc`
-- merges only Hubdocs-owned extract-registry bundle IDs
-
-FE/BE/tests consumer repo — chỉ cài `/hubdocs` + rule/schema/hook nhẹ:
-
-```bash
-hubdocs init --location=local --docs-root=/absolute/path/to/docs-hub --yes
 hubdocs harness install --type=consumer
 ```
 
-Consumer mode không sync architecture authoring family. `HUBDOCS_ROOT` là
-machine-local pointer do member chọn; không đoán sibling checkout.
+`docs` syncs the complete architecture-authoring family. `consumer` syncs only
+the lightweight `/hubdocs` lookup skill/rule/schema/hook.
 
-Lệnh idempotent và không ghi đè file đã tùy chỉnh. Dùng `--force` nếu chủ động
-muốn thay bằng bản package; `--project-root` để chọn project khác cwd.
-
-### Accelerator boundary
-
-ArtifactGraph is optional and one-way: Hubdocs never requires it; ArtifactGraph
-must not own architecture Markdown. Architecture skills keep a direct Markdown
-fallback when Hubdocs MCP is offline. If ArtifactGraph is missing, Hubdocs
-continues targeted local reads and emits one deduplicated
-`hubdocs.missing-optional` event per run/optional after fallback. The event uses
-`.cursor/schemas/hubdocs/missing-optional-event.schema.json` and reports only
-measured `fileReads` and `contextBytes`, never token estimates.
+After init: restart agent(s), then try tool `hubdocs_list_ids`.

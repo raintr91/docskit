@@ -44,9 +44,8 @@ accelerator for registries/tags/parity only.
 ```bash
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs version
-cd /path/to/your/docs-hub    # thư mục có architecture/
-hubdocs init --location=local --yes
-# hubdocs init               # interactive; local is the default
+cd /path/to/your-docs-hub    # thư mục có architecture/
+hubdocs init                 # hỏi agent → lane → wire MCP local + harness
 ```
 
 **Windows**
@@ -57,11 +56,9 @@ irm https://raw.githubusercontent.com/raintr91/hubdocs/main/install.ps1 | iex
 
 Requires **Node ≥ 22**.
 
-Local `init` lấy docs root theo thứ tự `--docs-root` → `HUBDOCS_ROOT` → cwd có
-`architecture/`. Không có sibling fallback hay package-global root marker.
-
-Global wiring phải dùng `--location=global`. Không truyền `--docs-root` thì MCP
-global là rootless và mỗi tool call phải truyền `docsRoot`.
+`init` luôn ghi MCP **local trong repo đang chạy**. Local docs root theo thứ tự
+`--docs-root` → `HUBDOCS_ROOT` → cwd có `architecture/`. Không có sibling
+fallback. CI có thể dùng `hubdocs init --yes` (lane mặc định `docs`).
 
 Sau `init`: restart agent → thử tool `hubdocs_list_ids`.
 
@@ -84,8 +81,7 @@ HUBDOCS_REF=v1.0.2 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs
 
 Windows: chạy lại `irm …/install.ps1 | iex`.
 
-Sau update: nếu đổi wire MCP thì `cd` docs hub → `hubdocs init --location=local --yes`
-rồi restart agent.
+Sau update: `cd` docs hub → `hubdocs init` rồi restart agent.
 
 ---
 
@@ -118,13 +114,12 @@ advanced/backward compatibility, không cần trong luồng thông thường.
 | Step | CLI |
 |------|-----|
 | Install / update package | `curl …/install.sh \| bash` |
-| Wire agents (local default) | `hubdocs init` |
-| Explicit rootless global MCP | `hubdocs init --location=global --yes` |
+| Agents → lane → MCP + harness | `hubdocs init` |
+| CI non-interactive | `hubdocs init --yes` |
 | Print MCP snippet | `hubdocs init --print-config cursor` |
-| Install docs authoring harness | `hubdocs harness install --type=docs` |
-| Install lightweight FE/BE/tests lookup harness | `hubdocs harness install --type=consumer` |
-| Inspect managed harness assets | `hubdocs status [--project-root <path>]` |
-| Preview/remove stale managed assets | `hubdocs prune [--project-root <path>] [--yes]` |
+| Harness-only (advanced) | `hubdocs harness install --type=docs\|consumer` |
+| Inspect managed harness assets | `hubdocs status` |
+| Preview/remove stale managed assets | `hubdocs prune [--yes]` |
 | Remove this repo's harness + local MCP | `hubdocs deinit [--yes]` |
 | Remove everything globally | `hubdocs uninstall [--yes]` |
 | Version / paths | `hubdocs version` |

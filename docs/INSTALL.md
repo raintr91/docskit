@@ -9,7 +9,7 @@ Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 | Bước | Lệnh | Việc |
 |------|------|------|
 | 1 | `curl …/install.sh \| bash` | CLI trên PATH |
-| 2 | **`hubdocs init`** | Wire Cursor / Claude / Kilo (↑↓ · Space) |
+| 2 | **`hubdocs init`** | Hỏi agent → lane → MCP local + harness |
 
 ## Linux / WSL
 
@@ -17,8 +17,8 @@ Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs version
 cd /path/to/your/docs-hub    # must contain architecture/
-hubdocs init --location=local --yes
-# hubdocs init               # interactive agents
+hubdocs init                 # interactive: agents → lane
+# hubdocs init --yes         # CI: detected agents + docs lane
 ```
 
 Uninstall:

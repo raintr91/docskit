@@ -89,7 +89,7 @@ test('standalone package behavior', async (t) => {
     process.chdir(empty)
     assert.throws(
       () => resolveDocsRoot(),
-      /hubdocs init --location=local/,
+      /hubdocs init/,
     )
     process.chdir(originalCwd)
   })
@@ -122,6 +122,38 @@ test('standalone package behavior', async (t) => {
       assert.equal(config.mcpServers.hubdocs.env.HUBDOCS_ROOT, hub)
     }
     process.chdir(originalCwd)
+  })
+
+  await t.test('local init writes project configs for previously global-only agents', async () => {
+    const hub = makeHub('local-agents')
+    process.chdir(hub)
+    const result = await installAgents({
+      target: 'codex,hermes,antigravity',
+      yes: true,
+    })
+    assert.equal(result.skipped.length, 0)
+    assert.ok(existsSync(path.join(hub, '.codex', 'config.toml')))
+    assert.ok(existsSync(path.join(hub, '.hermes', 'config.yaml')))
+    assert.ok(existsSync(path.join(hub, '.gemini', 'config', 'mcp_config.json')))
+    process.chdir(originalCwd)
+  })
+
+  await t.test('CLI init installs harness for the selected lane', () => {
+    const hub = makeHub('cli-init')
+    const cli = path.resolve(originalCwd, 'bin', 'hubdocs.mjs')
+    const result = spawnSync(
+      process.execPath,
+      [cli, 'init', '--target=cursor', '--type=docs', '--yes'],
+      {
+        cwd: hub,
+        encoding: 'utf8',
+        env: { ...process.env, HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR },
+      },
+    )
+    assert.equal(result.status, 0, result.stderr)
+    assert.match(result.stdout, /Harness \(docs\)/)
+    assert.ok(existsSync(path.join(hub, '.cursor', 'mcp.json')))
+    assert.ok(existsSync(path.join(hub, '.hubdocs', 'install-manifest.json')))
   })
 
   await t.test('explicit global wiring can stay rootless', async () => {

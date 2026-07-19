@@ -12,7 +12,7 @@ import path from 'node:path'
 import os from 'node:os'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { packageRoot, defaultHubdocsRoot, looksLikeHub } from '../config/docs-root.js'
-import { checkboxPrompt, selectPrompt } from './prompt.js'
+import { checkboxPrompt } from './prompt.js'
 import { buildTomlTable, upsertTomlTable, removeTomlTable } from './toml.js'
 
 export type AgentId =
@@ -65,8 +65,6 @@ const AGENT_ALIASES: Record<string, AgentId> = {
   kiro: 'kiro',
   kilo: 'kilo',
 }
-
-const GLOBAL_ONLY: ReadonlySet<AgentId> = new Set(['codex', 'hermes', 'antigravity'])
 
 const MCP_NAME = 'hubdocs'
 
@@ -224,8 +222,8 @@ function opencodeConfigPath(location: InstallLocation, cwd: string): string {
   return jsonc
 }
 
-export function supportsLocation(agent: AgentId, location: InstallLocation): boolean {
-  if (location === 'local' && GLOBAL_ONLY.has(agent)) return false
+export function supportsLocation(_agent: AgentId, _location: InstallLocation): boolean {
+  // Every selected agent receives a project-local config under the init cwd.
   return true
 }
 
@@ -249,11 +247,11 @@ export function agentConfigPath(
       case 'kilo':
         return path.join(cwd, '.kilocode', 'mcp.json')
       case 'codex':
-        return path.join(os.homedir(), '.codex', 'config.toml')
+        return path.join(cwd, '.codex', 'config.toml')
       case 'hermes':
-        return path.join(hermesHome(), 'config.yaml')
+        return path.join(cwd, '.hermes', 'config.yaml')
       case 'antigravity':
-        return defaultAntigravityMcpPath()
+        return path.join(cwd, '.gemini', 'config', 'mcp_config.json')
     }
   }
 
@@ -361,9 +359,6 @@ export function formatPrintConfig(
   location: InstallLocation,
   docsRoot?: string,
 ): string {
-  if (!supportsLocation(agent, location)) {
-    return `# ${AGENT_LABEL[agent]} has no project-local config — use --location=global.\n`
-  }
   const file = agentConfigPath(agent, location)
   const entry = mcpEntryForAgent(agent, buildMcpEntry({ docsRoot, location }))
 
@@ -748,9 +743,8 @@ export function uninstallAgents(opts: UninstallAgentsOptions = {}): UninstallAge
 
 async function promptInteractive(detected: AgentId[]): Promise<{
   targets: AgentId[]
-  location: InstallLocation
 }> {
-  console.log('hubdocs init — wire MCP into agents\n')
+  console.log('hubdocs init — choose agents\n')
   const pre = detected.length > 0 ? detected : (['cursor'] as AgentId[])
 
   const targets = await checkboxPrompt<AgentId>({
@@ -764,22 +758,7 @@ async function promptInteractive(detected: AgentId[]): Promise<{
     })),
   })
 
-  const location = await selectPrompt<InstallLocation>({
-    message: 'Install location?',
-    defaultIndex: 0,
-    choices: [
-      {
-        value: 'local',
-        name: 'local — project configs only (codex/hermes/antigravity need global)',
-      },
-      {
-        value: 'global',
-        name: 'global — home configs for all projects',
-      },
-    ],
-  })
-
-  return { targets, location }
+  return { targets }
 }
 
 export async function installAgents(opts: InstallOptions = {}): Promise<InstallResult> {
@@ -825,7 +804,7 @@ export async function installAgents(opts: InstallOptions = {}): Promise<InstallR
   } else {
     const picked = await promptInteractive(detected)
     targets = picked.targets
-    location = opts.location ?? picked.location
+    location = opts.location ?? 'local'
   }
 
   const baseEntry = buildMcpEntry({
@@ -835,17 +814,12 @@ export async function installAgents(opts: InstallOptions = {}): Promise<InstallR
   })
   const written: InstallResult['written'] = []
   const skipped: string[] = []
+  const cwd = process.cwd()
 
   for (const agent of targets) {
-    if (!supportsLocation(agent, location)) {
-      skipped.push(
-        `${agent}: no project-local config — re-run with --location=global`,
-      )
-      continue
-    }
     written.push({ agent, path: writeAgentConfig(agent, location, baseEntry) })
     if (agent === 'claude') {
-      const perm = mergeClaudePermissions(location)
+      const perm = mergeClaudePermissions(location, cwd)
       if (perm) written.push({ agent: 'claude', path: `${perm} (permissions)` })
     }
   }

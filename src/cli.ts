@@ -10,16 +10,17 @@ import { createRequire } from 'node:module'
 import { lstatSync, realpathSync, rmSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { packageRoot, defaultHubdocsRoot } from './config/docs-root.js'
-import { installAgents, uninstallAgents, AGENT_IDS } from './install/agents.js'
+import { packageRoot, defaultHubdocsRoot, looksLikeHub } from './config/docs-root.js'
+import { installAgents, uninstallAgents } from './install/agents.js'
 import {
   installHarness,
   pruneHarness,
   statusHarness,
   uninstallHarness,
+  type HubdocsHarnessType,
 } from './install/harness.js'
 import { discoverInstalls, ledgerPath, readLedger, removeLedger } from './install/ledger.js'
-import { selectPrompt } from './install/prompt.js'
+import { promptLine, selectPrompt } from './install/prompt.js'
 
 const require = createRequire(import.meta.url)
 
@@ -37,11 +38,10 @@ function usage(): void {
 
 Local MCP for arc42 × C4 docs hubs — index IDs, deps, orphans, links, route.
 
-Wire agents:
-  init [--target=claude,cursor,codex,opencode,hermes,gemini,antigravity,kiro,kilo|auto|all]
-       [--location=local|global] [--yes] [--wsl]
-       [--docs-root <path>] [--print-config <agent>] [--mcp-file <path>]
-       # no flags → TTY multi-select (↑↓ · Space · Enter)
+Wire agents + harness (member UX — just run hubdocs init):
+  init [--target=…] [--type=docs|consumer] [--docs-root <path>] [--yes] [--wsl]
+       [--location=local|global] [--print-config <agent>] [--mcp-file <path>]
+       # no flags → TTY: agents → lane → wire MCP local + install harness
   install …   # deprecated alias → init
 
 Repo lifecycle:
@@ -66,8 +66,8 @@ Docs: docs/INIT.md · docs/INSTALL.md · README.md
 Env:
   HUBDOCS_ROOT   project docs hub; otherwise cwd if it has architecture/
 
-Local wiring is the default. Global wiring is explicit and rootless unless
---docs-root is supplied; pass docsRoot to each MCP tool in rootless mode.
+Init always writes project-local MCP configs into the current repo.
+--location=global remains available for CI/rootless wiring.
 `)
   process.exit(1)
 }
@@ -83,29 +83,91 @@ function has(flag: string): boolean {
   return process.argv.includes(flag)
 }
 
+async function resolveInitLane(): Promise<{
+  type: HubdocsHarnessType
+  docsRoot?: string
+}> {
+  const flagged = arg('--type') as HubdocsHarnessType | undefined
+  const docsRootFlag = arg('--docs-root')
+  const interactive =
+    !has('--yes') && !flagged && Boolean(process.stdin.isTTY && process.stdout.isTTY)
+
+  let type: HubdocsHarnessType = flagged ?? 'docs'
+  if (interactive) {
+    type = await selectPrompt<HubdocsHarnessType>({
+      message: 'Which Hubdocs lane?',
+      defaultIndex: 0,
+      choices: [
+        { value: 'docs', name: 'docs — architecture authoring hub' },
+        { value: 'consumer', name: 'consumer — FE/BE/tests lookup only' },
+      ],
+    })
+  }
+  if (type !== 'docs' && type !== 'consumer') {
+    throw new Error('--type must be docs | consumer')
+  }
+
+  let docsRoot = docsRootFlag
+  if (type === 'consumer' && !docsRoot) {
+    const cwdLooksLikeHub = looksLikeHub(process.cwd())
+    if (!cwdLooksLikeHub && interactive) {
+      docsRoot = await promptLine(
+        'Docs hub path for HUBDOCS_ROOT (absolute path with architecture/): ',
+      )
+      if (!docsRoot) throw new Error('consumer lane requires --docs-root when cwd is not a docs hub')
+    } else if (!cwdLooksLikeHub && !defaultHubdocsRoot()) {
+      throw new Error('consumer lane requires --docs-root when cwd is not a docs hub')
+    }
+  }
+  return { type, docsRoot }
+}
+
 async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<void> {
   if (opts.deprecatedAlias) {
     console.error('note: `install` is deprecated — use `hubdocs init`')
   }
   try {
+    if (arg('--print-config')) {
+      await installAgents({
+        target: arg('--target'),
+        location: (arg('--location') as 'global' | 'local' | undefined) ?? 'local',
+        yes: has('--yes'),
+        useWsl: has('--wsl'),
+        mcpFile: arg('--mcp-file'),
+        printConfig: arg('--print-config'),
+        docsRoot: arg('--docs-root'),
+      })
+      return
+    }
+
+    const lane = await resolveInitLane()
     const result = await installAgents({
       target: arg('--target'),
-      location: (arg('--location') as 'global' | 'local' | undefined) ?? undefined,
+      location: (arg('--location') as 'global' | 'local' | undefined) ?? 'local',
       yes: has('--yes'),
       useWsl: has('--wsl'),
       mcpFile: arg('--mcp-file'),
-      printConfig: arg('--print-config'),
-      docsRoot: arg('--docs-root'),
+      docsRoot: lane.docsRoot ?? arg('--docs-root'),
     })
-    if (arg('--print-config')) return
     console.log(`Wired hubdocs → ${result.targets.join(', ') || '(none)'} (${result.location})`)
     for (const w of result.written) {
       console.log(`  ${w.agent}: ${w.path}`)
     }
     for (const s of result.skipped) console.log(`  skip: ${s}`)
-    console.log(`Agents: ${AGENT_IDS.join(' | ')}`)
-    const configuredRoot = arg('--docs-root') ?? defaultHubdocsRoot()
-    console.log(`HUBDOCS_ROOT: ${configuredRoot || '(rootless global; use tool docsRoot)'}`)
+
+    const harness = installHarness({
+      projectRoot: arg('--project-root'),
+      force: has('--force'),
+      type: lane.type,
+    })
+    for (const file of harness.written) console.log(`  wrote: ${file}`)
+    for (const file of harness.unchanged) console.log(`  unchanged: ${file}`)
+    for (const file of harness.skipped) console.log(`  skip customized: ${file} (use --force)`)
+    console.log(`Harness (${lane.type}): ${harness.written.length} written, ${harness.unchanged.length} unchanged`)
+    console.log(`manifest: ${harness.manifest}`)
+
+    const configuredRoot = lane.docsRoot ?? arg('--docs-root') ?? defaultHubdocsRoot()
+    console.log(`HUBDOCS_ROOT: ${configuredRoot || '(rootless; use tool docsRoot)'}`)
     console.log('Restart agent(s), then try tool hubdocs_list_ids')
   } catch (err) {
     console.error(err instanceof Error ? err.message : err)
