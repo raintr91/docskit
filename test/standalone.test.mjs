@@ -36,6 +36,9 @@ import { routeTopic } from '../dist/scan/route.js'
 const originalCwd = process.cwd()
 const originalRoot = process.env.HUBDOCS_ROOT
 
+// Keep the install ledger out of the real ~/.local/state during tests.
+process.env.HUBDOCS_STATE_DIR = mkdtempSync(path.join(os.tmpdir(), 'hubdocs-state-'))
+
 function tempDir(name) {
   return mkdtempSync(path.join(os.tmpdir(), `hubdocs-${name}-`))
 }

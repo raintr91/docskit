@@ -7,6 +7,8 @@
  */
 
 import { createRequire } from 'node:module'
+import { lstatSync, realpathSync, rmSync } from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { packageRoot, defaultHubdocsRoot } from './config/docs-root.js'
 import { installAgents, uninstallAgents, AGENT_IDS } from './install/agents.js'
@@ -16,6 +18,8 @@ import {
   statusHarness,
   uninstallHarness,
 } from './install/harness.js'
+import { discoverInstalls, ledgerPath, readLedger, removeLedger } from './install/ledger.js'
+import { selectPrompt } from './install/prompt.js'
 
 const require = createRequire(import.meta.url)
 
@@ -45,9 +49,15 @@ Install Cursor harness into the current project:
   status [--project-root <path>]
   prune [--project-root <path>] [--yes]   # dry-run unless --yes
 
-Remove the Cursor harness + MCP wiring:
-  uninstall [--project-root <path>] [--target=<agents>] [--location=local|global]
-            [--keep-mcp] [--yes]   # dry-run unless --yes
+Uninstall (dry-run unless --yes; no flags → interactive scope menu):
+  uninstall [--scope=repo|all-repos|mcp-local|mcp-global|cli|all] [--all]
+            [--project-root <path>] [--discover <dir>]
+            [--target=<agents>] [--location=local|global] [--keep-mcp] [--yes]
+       # repo       current folder harness + local MCP
+       # all-repos  every repo in the install ledger (+ --discover <dir>)
+       # mcp-local / mcp-global   just the MCP entry
+       # cli        CLI toolkit (~/.hubdocs + ~/.local/bin symlinks)
+       # all        everything above, then the ledger
 
 Other:
   version
@@ -182,36 +192,240 @@ function runHarnessPrune(): void {
   }
 }
 
-function runUninstall(): void {
-  const yes = has('--yes')
-  const keepMcp = has('--keep-mcp')
+type UninstallScope = 'repo' | 'all-repos' | 'mcp-local' | 'mcp-global' | 'cli' | 'all'
+
+const UNINSTALL_SCOPES: UninstallScope[] = [
+  'repo',
+  'all-repos',
+  'mcp-local',
+  'mcp-global',
+  'cli',
+  'all',
+]
+
+interface UninstallFlags {
+  yes: boolean
+  keepMcp: boolean
+  target?: string
+  location?: 'global' | 'local'
+  projectRoot?: string
+  discoverDir?: string
+}
+
+function cliLayout(): { installDir: string; binDir: string } {
+  const installDir = process.env.HUBDOCS_INSTALL_DIR
+    ? path.resolve(process.env.HUBDOCS_INSTALL_DIR)
+    : path.join(os.homedir(), '.hubdocs')
+  const binDir = process.env.HUBDOCS_BIN_DIR
+    ? path.resolve(process.env.HUBDOCS_BIN_DIR)
+    : path.join(os.homedir(), '.local', 'bin')
+  return { installDir, binDir }
+}
+
+function lexists(file: string): boolean {
   try {
-    const harness = uninstallHarness({ projectRoot: arg('--project-root'), yes })
+    lstatSync(file)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function realOrSelf(file: string): string {
+  try {
+    return realpathSync(file)
+  } catch {
+    return file
+  }
+}
+
+function removeCliToolkit(dryRun: boolean): {
+  removed: string[]
+  wouldRemove: string[]
+  skipped: string[]
+} {
+  const { installDir, binDir } = cliLayout()
+  const removed: string[] = []
+  const wouldRemove: string[] = []
+  const skipped: string[] = []
+  const here = realOrSelf(process.cwd())
+  const targets = [path.join(binDir, 'hubdocs'), path.join(binDir, 'hubdocs-mcp'), installDir]
+
+  for (const target of targets) {
+    if (!lexists(target)) continue
+    if (target === installDir && realOrSelf(target) === here) {
+      skipped.push(`${target} (running from here — remove manually)`)
+      continue
+    }
+    if (dryRun) {
+      wouldRemove.push(target)
+      continue
+    }
+    try {
+      rmSync(target, { recursive: true, force: true })
+      removed.push(target)
+    } catch (err) {
+      skipped.push(`${target} (${err instanceof Error ? err.message : String(err)})`)
+    }
+  }
+  return { removed, wouldRemove, skipped }
+}
+
+function repoTargets(flags: UninstallFlags): string[] {
+  const set = new Set<string>(readLedger())
+  if (flags.discoverDir) for (const repo of discoverInstalls(flags.discoverDir)) set.add(repo)
+  return [...set]
+}
+
+function runScope(scope: UninstallScope, flags: UninstallFlags): void {
+  const yes = flags.yes
+  const cwd = flags.projectRoot ? path.resolve(flags.projectRoot) : process.cwd()
+
+  const doRepoHarness = (root: string): void => {
+    console.log(`repo: ${root}`)
+    const harness = uninstallHarness({ projectRoot: root, yes })
     for (const file of harness.wouldDelete) console.log(`  would delete: ${file}`)
     for (const file of harness.deleted) console.log(`  deleted: ${file}`)
     for (const file of harness.preservedModified) console.log(`  preserve modified: ${file}`)
-    for (const file of harness.missing) console.log(`  already missing: ${file}`)
     if (harness.registry) console.log(`  registry: ${harness.registry}`)
     if (harness.manifestRemoved) console.log(`  manifest removed: ${harness.manifest}`)
+  }
 
-    if (!keepMcp) {
-      const agents = uninstallAgents({
-        target: arg('--target'),
-        location: arg('--location') as 'global' | 'local' | undefined,
-        yes,
-      })
-      for (const entry of agents.removed) {
-        console.log(`  ${yes ? 'unwired' : 'would unwire'}: ${entry}`)
+  const doMcp = (location: 'local' | 'global', root: string): void => {
+    const agents = uninstallAgents({ target: flags.target ?? 'all', location, yes, cwd: root })
+    if (!agents.removed.length) {
+      console.log(`  mcp (${location}): no hubdocs entry`)
+      return
+    }
+    for (const entry of agents.removed) {
+      console.log(`  ${yes ? 'unwired' : 'would unwire'} (${location}): ${entry}`)
+    }
+  }
+
+  const doCli = (): void => {
+    const cli = removeCliToolkit(!yes)
+    for (const file of cli.wouldRemove) console.log(`  would remove: ${file}`)
+    for (const file of cli.removed) console.log(`  removed: ${file}`)
+    for (const file of cli.skipped) console.log(`  skip: ${file}`)
+  }
+
+  switch (scope) {
+    case 'repo':
+      doRepoHarness(cwd)
+      if (!flags.keepMcp) doMcp('local', cwd)
+      break
+    case 'all-repos': {
+      const repos = repoTargets(flags)
+      if (!repos.length) console.log('  (no registered repos — try --discover <dir>)')
+      for (const root of repos) {
+        doRepoHarness(root)
+        if (!flags.keepMcp) doMcp('local', root)
       }
-      for (const entry of agents.absent) console.log(`  mcp: ${entry}`)
+      break
+    }
+    case 'mcp-local':
+      doMcp('local', cwd)
+      break
+    case 'mcp-global':
+      doMcp('global', cwd)
+      break
+    case 'cli':
+      doCli()
+      break
+    case 'all': {
+      const repos = repoTargets(flags)
+      for (const root of repos) {
+        doRepoHarness(root)
+        doMcp('local', root)
+      }
+      doMcp('global', cwd)
+      doCli()
+      if (yes) {
+        if (removeLedger()) console.log(`  ledger removed: ${ledgerPath()}`)
+      } else {
+        console.log(`  would remove ledger: ${ledgerPath()}`)
+      }
+      break
+    }
+  }
+}
+
+async function runUninstall(): Promise<void> {
+  const flags: UninstallFlags = {
+    yes: has('--yes'),
+    keepMcp: has('--keep-mcp'),
+    target: arg('--target'),
+    location: arg('--location') as 'global' | 'local' | undefined,
+    projectRoot: arg('--project-root'),
+    discoverDir: arg('--discover'),
+  }
+
+  try {
+    let scope: UninstallScope
+    const scopeArg = arg('--scope')
+    if (has('--all')) {
+      scope = 'all'
+    } else if (scopeArg) {
+      if (!UNINSTALL_SCOPES.includes(scopeArg as UninstallScope)) {
+        throw new Error(`--scope must be one of: ${UNINSTALL_SCOPES.join(', ')}`)
+      }
+      scope = scopeArg as UninstallScope
+    } else if (
+      process.stdin.isTTY &&
+      !flags.yes &&
+      !flags.projectRoot &&
+      !arg('--target') &&
+      !arg('--location')
+    ) {
+      scope = await selectPrompt<UninstallScope>({
+        message: 'hubdocs uninstall — what to remove?',
+        defaultIndex: 0,
+        choices: [
+          { value: 'repo', name: 'Current repo harness + MCP (this folder)' },
+          { value: 'all-repos', name: 'All registered repo harnesses (ledger)' },
+          { value: 'mcp-local', name: 'Local MCP wiring (this folder’s agents)' },
+          { value: 'mcp-global', name: 'Global MCP wiring (home agents)' },
+          { value: 'cli', name: 'CLI toolkit (~/.hubdocs + ~/.local/bin)' },
+          { value: 'all', name: 'All — remove everything' },
+        ],
+      })
+    } else {
+      scope = 'repo'
     }
 
+    const interactive = process.stdin.isTTY && !flags.yes
+    if (interactive) {
+      console.log(`\nPreview (${scope}):`)
+      runScope(scope, { ...flags, yes: false })
+      const confirm = await selectPrompt<'yes' | 'no'>({
+        message: `Apply uninstall (${scope})? This cannot be undone.`,
+        defaultIndex: 1,
+        choices: [
+          { value: 'no', name: 'No — cancel' },
+          { value: 'yes', name: 'Yes — remove now' },
+        ],
+      })
+      if (confirm !== 'yes') {
+        console.log('Cancelled.')
+        return
+      }
+      console.log(`\nApplying (${scope}):`)
+      runScope(scope, { ...flags, yes: true })
+      console.log(`\nUninstalled (${scope}).`)
+      return
+    }
+
+    runScope(scope, flags)
     console.log(
-      yes
-        ? `Uninstalled hubdocs harness${keepMcp ? '' : ' + MCP wiring'}`
-        : `Uninstall dry-run: pass --yes to apply${keepMcp ? '' : ' (--keep-mcp leaves MCP wiring)'}`,
+      flags.yes
+        ? `\nUninstalled (${scope}).`
+        : `\nDry-run (${scope}) — pass --yes to apply.`,
     )
   } catch (err) {
+    if (err instanceof Error && err.message === 'cancelled') {
+      console.log('\nCancelled.')
+      return
+    }
     console.error(err instanceof Error ? err.message : err)
     process.exit(1)
   }
@@ -254,7 +468,7 @@ async function main(): Promise<void> {
   }
 
   if (cmd === 'uninstall') {
-    runUninstall()
+    await runUninstall()
     return
   }
 

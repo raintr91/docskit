@@ -87,7 +87,29 @@ Windows: chạy lại `irm …/install.ps1 | iex`.
 Sau update: nếu đổi wire MCP thì `cd` docs hub → `hubdocs init --location=local --yes`
 rồi restart agent.
 
-Uninstall: `curl -fsSL …/install.sh | bash -s -- --uninstall`
+---
+
+## Uninstall
+
+`hubdocs uninstall` gỡ harness (`.cursor/…`, `install-manifest.json`) và MCP wiring.
+Mặc định **dry-run** — thêm `--yes` để xoá thật. File member đã sửa được **giữ lại +
+báo**. Chạy không cờ trong TTY sẽ hiện **menu chọn phạm vi** (có mục *All*).
+
+```bash
+hubdocs uninstall                     # menu: repo / all-repos / mcp / cli / all
+hubdocs uninstall --yes               # repo hiện tại: harness + MCP local
+hubdocs uninstall --all --yes         # tất cả repo (ledger) + MCP local/global + CLI
+hubdocs uninstall --scope=all-repos --discover ~/workspace --yes
+```
+
+Phạm vi (`--scope`): `repo` · `all-repos` · `mcp-local` · `mcp-global` · `cli` · `all`.
+`harness install` ghi lại repo vào **install ledger** (`$XDG_STATE_HOME/hubdocs/installs.json`)
+để `--all` / `all-repos` dọn mọi nơi mà không cần `cd`; bản cài cũ chưa có ledger dùng
+`--discover <dir>` để quét lại. Cờ khác: `--keep-mcp` (giữ MCP), `--project-root <path>`,
+`--target=<agents>`, `--location=local|global`.
+
+Gỡ **chỉ CLI** khỏi máy (không đụng repo): `hubdocs uninstall --scope=cli --yes`
+hoặc `curl -fsSL …/install.sh | bash -s -- --uninstall`.
 
 ---
 
@@ -103,6 +125,8 @@ Uninstall: `curl -fsSL …/install.sh | bash -s -- --uninstall`
 | Install lightweight FE/BE/tests lookup harness | `hubdocs harness install --type=consumer` |
 | Inspect managed harness assets | `hubdocs status [--project-root <path>]` |
 | Preview/remove stale managed assets | `hubdocs prune [--project-root <path>] [--yes]` |
+| Remove harness + MCP (interactive scope menu) | `hubdocs uninstall` |
+| Remove everything (all repos + MCP + CLI) | `hubdocs uninstall --all --yes` |
 | Version / paths | `hubdocs version` |
 
 `install` = deprecated alias của `init`.

@@ -14,6 +14,7 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 import { packageRoot } from '../config/docs-root.js'
+import { forgetInstall, recordInstall } from './ledger.js'
 export const INSTALL_MANIFEST_PATH = '.hubdocs/install-manifest.json'
 export const INSTALL_MANIFEST_SCHEMA = 1
 export type HubdocsHarnessType = 'docs' | 'consumer'
@@ -425,6 +426,7 @@ export function installHarness(opts: {
   }
   result.manifest = writeManifest(root, realRoot, nextManifest)
   result.registry = mergeExtractRegistry(root, realRoot, type)
+  recordInstall(root)
   return result
 }
 
@@ -645,6 +647,7 @@ export function uninstallHarness(opts: {
     unlinkSync(manifestFile)
     result.manifestRemoved = true
   }
+  forgetInstall(root)
   pruneEmptyDirs(root, [...result.deleted, manifestFile])
   return result
 }

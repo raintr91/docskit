@@ -67,6 +67,26 @@ hubdocs prune [--project-root /path/to/docs]        # preview only
 hubdocs prune [--project-root /path/to/docs] --yes  # apply safe deletions
 ```
 
+## Uninstall
+
+```bash
+hubdocs uninstall                     # TTY scope menu (repo / all-repos / mcp / cli / all)
+hubdocs uninstall --yes               # this repo: harness + local MCP
+hubdocs uninstall --all --yes         # all ledger repos + MCP local/global + CLI
+hubdocs uninstall --scope=all-repos --discover ~/workspace --yes
+```
+
+Dry-run unless `--yes`. Owned harness files matching their recorded hash are
+deleted; **member-modified files are preserved and reported**. Only the
+Hubdocs-owned bundle keys are removed from the shared
+`.cursor/extracts/extract-registry.json` (the file is deleted only if no other
+toolkit's bundles remain). `harness install` records each repo in an install
+ledger (`$XDG_STATE_HOME/hubdocs/installs.json`) so `--all`/`all-repos` can clean
+every location without a manual `cd`; use `--discover <dir>` to rebuild the list
+for older ledger-less installs. `--scope=cli` removes just the CLI
+(`~/.hubdocs` + `~/.local/bin` symlinks), equivalent to
+`install.sh -- --uninstall`.
+
 `docs` syncs the complete architecture-authoring family. `consumer` syncs only
 the lightweight `/hubdocs` lookup skill/rule/schema/hook; wire its local MCP
 entry with an explicit `--docs-root` so `HUBDOCS_ROOT` points to the

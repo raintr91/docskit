@@ -10,13 +10,14 @@ import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
-import { uninstallAgents } from '../dist/install/agents.js'
-import {
-  INSTALL_MANIFEST_PATH,
-  installHarness,
-  statusHarness,
-  uninstallHarness,
-} from '../dist/install/harness.js'
+// Isolate the install ledger so tests never touch the real ~/.local/state.
+process.env.HUBDOCS_STATE_DIR = mkdtempSync(path.join(os.tmpdir(), 'hubdocs-state-'))
+
+const { uninstallAgents } = await import('../dist/install/agents.js')
+const { INSTALL_MANIFEST_PATH, installHarness, statusHarness, uninstallHarness } = await import(
+  '../dist/install/harness.js'
+)
+const { discoverInstalls, ledgerPath, readLedger } = await import('../dist/install/ledger.js')
 
 const originalCwd = process.cwd()
 
@@ -87,6 +88,33 @@ test('uninstall un-merges only hubdocs bundles from a shared registry', () => {
   assert.ok(existsSync(registry), 'registry kept because another bundle remains')
   const after = JSON.parse(readFileSync(registry, 'utf8'))
   assert.deepEqual(Object.keys(after.bundles), ['other-toolkit'])
+})
+
+test('install records the repo in the ledger; uninstall rewrites the file to forget it', () => {
+  const root = tempDir('ledger')
+  const other = tempDir('ledger-keep')
+  installHarness({ projectRoot: root, type: 'docs' })
+  installHarness({ projectRoot: other, type: 'docs' })
+  assert.ok(readLedger().includes(root), 'ledger should list the installed repo')
+
+  uninstallHarness({ projectRoot: root, yes: true })
+  // assert the persisted file (not just the pruned view) dropped the entry
+  const raw = JSON.parse(readFileSync(ledgerPath(), 'utf8'))
+  assert.equal(raw.repos.includes(root), false, 'ledger file should no longer contain it')
+  assert.ok(raw.repos.includes(other), 'other repo entry preserved')
+})
+
+test('discoverInstalls finds repos carrying a hubdocs manifest', () => {
+  const base = tempDir('discover')
+  const repo = path.join(base, 'nested', 'my-repo')
+  mkdirSync(repo, { recursive: true })
+  installHarness({ projectRoot: repo, type: 'docs' })
+
+  const found = discoverInstalls(base)
+  assert.ok(
+    found.some((p) => p === repo || existsSync(path.join(p, ...INSTALL_MANIFEST_PATH.split('/')))),
+    'discover should locate the nested manifest',
+  )
 })
 
 test('uninstallAgents strips the hubdocs MCP entry (cursor local)', () => {

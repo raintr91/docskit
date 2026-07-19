@@ -680,8 +680,9 @@ function removeAgentConfig(
   agent: AgentId,
   location: InstallLocation,
   dryRun: boolean,
+  cwd: string,
 ): string | null {
-  const file = agentConfigPath(agent, location)
+  const file = agentConfigPath(agent, location, cwd)
   let removed: boolean
   switch (agent) {
     case 'codex':
@@ -703,6 +704,8 @@ export interface UninstallAgentsOptions {
   target?: string
   location?: InstallLocation
   yes?: boolean
+  /** Project root for local configs (defaults to process.cwd()). */
+  cwd?: string
 }
 
 export interface UninstallAgentsResult {
@@ -716,7 +719,8 @@ export interface UninstallAgentsResult {
 /** Reverse of installAgents — strip the hubdocs MCP entry from targeted agent configs. */
 export function uninstallAgents(opts: UninstallAgentsOptions = {}): UninstallAgentsResult {
   const dryRun = !opts.yes
-  const detected = detectAgents()
+  const cwd = opts.cwd ? path.resolve(opts.cwd) : process.cwd()
+  const detected = detectAgents(cwd)
   const location: InstallLocation = opts.location ?? 'local'
   const targets = parseTargets(opts.target ?? 'auto', detected)
   const removed: string[] = []
@@ -727,11 +731,11 @@ export function uninstallAgents(opts: UninstallAgentsOptions = {}): UninstallAge
       absent.push(`${agent}: no ${location} config`)
       continue
     }
-    const file = removeAgentConfig(agent, location, dryRun)
+    const file = removeAgentConfig(agent, location, dryRun, cwd)
     if (file) {
       removed.push(`${agent}: ${file}`)
       if (agent === 'claude') {
-        const perm = removeClaudePermissions(location, dryRun)
+        const perm = removeClaudePermissions(location, dryRun, cwd)
         if (perm) removed.push(`claude: ${perm} (permissions)`)
       }
     } else {
