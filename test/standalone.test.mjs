@@ -29,6 +29,18 @@ import {
   pruneHarness,
   statusHarness,
 } from '../dist/install/harness.js'
+import {
+  canonicalGitignorePattern,
+  ensureGitignoreEntries,
+  generatedTargets,
+  removeGitignoreEntries,
+} from '../dist/install/gitignore.js'
+import {
+  optionalToolkitInvocations,
+  parseOptionalToolkits,
+  resolveOptionalToolkits,
+  runOptionalToolkits,
+} from '../dist/install/optional.js'
 import { indexIds, walkMdFiles, SCAN_MD_DIRS } from '../dist/scan/ids.js'
 import { depsFromFiles, validateMdLinks } from '../dist/scan/links.js'
 import { routeTopic } from '../dist/scan/route.js'
@@ -138,6 +150,166 @@ test('standalone package behavior', async (t) => {
     process.chdir(originalCwd)
   })
 
+  await t.test('optional toolkit wizard supports skip, flags, and no hidden install', async () => {
+    assert.equal(parseOptionalToolkits(undefined), undefined)
+    assert.deepEqual(parseOptionalToolkits('none'), [])
+    assert.deepEqual(parseOptionalToolkits('artifactgraph,artifactgraph'), ['artifactgraph'])
+    assert.throws(() => parseOptionalToolkits('unknown'), /Unknown optional toolkit/)
+
+    const skipped = await resolveOptionalToolkits({ interactive: false })
+    assert.deepEqual(skipped, [])
+
+    let prompted = false
+    const selected = await resolveOptionalToolkits({
+      interactive: true,
+      prompts: {
+        checkbox: async ({ message, choices }) => {
+          prompted = true
+          assert.match(message, /none = skip/)
+          assert.deepEqual(
+            choices.map((choice) => ({
+              value: choice.value,
+              checked: Boolean(choice.checked),
+            })),
+            [{ value: 'artifactgraph', checked: false }],
+          )
+          return ['artifactgraph']
+        },
+      },
+    })
+    assert.equal(prompted, true)
+    assert.deepEqual(selected, ['artifactgraph'])
+
+    const docsInvocation = optionalToolkitInvocations({
+      selected,
+      projectRoot: '/tmp/docs',
+      target: 'cursor,claude',
+      type: 'docs',
+    })[0]
+    assert.deepEqual(docsInvocation.args, [
+      'init',
+      '--target=cursor,claude',
+      '--type=docs',
+      '--location=local',
+      '--yes',
+    ])
+    const consumerInvocation = optionalToolkitInvocations({
+      selected,
+      projectRoot: '/tmp/consumer',
+      target: 'none',
+      type: 'consumer',
+    })[0]
+    assert.ok(consumerInvocation.args.includes('--type=common'))
+
+    const originalPath = process.env.PATH
+    process.env.PATH = ''
+    try {
+      const unavailable = runOptionalToolkits([docsInvocation])
+      assert.deepEqual(unavailable, {
+        initialized: [],
+        unavailable: ['artifactgraph'],
+      })
+    } finally {
+      if (originalPath === undefined) delete process.env.PATH
+      else process.env.PATH = originalPath
+    }
+
+    const hub = makeHub('optional-unavailable')
+    const cli = path.resolve(originalCwd, 'bin', 'hubdocs.mjs')
+    const cliResult = spawnSync(
+      process.execPath,
+      [
+        cli,
+        'init',
+        '--target=none',
+        '--type=docs',
+        '--with=artifactgraph',
+        '--yes',
+      ],
+      {
+        cwd: hub,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          PATH: '',
+          HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR,
+        },
+      },
+    )
+    assert.equal(cliResult.status, 0, cliResult.stderr)
+    assert.match(cliResult.stdout, /Optional toolkit unavailable: artifactgraph/)
+    assert.ok(existsSync(path.join(hub, '.hubdocs', 'install-manifest.json')))
+  })
+
+  await t.test('generated local targets merge into .gitignore with DNA semantics', () => {
+    const hub = makeHub('gitignore')
+    writeFileSync(path.join(hub, '.gitignore'), 'node_modules/\r\n/.cursor/\r\n')
+    const intended = generatedTargets({
+      projectRoot: hub,
+      location: 'local',
+      written: [
+        path.join(hub, '.cursor', 'mcp.json'),
+        path.join(hub, '.codex', 'config.toml'),
+        path.join(hub, '.hermes', 'config.yaml'),
+      ],
+      harnessInstalled: true,
+    })
+    assert.deepEqual(
+      intended.map((e) => e.pattern).sort(),
+      ['.codex/', '.cursor/', '.hermes/', '.hubdocs/'].sort(),
+    )
+    assert.equal(intended.find((e) => e.pattern === '.cursor/')?.shared, true)
+    assert.equal(intended.find((e) => e.pattern === '.hubdocs/')?.shared, undefined)
+
+    const added = ensureGitignoreEntries(
+      hub,
+      intended.map((e) => e.pattern),
+    )
+    assert.equal(added.changed, true)
+    const content = readFileSync(path.join(hub, '.gitignore'), 'utf8')
+    assert.match(content, /\r\n/)
+    assert.equal(content.match(/\.cursor\//g)?.length, 1)
+    assert.match(content, /\.hubdocs\//)
+    assert.match(content, /\.codex\//)
+    assert.match(content, /\.hermes\//)
+    assert.doesNotMatch(content, /# >>> hubdocs generated files/)
+
+    const again = ensureGitignoreEntries(
+      hub,
+      intended.map((e) => e.pattern),
+    )
+    assert.equal(again.changed, false)
+
+    const removed = removeGitignoreEntries(hub, ['.hubdocs/', '.codex/', '.hermes/'])
+    assert.equal(removed.changed, true)
+    const after = readFileSync(path.join(hub, '.gitignore'), 'utf8')
+    assert.match(after, /node_modules\//)
+    assert.match(after, /\.cursor\//)
+    assert.doesNotMatch(after, /\.hubdocs\//)
+    assert.equal(canonicalGitignorePattern('/.cursor/'), '.cursor')
+    assert.equal(canonicalGitignorePattern('.cursor'), '.cursor')
+    assert.equal(canonicalGitignorePattern('.cursor/'), '.cursor')
+  })
+
+  await t.test('global location never claims home agent paths in repo .gitignore', () => {
+    const hub = makeHub('gitignore-global')
+    const intended = generatedTargets({
+      projectRoot: hub,
+      location: 'global',
+      written: [path.join(os.homedir(), '.cursor', 'mcp.json')],
+      harnessInstalled: true,
+    })
+    assert.deepEqual(
+      intended.map((e) => ({ pattern: e.pattern, shared: Boolean(e.shared) })).sort((a, b) =>
+        a.pattern.localeCompare(b.pattern),
+      ),
+      [
+        { pattern: '.cursor/', shared: true },
+        { pattern: '.hubdocs/', shared: false },
+      ],
+    )
+  })
+
   await t.test('CLI init installs harness for the selected lane', () => {
     const hub = makeHub('cli-init')
     const cli = path.resolve(originalCwd, 'bin', 'hubdocs.mjs')
@@ -154,6 +326,71 @@ test('standalone package behavior', async (t) => {
     assert.match(result.stdout, /Harness \(docs\)/)
     assert.ok(existsSync(path.join(hub, '.cursor', 'mcp.json')))
     assert.ok(existsSync(path.join(hub, '.hubdocs', 'install-manifest.json')))
+    const gitignore = readFileSync(path.join(hub, '.gitignore'), 'utf8')
+    assert.match(gitignore, /\.cursor\//)
+    assert.match(gitignore, /\.hubdocs\//)
+    assert.doesNotMatch(gitignore, /# >>> hubdocs generated files/)
+    const manifest = JSON.parse(
+      readFileSync(path.join(hub, '.hubdocs', 'install-manifest.json'), 'utf8'),
+    )
+    assert.ok(Array.isArray(manifest.gitignore))
+    assert.ok(manifest.gitignore.some((e) => e.pattern === '.cursor/' && e.shared === true))
+    assert.ok(manifest.gitignore.some((e) => e.pattern === '.hubdocs/' && !e.shared))
+
+    const second = spawnSync(
+      process.execPath,
+      [cli, 'init', '--target=cursor', '--type=docs', '--yes'],
+      {
+        cwd: hub,
+        encoding: 'utf8',
+        env: { ...process.env, HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR },
+      },
+    )
+    assert.equal(second.status, 0, second.stderr)
+    assert.match(second.stdout, /gitignore: unchanged/)
+  })
+
+  await t.test('multi-agent local init ignores only written agent paths', () => {
+    const hub = makeHub('cli-multi')
+    const cli = path.resolve(originalCwd, 'bin', 'hubdocs.mjs')
+    const result = spawnSync(
+      process.execPath,
+      [cli, 'init', '--target=cursor,codex,hermes', '--type=docs', '--yes'],
+      {
+        cwd: hub,
+        encoding: 'utf8',
+        env: { ...process.env, HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR },
+      },
+    )
+    assert.equal(result.status, 0, result.stderr)
+    const gitignore = readFileSync(path.join(hub, '.gitignore'), 'utf8')
+    assert.match(gitignore, /\.codex\//)
+    assert.match(gitignore, /\.hermes\//)
+    assert.doesNotMatch(gitignore, /\.kilocode\//)
+    assert.doesNotMatch(gitignore, /\.kiro\//)
+  })
+
+  await t.test('status reports missing managed gitignore entries', () => {
+    const hub = makeHub('gitignore-status')
+    const intended = generatedTargets({
+      projectRoot: hub,
+      location: 'local',
+      written: [path.join(hub, '.cursor', 'mcp.json')],
+      harnessInstalled: true,
+    })
+    ensureGitignoreEntries(
+      hub,
+      intended.map((e) => e.pattern),
+    )
+    installHarness({
+      projectRoot: hub,
+      type: 'docs',
+      gitignoreEntries: intended,
+    })
+    writeFileSync(path.join(hub, '.gitignore'), 'node_modules/\n')
+    const status = statusHarness({ projectRoot: hub })
+    assert.ok(status.gitignore.some((e) => e.pattern === '.hubdocs/' && e.status === 'missing'))
+    assert.ok(status.gitignore.some((e) => e.pattern === '.cursor/' && e.status === 'missing'))
   })
 
   await t.test('explicit global wiring can stay rootless', async () => {
@@ -250,7 +487,7 @@ test('standalone package behavior', async (t) => {
         schema: 1,
         toolApi: 1,
         harnessApi: 1,
-        version: '1.0.2',
+        version: '1.1.0',
       },
     )
     assert.ok(Object.keys(firstManifest.hashes).length >= 18)
@@ -355,7 +592,7 @@ test('standalone package behavior', async (t) => {
     const staleManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
     assert.equal(staleManifest.hashes[retiredRel], undefined)
     assert.equal(staleManifest.stale[retiredRel].hash, hash(retiredBody))
-    assert.equal(staleManifest.stale[retiredRel].sinceVersion, '1.0.2')
+    assert.equal(staleManifest.stale[retiredRel].sinceVersion, '1.1.0')
     installHarness({ projectRoot: project })
     const retainedManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
     assert.deepEqual(retainedManifest.stale, staleManifest.stale)

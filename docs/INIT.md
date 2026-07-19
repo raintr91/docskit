@@ -1,4 +1,4 @@
-# hubdocs init — agents → lane → MCP + harness
+# hubdocs init — agents → lane → optional toolkits → MCP + harness
 
 Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 
@@ -14,7 +14,8 @@ TTY wizard:
 
 1. Choose agents (checkbox)
 2. Choose lane (`docs` authoring hub or `consumer` lookup)
-3. Wire **project-local** MCP configs into the current repo and install the harness
+3. Choose optional toolkits (`ArtifactGraph`; none = skip, add later)
+4. Wire **project-local** MCP configs into the current repo and install the harness
 
 No location prompt. Every selected agent gets a config under the repo cwd
 (including Codex / Hermes / Antigravity).
@@ -43,9 +44,16 @@ Which Hubdocs lane?
   (↑↓ move · Enter confirm)
  ❯ ● docs — architecture authoring hub
    ○ consumer — FE/BE/tests lookup only
+
+Optional toolkits to initialize now (none = skip, add later):
+  (↑↓ move · Space toggle · a all · Enter confirm)
+ ❯ ◯ ArtifactGraph — local registry/tag/parity accelerator
 ```
 
 Consumer lane outside a docs hub asks for the docs hub path used as `HUBDOCS_ROOT`.
+ArtifactGraph is unchecked by default. Selecting it delegates to the separately
+installed `artifactgraph init` without downloading anything. If that toolkit is
+not installed, Hubdocs init still succeeds and prints the command to run later.
 
 | Phím | Việc |
 |------|------|
@@ -63,6 +71,8 @@ Consumer lane outside a docs hub asks for the docs hub path used as `HUBDOCS_ROO
 cd /path/to/your/docs-hub
 hubdocs init --yes
 hubdocs init --target=cursor,claude --type=docs --yes
+hubdocs init --target=cursor --type=docs --with=artifactgraph --yes
+hubdocs init --target=none --type=docs --with=none --yes
 hubdocs init --type=consumer --docs-root=/absolute/path/to/docs-hub --yes
 hubdocs init --print-config cursor
 ```
@@ -71,12 +81,19 @@ hubdocs init --print-config cursor
 |------|---------|----------|
 | `--target` | `auto` · `all` · `none` · csv | prompt / với `--yes` = `auto` |
 | `--type` | `docs` · `consumer` | prompt / với `--yes` = `docs` |
+| `--with` | `artifactgraph` · `none` | prompt / non-TTY = `none` |
+| `--artifactgraph` / `--no-artifactgraph` | alias bật/tắt optional | — |
 | `--docs-root` | absolute path tới docs hub | `HUBDOCS_ROOT` → cwd có `architecture/` |
 | `--yes` | bỏ prompt | — |
 | `--wsl` | Cursor Win → MCP qua `wsl.exe` | — |
 | `--location` | `local` · `global` | **local** (advanced/CI) |
 | `--print-config <id>` | in snippet, không ghi | — |
 | `--mcp-file <path>` | ghi thẳng 1 file (cursor) | — |
+
+`--with=none` is the explicit empty optional selection. Hubdocs itself and its
+harness are still initialized; optional toolkits can register themselves later.
+For a docs lane, delegated ArtifactGraph uses `--type=docs`; a generic consumer
+lane uses only `--type=common` because Hubdocs cannot infer FE/BE/tests.
 
 ---
 
@@ -97,7 +114,11 @@ hubdocs init --print-config cursor
 `--location=global` vẫn ghi home configs cho CI/rootless wiring.
 
 Harness assets land under `.cursor/` and are tracked in
-`.hubdocs/install-manifest.json`. Use `hubdocs deinit` to remove this repo and
+`.hubdocs/install-manifest.json`. `hubdocs init` merges only the local paths it
+actually wrote into `.gitignore` (shared `.cursor/` + exclusive `.hubdocs/` and
+agent-local configs). Global agent configs are never added to the repo ignore
+file. Use `hubdocs deinit` to remove this repo's owned harness artifacts and
+exclusive ignore entries (shared `.cursor/` is kept for other toolkits) and
 `hubdocs uninstall` to remove everything globally.
 
 ---

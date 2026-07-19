@@ -24,6 +24,21 @@ only.
 Do not require Hubdocs for architecture work: if the MCP is unavailable, inspect
 the repository Markdown directly or explain how to run project-local setup.
 
+## Index routing
+
+Cross-repo index is per-repo, never one giant parent-workspace graph:
+
+- Architecture ID / C4 path → Hubdocs (`HUBDOCS_ROOT`). Never CodeGraph for
+  architecture Markdown.
+- IR / registry / generation → pointer kits when present
+  (`CODEGENKIT_DOCS_ROOT`, `TESTKIT_DOCS_ROOT`, `TESTKIT_TESTS_ROOT`).
+- Symbol / call-graph for repo `X` → CodeGraph MCP for `X`
+  (`codegraph-<key>`, `--project-root` = checkout of `X`). Platform DNA wires
+  those servers from machine-local maps (`platform-repos.local.json`,
+  `legacy-repos.local.json`); members must not hand-edit `.cursor/mcp.json` for
+  that. Re-run `platform-dna codegraph:wire` to refresh.
+- ArtifactGraph stays local-only; it is never a shared index for other repos.
+
 ArtifactGraph is optional. If `@platform/artifactgraph` is not configured,
 unavailable, or fails, Hubdocs must continue with targeted local search and
 scoped Markdown reads; the missing optional must never abort the run. Assign one

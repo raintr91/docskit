@@ -18,6 +18,10 @@ const { uninstallAgents } = await import('../dist/install/agents.js')
 const { INSTALL_MANIFEST_PATH, installHarness, statusHarness, uninstallHarness } = await import(
   '../dist/install/harness.js'
 )
+const {
+  ensureGitignoreEntries,
+  generatedTargets,
+} = await import('../dist/install/gitignore.js')
 const { discoverInstalls, ledgerPath, readLedger } = await import('../dist/install/ledger.js')
 
 const originalCwd = process.cwd()
@@ -183,4 +187,53 @@ test('uninstallAgents strips the hubdocs MCP entry (cursor local)', () => {
   } finally {
     process.chdir(originalCwd)
   }
+})
+
+test('deinit removes exclusive gitignore entries but keeps shared .cursor/', () => {
+  const root = tempDir('gitignore-shared')
+  mkdirSync(path.join(root, 'architecture'), { recursive: true })
+  writeFileSync(path.join(root, 'architecture', '.keep'), '')
+  const intended = generatedTargets({
+    projectRoot: root,
+    location: 'local',
+    written: [
+      path.join(root, '.cursor', 'mcp.json'),
+      path.join(root, '.codex', 'config.toml'),
+    ],
+    harnessInstalled: true,
+  })
+  ensureGitignoreEntries(
+    root,
+    intended.map((e) => e.pattern),
+  )
+  // Simulate another toolkit also depending on .cursor/
+  writeFileSync(
+    path.join(root, '.gitignore'),
+    `${readFileSync(path.join(root, '.gitignore'), 'utf8')}# other-toolkit note\n`,
+  )
+  installHarness({
+    projectRoot: root,
+    type: 'docs',
+    gitignoreEntries: intended,
+  })
+
+  const before = readFileSync(path.join(root, '.gitignore'), 'utf8')
+  assert.match(before, /\.cursor\//)
+  assert.match(before, /\.hubdocs\//)
+  assert.match(before, /\.codex\//)
+
+  const result = uninstallHarness({ projectRoot: root, yes: true })
+  assert.ok(result.deleted.some((line) => line.includes('entry: .hubdocs/')))
+  assert.ok(result.deleted.some((line) => line.includes('entry: .codex/')))
+  assert.equal(
+    result.deleted.some((line) => line.includes('entry: .cursor/')),
+    false,
+    'shared .cursor/ must survive deinit',
+  )
+
+  const after = readFileSync(path.join(root, '.gitignore'), 'utf8')
+  assert.match(after, /\.cursor\//)
+  assert.doesNotMatch(after, /\.hubdocs\//)
+  assert.doesNotMatch(after, /\.codex\//)
+  assert.match(after, /other-toolkit note/)
 })

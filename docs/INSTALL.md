@@ -9,7 +9,7 @@ Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 | Bước | Lệnh | Việc |
 |------|------|------|
 | 1 | `curl …/install.sh \| bash` | CLI trên PATH |
-| 2 | **`hubdocs init`** | Hỏi agent → lane → MCP local + harness |
+| 2 | **`hubdocs init`** | Hỏi agent → lane → optional toolkits → MCP local + harness |
 
 ## Linux / WSL
 
@@ -17,8 +17,9 @@ Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs version
 cd /path/to/your/docs-hub    # must contain architecture/
-hubdocs init                 # interactive: agents → lane
+hubdocs init                 # interactive: agents → lane → optional toolkits
 # hubdocs init --yes         # CI: detected agents + docs lane
+# hubdocs init --with=artifactgraph --yes
 ```
 
 Uninstall:
@@ -33,6 +34,9 @@ Defaults: tree → `~/.hubdocs`, link → `~/.local/bin/hubdocs`.
 Docs hub: **cd vào hub rồi `hubdocs init`**. Local là mặc định; root resolve từ
 `--docs-root` → `HUBDOCS_ROOT` → valid cwd. Package không tự tìm sibling repo;
 install ledger chỉ phục vụ `hubdocs uninstall`, không tham gia resolve docs root.
+Optional ArtifactGraph mặc định skip; chọn trong wizard hoặc dùng
+`--with=artifactgraph`. Hubdocs chỉ delegate sang toolkit đã cài, không clone hay
+cài ngầm; nếu chưa có thì init Hubdocs vẫn thành công và in lệnh chạy sau.
 
 ## Update
 
@@ -43,7 +47,7 @@ curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | 
 hubdocs version
 ```
 
-Pin tag: `HUBDOCS_REF=v1.0.2 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.2/install.sh | bash`
+Pin tag: `HUBDOCS_REF=v1.1.0 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.1.0/install.sh | bash`
 
 ## Windows (PowerShell)
 

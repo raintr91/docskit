@@ -14,7 +14,16 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 import { packageRoot } from '../config/docs-root.js'
+import {
+  canonicalGitignorePattern,
+  mergeOwnedGitignore,
+  removeGitignoreEntries,
+  type OwnedGitignoreEntry,
+} from './gitignore.js'
 import { forgetInstall, recordInstall } from './ledger.js'
+
+export type { OwnedGitignoreEntry } from './gitignore.js'
+
 export const INSTALL_MANIFEST_PATH = '.hubdocs/install-manifest.json'
 export const INSTALL_MANIFEST_SCHEMA = 1
 export type HubdocsHarnessType = 'docs' | 'consumer'
@@ -37,6 +46,12 @@ export interface StaleHarnessAsset {
   sinceVersion: string
 }
 
+export interface GitignoreEntryStatus {
+  pattern: string
+  shared: boolean
+  status: 'present' | 'missing'
+}
+
 export interface HarnessInstallManifest {
   package: string
   schema: number
@@ -45,6 +60,8 @@ export interface HarnessInstallManifest {
   version: string
   hashes: Record<string, string>
   stale: Record<string, StaleHarnessAsset>
+  /** Exact ignore entries Hubdocs ensured; shared kept on deinit. */
+  gitignore?: OwnedGitignoreEntry[]
 }
 
 export interface HarnessInstallResult {
@@ -66,6 +83,7 @@ export interface HarnessStatusResult {
   stale: string[]
   staleModified: string[]
   staleMissing: string[]
+  gitignore: GitignoreEntryStatus[]
 }
 
 export interface HarnessPruneResult {
@@ -200,6 +218,41 @@ function validateHash(value: unknown, rel: string): asserts value is string {
   }
 }
 
+function validateManifestGitignore(value: unknown): OwnedGitignoreEntry[] {
+  if (value === undefined) return []
+  if (!Array.isArray(value)) {
+    throw new Error('Invalid Hubdocs install manifest gitignore')
+  }
+  const seen = new Set<string>()
+  const entries: OwnedGitignoreEntry[] = []
+  for (const raw of value) {
+    if (
+      !raw ||
+      typeof raw !== 'object' ||
+      typeof (raw as OwnedGitignoreEntry).pattern !== 'string' ||
+      !(raw as OwnedGitignoreEntry).pattern.trim() ||
+      /[\r\n]/.test((raw as OwnedGitignoreEntry).pattern)
+    ) {
+      throw new Error('Invalid Hubdocs install manifest gitignore entry')
+    }
+    if (
+      (raw as OwnedGitignoreEntry).shared !== undefined &&
+      typeof (raw as OwnedGitignoreEntry).shared !== 'boolean'
+    ) {
+      throw new Error('Invalid Hubdocs install manifest gitignore shared flag')
+    }
+    const pattern = (raw as OwnedGitignoreEntry).pattern.trim()
+    const canonical = canonicalGitignorePattern(pattern)
+    if (!canonical || seen.has(canonical)) continue
+    seen.add(canonical)
+    entries.push({
+      pattern,
+      ...((raw as OwnedGitignoreEntry).shared ? { shared: true } : {}),
+    })
+  }
+  return entries
+}
+
 function readManifest(
   root: string,
   realRoot: string,
@@ -259,6 +312,7 @@ function readManifest(
   for (const rel of Object.keys(hashes)) {
     if (stale[rel]) throw new Error(`Harness path is both current and stale: ${rel}`)
   }
+  const gitignore = validateManifestGitignore(raw.gitignore)
   return {
     package: raw.package,
     schema: raw.schema,
@@ -267,6 +321,7 @@ function readManifest(
     version: raw.version,
     hashes,
     stale,
+    ...(gitignore.length ? { gitignore } : {}),
   }
 }
 
@@ -361,6 +416,7 @@ export function installHarness(opts: {
   projectRoot?: string
   force?: boolean
   type?: HubdocsHarnessType
+  gitignoreEntries?: OwnedGitignoreEntry[]
 } = {}): HarnessInstallResult {
   const { root, realRoot } = resolveProjectRoot(opts.projectRoot)
   const type = opts.type ?? 'docs'
@@ -415,6 +471,7 @@ export function installHarness(opts: {
     result.written.push(target)
   }
 
+  const gitignore = mergeOwnedGitignore(previous?.gitignore, opts.gitignoreEntries)
   const nextManifest: HarnessInstallManifest = {
     package: metadata.package,
     schema: INSTALL_MANIFEST_SCHEMA,
@@ -423,11 +480,54 @@ export function installHarness(opts: {
     version: metadata.version,
     hashes,
     stale,
+    ...(gitignore.length ? { gitignore } : {}),
   }
   result.manifest = writeManifest(root, realRoot, nextManifest)
   result.registry = mergeExtractRegistry(root, realRoot, type)
   recordInstall(root)
   return result
+}
+
+/**
+ * Update only managed gitignore metadata on an existing install (used when
+ * init merges ignores after harness assets are already written).
+ */
+export function recordManagedGitignore(
+  projectRoot: string,
+  entries: OwnedGitignoreEntry[],
+): HarnessInstallManifest {
+  const { root, realRoot } = resolveProjectRoot(projectRoot)
+  const metadata = packageMetadata()
+  const manifest = readManifest(root, realRoot, metadata)
+  if (!manifest) {
+    throw new Error(`Hubdocs install manifest not found: ${manifestPath(root)}`)
+  }
+  const gitignore = mergeOwnedGitignore(manifest.gitignore, entries)
+  const next: HarnessInstallManifest = {
+    ...manifest,
+    ...(gitignore.length ? { gitignore } : {}),
+  }
+  if (!gitignore.length) delete next.gitignore
+  writeManifest(root, realRoot, next)
+  return next
+}
+
+function gitignoreStatus(root: string, manifest: HarnessInstallManifest): GitignoreEntryStatus[] {
+  const entries = manifest.gitignore ?? []
+  if (!entries.length) return []
+  const file = path.join(root, '.gitignore')
+  const present = new Set<string>()
+  if (existsSync(file) && lstatSync(file).isFile()) {
+    for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
+      const trimmed = line.trim()
+      if (trimmed && !trimmed.startsWith('#')) present.add(canonicalGitignorePattern(trimmed))
+    }
+  }
+  return entries.map((entry) => ({
+    pattern: entry.pattern,
+    shared: Boolean(entry.shared),
+    status: present.has(canonicalGitignorePattern(entry.pattern)) ? 'present' : 'missing',
+  }))
 }
 
 export function statusHarness(opts: { projectRoot?: string } = {}): HarnessStatusResult {
@@ -444,6 +544,7 @@ export function statusHarness(opts: { projectRoot?: string } = {}): HarnessStatu
     stale: [],
     staleModified: [],
     staleMissing: [],
+    gitignore: [],
   }
   if (!manifest) return result
 
@@ -459,6 +560,7 @@ export function statusHarness(opts: { projectRoot?: string } = {}): HarnessStatu
     else if (sha256(readFileSync(target)) === asset.hash) result.stale.push(target)
     else result.staleModified.push(target)
   }
+  result.gitignore = gitignoreStatus(root, manifest)
   return result
 }
 
@@ -585,7 +687,8 @@ function uninstallExtractRegistry(
 /**
  * Full removal: delete every hubdocs-owned harness file recorded in the manifest
  * (current + stale), preserve and report member-modified files, un-merge the
- * shared extract registry, then drop the manifest. Dry-run unless `yes`.
+ * shared extract registry, remove exclusive ignore entries (keep shared), then
+ * drop the manifest. Dry-run unless `yes`.
  */
 export function uninstallHarness(opts: {
   projectRoot?: string
@@ -633,6 +736,37 @@ export function uninstallHarness(opts: {
   const registry = uninstallExtractRegistry(root, realRoot, dryRun)
   if (registry) result.registry = registry
 
+  // Remove only exclusively-owned ignore entries; shared entries (for example
+  // `.cursor/`) may still be relied on by another toolkit, so keep them.
+  const exclusiveIgnore = (manifest.gitignore ?? [])
+    .filter((entry) => !entry.shared)
+    .map((entry) => entry.pattern)
+  if (exclusiveIgnore.length) {
+    if (dryRun) {
+      const file = path.join(root, '.gitignore')
+      const present =
+        existsSync(file) && lstatSync(file).isFile()
+          ? new Set(
+              readFileSync(file, 'utf8')
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter((line) => line && !line.startsWith('#'))
+                .map(canonicalGitignorePattern),
+            )
+          : new Set<string>()
+      for (const pattern of exclusiveIgnore) {
+        if (present.has(canonicalGitignorePattern(pattern))) {
+          result.wouldDelete.push(`${file} entry: ${pattern}`)
+        }
+      }
+    } else {
+      const removed = removeGitignoreEntries(root, exclusiveIgnore)
+      for (const pattern of removed.removed) {
+        result.deleted.push(`${removed.file} entry: ${pattern}`)
+      }
+    }
+  }
+
   const manifestFile = resolveContainedPath(
     root,
     realRoot,
@@ -648,6 +782,6 @@ export function uninstallHarness(opts: {
     result.manifestRemoved = true
   }
   forgetInstall(root)
-  pruneEmptyDirs(root, [...result.deleted, manifestFile])
+  pruneEmptyDirs(root, [...result.deleted.filter((p) => !p.includes(' entry: ')), manifestFile])
   return result
 }

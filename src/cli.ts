@@ -21,6 +21,19 @@ import {
 } from './install/harness.js'
 import { discoverInstalls, ledgerPath, readLedger, removeLedger } from './install/ledger.js'
 import { promptLine, selectPrompt } from './install/prompt.js'
+import {
+  canonicalGitignorePattern,
+  ensureGitignoreEntries,
+  generatedTargets,
+  type OwnedGitignoreEntry,
+} from './install/gitignore.js'
+import {
+  optionalToolkitInvocations,
+  parseOptionalToolkits,
+  resolveOptionalToolkits,
+  runOptionalToolkits,
+  type OptionalToolkitId,
+} from './install/optional.js'
 
 const require = createRequire(import.meta.url)
 
@@ -40,8 +53,9 @@ Local MCP for arc42 × C4 docs hubs — index IDs, deps, orphans, links, route.
 
 Wire agents + harness (member UX — just run hubdocs init):
   init [--target=…] [--type=docs|consumer] [--docs-root <path>] [--yes] [--wsl]
+       [--with=artifactgraph|none] [--artifactgraph | --no-artifactgraph]
        [--location=local|global] [--print-config <agent>] [--mcp-file <path>]
-       # no flags → TTY: agents → lane → wire MCP local + install harness
+       # no flags → TTY: agents → lane → optional toolkits → MCP + harness
   install …   # deprecated alias → init
 
 Repo lifecycle:
@@ -81,6 +95,21 @@ function arg(flag: string): string | undefined {
 
 function has(flag: string): boolean {
   return process.argv.includes(flag)
+}
+
+function requestedOptionalToolkits(): OptionalToolkitId[] | undefined {
+  const enable = has('--artifactgraph')
+  const disable = has('--no-artifactgraph')
+  const withArg = arg('--with')
+  if (enable && disable) {
+    throw new Error('Use only one of --artifactgraph or --no-artifactgraph')
+  }
+  if ((enable || disable) && withArg !== undefined) {
+    throw new Error('Use --with or --artifactgraph/--no-artifactgraph, not both')
+  }
+  if (enable) return ['artifactgraph']
+  if (disable) return []
+  return parseOptionalToolkits(withArg)
 }
 
 async function resolveInitLane(): Promise<{
@@ -149,6 +178,10 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
     }
 
     const lane = await resolveInitLane()
+    const optional = await resolveOptionalToolkits({
+      interactive: !has('--yes') && Boolean(process.stdin.isTTY && process.stdout.isTTY),
+      requested: requestedOptionalToolkits(),
+    })
     const result = await installAgents({
       target,
       location: (arg('--location') as 'global' | 'local' | undefined) ?? 'local',
@@ -163,16 +196,63 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
     }
     for (const s of result.skipped) console.log(`  skip: ${s}`)
 
+    const projectRoot = path.resolve(arg('--project-root') ?? process.cwd())
+    const intended = generatedTargets({
+      projectRoot,
+      location: result.location,
+      written: result.written.map((w) => w.path),
+      harnessInstalled: true,
+    })
+    const ensured = ensureGitignoreEntries(
+      projectRoot,
+      intended.map((entry) => entry.pattern),
+    )
+    const addedCanonical = new Set(ensured.added.map(canonicalGitignorePattern))
+    // Claim shared entries always (status/deinit); claim exclusive only when
+    // this run actually appended them so we never steal member-authored lines.
+    const claimed: OwnedGitignoreEntry[] = intended.filter(
+      (entry) => entry.shared || addedCanonical.has(canonicalGitignorePattern(entry.pattern)),
+    )
     const harness = installHarness({
-      projectRoot: arg('--project-root'),
+      projectRoot,
       force: has('--force'),
       type: lane.type,
+      gitignoreEntries: claimed,
     })
     for (const file of harness.written) console.log(`  wrote: ${file}`)
     for (const file of harness.unchanged) console.log(`  unchanged: ${file}`)
     for (const file of harness.skipped) console.log(`  skip customized: ${file} (use --force)`)
     console.log(`Harness (${lane.type}): ${harness.written.length} written, ${harness.unchanged.length} unchanged`)
     console.log(`manifest: ${harness.manifest}`)
+    console.log(
+      `gitignore: ${ensured.changed ? 'updated' : 'unchanged'} ${ensured.file}` +
+        (ensured.added.length ? ` (+${ensured.added.join(', ')})` : ''),
+    )
+
+    if (optional.length) {
+      const optionalResult = runOptionalToolkits(
+        optionalToolkitInvocations({
+          selected: optional,
+          projectRoot,
+          target: result.targets.join(',') || 'none',
+          type: lane.type,
+          force: has('--force'),
+          useWsl: has('--wsl'),
+        }),
+      )
+      for (const id of optionalResult.initialized) {
+        console.log(`Optional toolkit initialized: ${id}`)
+      }
+      for (const id of optionalResult.unavailable) {
+        console.log(
+          `Optional toolkit unavailable: ${id} — install it, then run ` +
+            `\`${id} init --target=${result.targets.join(',') || 'none'} ` +
+            `--type=${lane.type === 'docs' ? 'docs' : 'common'} --yes\``,
+        )
+      }
+    } else {
+      console.log('Optional toolkits: skipped (add later with --with=artifactgraph)')
+    }
 
     const configuredRoot = lane.docsRoot ?? arg('--docs-root') ?? defaultHubdocsRoot()
     console.log(`HUBDOCS_ROOT: ${configuredRoot || '(rootless; use tool docsRoot)'}`)
@@ -199,16 +279,36 @@ function runHarness(): void {
     if (type !== 'docs' && type !== 'consumer') {
       throw new Error('--type must be docs | consumer')
     }
+    const projectRoot = path.resolve(arg('--project-root') ?? process.cwd())
+    const intended = generatedTargets({
+      projectRoot,
+      location: 'local',
+      written: [],
+      harnessInstalled: true,
+    })
+    const ensured = ensureGitignoreEntries(
+      projectRoot,
+      intended.map((entry) => entry.pattern),
+    )
+    const addedCanonical = new Set(ensured.added.map(canonicalGitignorePattern))
+    const claimed: OwnedGitignoreEntry[] = intended.filter(
+      (entry) => entry.shared || addedCanonical.has(canonicalGitignorePattern(entry.pattern)),
+    )
     const result = installHarness({
-      projectRoot: arg('--project-root'),
+      projectRoot,
       force: has('--force'),
       type,
+      gitignoreEntries: claimed,
     })
     for (const file of result.written) console.log(`  wrote: ${file}`)
     for (const file of result.unchanged) console.log(`  unchanged: ${file}`)
     for (const file of result.skipped) console.log(`  skip customized: ${file} (use --force)`)
     for (const file of result.stale) console.log(`  stale: ${file}`)
     console.log(`manifest: ${result.manifest}`)
+    console.log(
+      `gitignore: ${ensured.changed ? 'updated' : 'unchanged'} ${ensured.file}` +
+        (ensured.added.length ? ` (+${ensured.added.join(', ')})` : ''),
+    )
     console.log(
       `Harness: ${result.written.length} written, ${result.unchanged.length} unchanged, ${result.skipped.length} skipped`,
     )
@@ -230,8 +330,14 @@ function runHarnessStatus(): void {
     for (const file of result.stale) console.log(`  stale: ${file}`)
     for (const file of result.staleModified) console.log(`  stale modified: ${file}`)
     for (const file of result.staleMissing) console.log(`  stale missing: ${file}`)
+    for (const entry of result.gitignore) {
+      if (entry.status === 'missing') {
+        console.log(`  missing gitignore: ${entry.pattern}${entry.shared ? ' (shared)' : ''}`)
+      }
+    }
+    const missingIgnore = result.gitignore.filter((e) => e.status === 'missing').length
     console.log(
-      `Harness ${result.version}: ${result.current.length} current, ${result.modified.length} modified, ${result.missing.length} missing, ${result.stale.length + result.staleModified.length + result.staleMissing.length} stale`,
+      `Harness ${result.version}: ${result.current.length} current, ${result.modified.length} modified, ${result.missing.length} missing, ${result.stale.length + result.staleModified.length + result.staleMissing.length} stale, ${missingIgnore} gitignore missing`,
     )
   } catch (err) {
     console.error(err instanceof Error ? err.message : err)

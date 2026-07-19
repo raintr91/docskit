@@ -47,6 +47,20 @@ hubdocs harness install --type=consumer
 The local MCP entry stores `HUBDOCS_ROOT`; every tool also accepts `docsRoot`.
 The selected hub must contain `architecture/`. Never infer a sibling checkout.
 
+## Index routing
+
+Do not merge repositories into one workspace graph. Route by intent:
+
+- Architecture ID / C4 path → Hubdocs (`HUBDOCS_ROOT`). Never CodeGraph for
+  architecture Markdown.
+- IR / registry / generation → pointer kits when present
+  (`CODEGENKIT_DOCS_ROOT`, `TESTKIT_DOCS_ROOT`, `TESTKIT_TESTS_ROOT`).
+- Symbol / call-graph for repo `X` → CodeGraph MCP of repo `X`
+  (`codegraph-<key>`, `--project-root` = checkout of `X`). Platform DNA wires
+  those servers from `platform-repos.local.json` /
+  `legacy-repos.local.json`; do not hand-edit `.cursor/mcp.json` for that.
+- ArtifactGraph stays local-only and must not index other repositories.
+
 ## Owned architecture family
 
 Docs `harness install --type=docs` also syncs `/architecture` `/context` `/containers`

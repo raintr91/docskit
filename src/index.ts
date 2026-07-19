@@ -13,6 +13,8 @@ export {
   installHarness,
   statusHarness,
   pruneHarness,
+  uninstallHarness,
+  recordManagedGitignore,
   INSTALL_MANIFEST_PATH,
   INSTALL_MANIFEST_SCHEMA,
   HUBDOCS_OWNED_SKILLS,
@@ -22,5 +24,27 @@ export type {
   HarnessInstallResult,
   HarnessStatusResult,
   HarnessPruneResult,
+  HarnessUninstallResult,
   StaleHarnessAsset,
+  GitignoreEntryStatus,
+  OwnedGitignoreEntry,
 } from './install/harness.js'
+export {
+  canonicalGitignorePattern,
+  ensureGitignoreEntries,
+  removeGitignoreEntries,
+  generatedTargets,
+  mergeOwnedGitignore,
+} from './install/gitignore.js'
+export {
+  OPTIONAL_TOOLKIT_IDS,
+  parseOptionalToolkits,
+  resolveOptionalToolkits,
+  optionalToolkitInvocations,
+  runOptionalToolkits,
+} from './install/optional.js'
+export type {
+  OptionalToolkitId,
+  OptionalToolkitInvocation,
+  OptionalToolkitRunResult,
+} from './install/optional.js'

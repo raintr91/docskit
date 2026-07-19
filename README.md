@@ -45,7 +45,7 @@ accelerator for registries/tags/parity only.
 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 hubdocs version
 cd /path/to/your-docs-hub    # thư mục có architecture/
-hubdocs init                 # hỏi agent → lane → wire MCP local + harness
+hubdocs init                 # agents → lane → optional toolkits → MCP + harness
 ```
 
 **Windows**
@@ -59,6 +59,8 @@ Requires **Node ≥ 22**.
 `init` luôn ghi MCP **local trong repo đang chạy**. Local docs root theo thứ tự
 `--docs-root` → `HUBDOCS_ROOT` → cwd có `architecture/`. Không có sibling
 fallback. CI có thể dùng `hubdocs init --yes` (lane mặc định `docs`).
+Optional ArtifactGraph mặc định được bỏ qua; chọn trong wizard hoặc dùng
+`--with=artifactgraph`. Hubdocs không cài ngầm toolkit khác.
 
 Sau `init`: restart agent → thử tool `hubdocs_list_ids`.
 
@@ -76,7 +78,7 @@ hubdocs version
 Pin bản cụ thể:
 
 ```bash
-HUBDOCS_REF=v1.0.2 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.0.2/install.sh | bash
+HUBDOCS_REF=v1.1.0 curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/v1.1.0/install.sh | bash
 ```
 
 Windows: chạy lại `irm …/install.ps1 | iex`.
@@ -114,8 +116,9 @@ advanced/backward compatibility, không cần trong luồng thông thường.
 | Step | CLI |
 |------|-----|
 | Install / update package | `curl …/install.sh \| bash` |
-| Agents → lane → MCP + harness | `hubdocs init` |
+| Agents → lane → optional toolkits → MCP + harness | `hubdocs init` |
 | CI non-interactive | `hubdocs init --yes` |
+| CI + ArtifactGraph đã cài | `hubdocs init --with=artifactgraph --yes` |
 | Print MCP snippet | `hubdocs init --print-config cursor` |
 | Harness-only (advanced) | `hubdocs harness install --type=docs\|consumer` |
 | Inspect managed harness assets | `hubdocs status` |
