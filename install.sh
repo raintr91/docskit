@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # docskit installer (Linux / WSL) — git clone + npm/pnpm build (needs Node ≥ 22).
 #
-#   curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/raintr91/docskit/main/install.sh | bash
 #
 # Upgrade: re-run the same command.
 # Uninstall: bash install.sh --uninstall
 #
 # Env:
-#   DOCSKIT_REPO          default: raintr91/hubdocs
+#   DOCSKIT_REPO          default: raintr91/docskit
 #   DOCSKIT_INSTALL_DIR   default: ~/.docskit
 #   DOCSKIT_BIN_DIR       default: ~/.local/bin
 #   DOCSKIT_REF           git ref (default: main)
 set -euo pipefail
 
-REPO="${DOCSKIT_REPO:-raintr91/hubdocs}"
+REPO="${DOCSKIT_REPO:-raintr91/docskit}"
 INSTALL_DIR="${DOCSKIT_INSTALL_DIR:-$HOME/.docskit}"
 BIN_DIR="${DOCSKIT_BIN_DIR:-$HOME/.local/bin}"
 REF="${DOCSKIT_REF:-main}"
