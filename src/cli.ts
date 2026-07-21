@@ -190,7 +190,8 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
       execSync('curl -fsSL https://raw.githubusercontent.com/raintr91/platform-dna/main/install.sh | bash', { stdio: 'inherit' })
     }
     console.log('[docskit] Ensuring platform-dna is initialized in workspace...')
-    execSync('platform-dna init --yes', { cwd: projectRoot, stdio: 'inherit' })
+    const dnaForceFlag = has('--force') ? ' --force' : ''
+    execSync(`platform-dna init --yes${dnaForceFlag}`, { cwd: projectRoot, stdio: 'inherit' })
     // ---------------------------
 
     let target = arg('--target')
