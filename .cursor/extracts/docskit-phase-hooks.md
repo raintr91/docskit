@@ -1,7 +1,7 @@
-# Hubdocs — phase hooks
+# Docskit — phase hooks
 
-Hubdocs is an optional index over Markdown owned by the configured docs repo.
-In consumer repos, that root comes from machine-local `HUBDOCS_ROOT`; never
+Docskit is an optional index over Markdown owned by the configured docs repo.
+In consumer repos, that root comes from machine-local `DOCSKIT_ROOT`; never
 inspect the current FE/BE/tests repo as if it were the docs hub.
 
 ```text
@@ -14,9 +14,9 @@ inspect the current FE/BE/tests repo as if it were the docs hub.
 Use `FLOW-*` and `docskit_journeys` for journeys. Keep ADRs in the configured
 arc42 decision home and code-level IDs in the target hub's product tree.
 
-If Hubdocs is not connected, continue with targeted Markdown inspection at the
+If Docskit is not connected, continue with targeted Markdown inspection at the
 explicit docs root. To wire it locally from another repo:
 
 ```bash
-hubdocs init --location=local --docs-root=/absolute/path/to/docs-hub --yes
+docskit init --location=local --docs-root=/absolute/path/to/docs-hub --yes
 ```

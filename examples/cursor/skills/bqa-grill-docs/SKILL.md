@@ -27,7 +27,7 @@ disable-model-invocation: true
 
 0. Tech debt: `#tech-debt:*` where `deferTo: bqa-grill-docs` (`grill-tech-debt.md`).
 1. Compare `design.zones/behavior/actions` vs `legacy.ui` vs common UI.
-2. Patch **bundle** (`design`, `review`, `spec` requirements) → `bundle_split` / `bundlekit split` (fallback `pnpm spec:split`).
+2. Patch **bundle** (`design`, `review`, `spec` requirements) → `bundle_split` / `docskit split` (fallback `pnpm spec:split`).
 3. Set `grillStatus.bqaFacts: done`.
 4. **Rule:** chưa `bqaFacts: done` → không thêm `openQuestions` mới.
 
@@ -36,7 +36,7 @@ disable-model-invocation: true
 5. Ask ≤5 focused batches: copy, layout, breadcrumb, delete dialogs, testId intent.
 6. Record decisions in `openQuestions` + tags.
 7. Set `grillStatus.bqaOpen: done`.
-8. User: `docs_render` / `bundlekit render` (fallback `pnpm docs:render`).
+8. User: `docs_render` / `docskit render` (fallback `pnpm docs:render`).
 
 ## Accelerators (optional)
 
@@ -44,14 +44,14 @@ disable-model-invocation: true
 if ArtifactGraph available: grill/parity hints
 else: model review from design+legacy slices (model fallback)
 
-if Hubdocs available: ID → doc path for referenced CMP/FLOW
+if Docskit available: ID → doc path for referenced CMP/FLOW
 else: search docs tree (local fallback)
 ```
 
 Missing optionals never block `/bqa-grill-docs`. After the existing fallback
-completes, emit exactly one `bundlekit.missing-optional` event per `runId` +
+completes, emit exactly one `docskit.missing-optional` event per `runId` +
 optional against
-`.cursor/schemas/bundlekit/missing-optional-event.schema.json`. Deduplicate
+`.cursor/schemas/docskit/missing-optional-event.schema.json`. Deduplicate
 retries and report only actual `fileReads` / `contextBytes`.
 
 ## specOrigin branches

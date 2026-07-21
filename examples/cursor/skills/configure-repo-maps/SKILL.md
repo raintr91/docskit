@@ -1,7 +1,7 @@
 ---
 name: configure-repo-maps
 extractBundle: configure-repo-maps
-description: /configure-repo-maps — NL → machine-local platform/legacy checkout maps (thin Bundlekit copy; prefer Platform DNA skill when installed).
+description: /configure-repo-maps — NL → machine-local platform/legacy checkout maps (thin Docskit copy; prefer Platform DNA skill when installed).
 disable-model-invocation: true
 ---
 
@@ -13,7 +13,7 @@ disable-model-invocation: true
 
 **Owner:** Platform DNA. Prefer `.cursor/skills/configure-repo-maps/SKILL.md` from
 Platform DNA when that toolkit is installed (same name — load DNA copy first).
-This Bundlekit extract exists so members who only init Bundlekit can still fill
+This Docskit extract exists so members who only init Docskit can still fill
 maps without hand-editing JSON.
 
 ## Goal

@@ -1,15 +1,15 @@
 ---
-description: Build and maintain the independent Hubdocs MCP package
+description: Build and maintain the independent Docskit MCP package
 alwaysApply: true
 ---
 
-# Platform AI (Hubdocs MCP)
+# Platform AI (Docskit MCP)
 
-- This repository builds the standalone `hubdocs` MCP; it is not a product
+- This repository builds the standalone `docskit` MCP; it is not a product
   docs/code hub.
 - Do not keep `platform-repos.json` or cross-repository topology here.
 - Package-owned source, tools, installers, harness, tests, and release docs are
   the scope; see `/platform-ai`.
-- Product maps live in destination hubs. Hubdocs may merge only its owned skill
+- Product maps live in destination hubs. Docskit may merge only its owned skill
   IDs during destination `init`.
 - Never depend on sibling checkout layout or copy another MCP's harness.

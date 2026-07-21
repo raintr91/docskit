@@ -1,5 +1,5 @@
 ---
-description: Bundlekit docs spec/grill/update workflow
+description: Docskit docs spec/grill/update workflow
 globs: product/components/**/code/**, product/legacy-dynamics/**
 alwaysApply: false
 ---
@@ -30,5 +30,5 @@ Shared: resolve skill `extractBundle` → `.cursor/extracts/extract-registry.jso
 5. **`/update-spec`** / **`/update-spec-legacy`** — controlled delta + `#update:*` (not full rewrite).
 6. **`/prototype`** — FE-lane handoff only after Codegenkit dry-run passes.
 
-- Render: `docs_render` / `bundlekit render` (pnpm fallback during transition)
+- Render: `docs_render` / `docskit render` (pnpm fallback during transition)
 - **Không** prototype UI, backend, real API, full E2E/unit trong phase spec/grill.

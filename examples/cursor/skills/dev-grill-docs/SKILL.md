@@ -48,14 +48,14 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 if ArtifactGraph available: analyze/grill/tag hints + recommend genDry
 else: model review from scoped bundle/design/legacy evidence (model fallback)
 
-if Hubdocs available: resolve CMP/CTR IDs
+if Docskit available: resolve CMP/CTR IDs
 else: repository path conventions (deterministic fallback)
 ```
 
 Missing optionals never block this docs-side grill. After the existing fallback
-completes, emit exactly one `bundlekit.missing-optional` event per `runId` +
+completes, emit exactly one `docskit.missing-optional` event per `runId` +
 optional against
-`.cursor/schemas/bundlekit/missing-optional-event.schema.json`. Deduplicate
+`.cursor/schemas/docskit/missing-optional-event.schema.json`. Deduplicate
 retries and report only actual `fileReads` / `contextBytes`.
 
 ## Out of scope

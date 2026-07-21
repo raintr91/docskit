@@ -36,14 +36,14 @@ Parent router: `/architecture` · People: [Start now](../../../platform/guide/st
 Prefer `docskit_list_ids` kind `CTX`|`LND` and `docskit_route`.
 
 ```text
-if Hubdocs available: targeted docskit_* tools for IDs / deps / journeys / links
+if Docskit available: targeted docskit_* tools for IDs / deps / journeys / links
 else: Glob/search under architecture/ and product/, then Read scoped Markdown
 
-Missing Hubdocs never blocks authoring.
-Missing ArtifactGraph never blocks Hubdocs or architecture skills.
+Missing Docskit never blocks authoring.
+Missing ArtifactGraph never blocks Docskit or architecture skills.
 ```
 
-When ArtifactGraph is missing, follow `/hubdocs` fallback evidence: continue
-targeted local reads, then emit one deduplicated `hubdocs.missing-optional`
+When ArtifactGraph is missing, follow `/docskit` fallback evidence: continue
+targeted local reads, then emit one deduplicated `docskit.missing-optional`
 event per run and optional with actual `fileReads` and `contextBytes` only.
 

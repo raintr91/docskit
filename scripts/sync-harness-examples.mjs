@@ -20,7 +20,7 @@ function walk(dir) {
 const mirrors = []
 for (const source of walk(sourceRoot)) {
   const rel = path.relative(sourceRoot, source)
-  if (rel === path.join('extracts', 'extract-registry.hubdocs.json')) continue
+  if (rel === path.join('extracts', 'extract-registry.docskit.json')) continue
   const posix = rel.split(path.sep).join('/')
   mirrors.push([`harness/cursor/${posix}`, `examples/cursor/${posix}`])
   mirrors.push([`harness/cursor/${posix}`, `.cursor/${posix}`])

@@ -1,13 +1,13 @@
-# hubdocs init — agents → lane → optional toolkits → MCP + harness
+# docskit init — agents → lane → optional toolkits → MCP + harness
 
-Repo: [raintr91/hubdocs](https://github.com/raintr91/hubdocs)
+Repo: [raintr91/docskit](https://github.com/raintr91/docskit)
 
 ## Member UX
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/raintr91/docskit/main/install.sh | bash
 cd /path/to/your/docs-hub    # folder with architecture/
-hubdocs init
+docskit init
 ```
 
 TTY wizard:
@@ -20,27 +20,27 @@ TTY wizard:
 No location prompt. Every selected agent gets a config under the repo cwd
 (including Codex / Hermes / Antigravity).
 
-Alias cũ: `hubdocs install` → gọi `init`.
+Alias cũ: `docskit install` → gọi `init`.
 
 ---
 
 ## Interactive
 
 ```bash
-hubdocs init
+docskit init
 ```
 
 ```text
-hubdocs init — choose agents
+docskit init — choose agents
 
-Which agents should get hubdocs MCP?
+Which agents should get docskit MCP?
   (↑↓ move · Space toggle · a all · Enter confirm)
  ❯ ◉ Claude Code  (detected)
    ◉ Cursor  (detected)
    ◯ Codex CLI
    …
 
-Which Hubdocs lane?
+Which Docskit lane?
   (↑↓ move · Enter confirm)
  ❯ ● docs — architecture authoring hub
    ○ consumer — FE/BE/tests lookup only
@@ -50,10 +50,10 @@ Optional toolkits to initialize now (none = skip, add later):
  ❯ ◯ ArtifactGraph — local registry/tag/parity accelerator
 ```
 
-Consumer lane outside a docs hub asks for the docs hub path used as `HUBDOCS_ROOT`.
+Consumer lane outside a docs hub asks for the docs hub path used as `DOCSKIT_ROOT`.
 ArtifactGraph is unchecked by default. Selecting it delegates to the separately
 installed `artifactgraph init` without downloading anything. If that toolkit is
-not installed, Hubdocs init still succeeds and prints the command to run later.
+not installed, Docskit init still succeeds and prints the command to run later.
 
 | Phím | Việc |
 |------|------|
@@ -69,12 +69,12 @@ not installed, Hubdocs init still succeeds and prints the command to run later.
 
 ```bash
 cd /path/to/your/docs-hub
-hubdocs init --yes
-hubdocs init --target=cursor,claude --type=docs --yes
-hubdocs init --target=cursor --type=docs --with=artifactgraph --yes
-hubdocs init --target=none --type=docs --with=none --yes
-hubdocs init --type=consumer --docs-root=/absolute/path/to/docs-hub --yes
-hubdocs init --print-config cursor
+docskit init --yes
+docskit init --target=cursor,claude --type=docs --yes
+docskit init --target=cursor --type=docs --with=artifactgraph --yes
+docskit init --target=none --type=docs --with=none --yes
+docskit init --type=consumer --docs-root=/absolute/path/to/docs-hub --yes
+docskit init --print-config cursor
 ```
 
 | Flag | Giá trị | Mặc định |
@@ -83,17 +83,17 @@ hubdocs init --print-config cursor
 | `--type` | `docs` · `consumer` | prompt / với `--yes` = `docs` |
 | `--with` | `artifactgraph` · `none` | prompt / non-TTY = `none` |
 | `--artifactgraph` / `--no-artifactgraph` | alias bật/tắt optional | — |
-| `--docs-root` | absolute path tới docs hub | `HUBDOCS_ROOT` → cwd có `architecture/` |
+| `--docs-root` | absolute path tới docs hub | `DOCSKIT_ROOT` → cwd có `architecture/` |
 | `--yes` | bỏ prompt | — |
 | `--wsl` | Cursor Win → MCP qua `wsl.exe` | — |
 | `--location` | `local` · `global` | **local** (advanced/CI) |
 | `--print-config <id>` | in snippet, không ghi | — |
 | `--mcp-file <path>` | ghi thẳng 1 file (cursor) | — |
 
-`--with=none` is the explicit empty optional selection. Hubdocs itself and its
+`--with=none` is the explicit empty optional selection. Docskit itself and its
 harness are still initialized; optional toolkits can register themselves later.
 For a docs lane, delegated ArtifactGraph uses `--type=docs`; a generic consumer
-lane uses only `--type=common` because Hubdocs cannot infer FE/BE/tests.
+lane uses only `--type=common` because Docskit cannot infer FE/BE/tests.
 
 ---
 
@@ -114,12 +114,12 @@ lane uses only `--type=common` because Hubdocs cannot infer FE/BE/tests.
 `--location=global` vẫn ghi home configs cho CI/rootless wiring.
 
 Harness assets land under `.cursor/` and are tracked in
-`.hubdocs/install-manifest.json`. `hubdocs init` merges only the local paths it
-actually wrote into `.gitignore` (shared `.cursor/` + exclusive `.hubdocs/` and
+`.docskit/install-manifest.json`. `docskit init` merges only the local paths it
+actually wrote into `.gitignore` (shared `.cursor/` + exclusive `.docskit/` and
 agent-local configs). Global agent configs are never added to the repo ignore
-file. Use `hubdocs deinit` to remove this repo's owned harness artifacts and
+file. Use `docskit deinit` to remove this repo's owned harness artifacts and
 exclusive ignore entries (shared `.cursor/` is kept for other toolkits) and
-`hubdocs uninstall` to remove everything globally.
+`docskit uninstall` to remove everything globally.
 
 ---
 
@@ -128,7 +128,7 @@ exclusive ignore entries (shared `.cursor/` is kept for other toolkits) and
 Mỗi tool resolve theo thứ tự:
 
 1. `docsRoot` trong tool call.
-2. `HUBDOCS_ROOT` trong project-local MCP entry.
+2. `DOCSKIT_ROOT` trong project-local MCP entry.
 3. cwd của MCP process nếu là docs hub hợp lệ.
 4. Báo lỗi setup.
 
@@ -139,15 +139,15 @@ target dùng chung giữa các project.
 
 ## Cursor harness profiles
 
-`hubdocs init` installs the harness for the chosen lane. You can still run harness
+`docskit init` installs the harness for the chosen lane. You can still run harness
 alone when needed:
 
 ```bash
-hubdocs harness install --type=docs
-hubdocs harness install --type=consumer
+docskit harness install --type=docs
+docskit harness install --type=consumer
 ```
 
 `docs` syncs the complete architecture-authoring family. `consumer` syncs only
-the lightweight `/hubdocs` lookup skill/rule/schema/hook.
+the lightweight `/docskit` lookup skill/rule/schema/hook.
 
-After init: restart agent(s), then try tool `hubdocs_list_ids`.
+After init: restart agent(s), then try tool `docskit_list_ids`.

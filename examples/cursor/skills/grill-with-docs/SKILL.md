@@ -31,10 +31,10 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 
 0. Tech debt step 0 (`grill-tech-debt.md`).
 1. Resolve spec ↔ legacyEvidence ↔ design conflicts in **bundle**.
-2. Write/fix `bundle.gen` → `bundle_split` (fallback: `bundlekit split`).
+2. Write/fix `bundle.gen` → `bundle_split` (fallback: `docskit split`).
 3. If ArtifactGraph is available, use `artifactgraph_allowlist_check` +
    `artifactgraph_recommend_command` for `genDry`; never execute FE gen here.
-4. `docs_render` (fallback: `bundlekit render`).
+4. `docs_render` (fallback: `docskit render`).
 5. Handoff ID/path + recommendation to FE Codegenkit. Missing Codegenkit is a
    pending handoff, not a reason to invent a local shell fallback.
 
@@ -44,14 +44,14 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 if ArtifactGraph available: reconcile/parity/tag hints + command recommendation
 else: model reconcile from scoped bundle slices (model fallback)
 
-if Hubdocs available: resolve referenced CMP/FLOW IDs
+if Docskit available: resolve referenced CMP/FLOW IDs
 else: repository path conventions (deterministic fallback)
 ```
 
 Missing optionals never block `/grill-with-docs`. After the existing fallback
-completes, emit exactly one `bundlekit.missing-optional` event per `runId` +
+completes, emit exactly one `docskit.missing-optional` event per `runId` +
 optional against
-`.cursor/schemas/bundlekit/missing-optional-event.schema.json`. Deduplicate
+`.cursor/schemas/docskit/missing-optional-event.schema.json`. Deduplicate
 retries and report only actual `fileReads` / `contextBytes`.
 
 ## Do not

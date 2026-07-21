@@ -54,7 +54,7 @@ Khi người dùng gọi `... /legacy /spec`, Agent PHẢI:
 
 ## Tools (required after docskit init)
 
-Prefer MCP/CLI when Bundlekit is installed:
+Prefer MCP/CLI when Docskit is installed:
 
 - `docskit_bundle_split` / `docskit split -- <bundle>`
 - `docs_render` / `docskit render …`
@@ -63,7 +63,7 @@ Prefer MCP/CLI when Bundlekit is installed:
 ## Accelerators (optional)
 
 ```text
-if Hubdocs available: resolve CMP/CTR/FLOW IDs → paths
+if Docskit available: resolve CMP/CTR/FLOW IDs → paths
 else: repository conventions / search (local fallback)
 
 if ArtifactGraph available: tags/parity slice for touched contracts

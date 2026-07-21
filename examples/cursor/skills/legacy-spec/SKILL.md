@@ -16,7 +16,7 @@ Template: `product/legacy-dynamics/_template/_legacy.dynamics.yaml`
 
 | Load | Do not load |
 |------|-------------|
-| Legacy source (minimal); `bundlekit/legacy/project-config.md` progressive | Writing under FE `docs/` |
+| Legacy source (minimal); `docskit/legacy/project-config.md` progressive | Writing under FE `docs/` |
 | Write `product/legacy-dynamics/{module}/_legacy.dynamics.yaml` + Code `*.bundle.yaml` | Full `platform-repos.json` dump |
 | `legacy/evidence.md` — pointer only | Full repo scan |
 
@@ -27,7 +27,7 @@ Template: `product/legacy-dynamics/_template/_legacy.dynamics.yaml`
 3. Per function: Code under `Surfaces/.../Modules/CMP-*/Functions/[Screen | API]` (`*.bundle.yaml`, `specOrigin: legacy`).
 4. Parity + context-orphan per `legacy/parity.md`.
 5. **Không** `gen` / codegen tags on archaeology turn.
-6. Validate: `legacy_dynamics_validate` / `bundlekit legacy-validate -- <file>` (fallback `pnpm legacy-dynamics:validate`).
+6. Validate: `legacy_dynamics_validate` / `docskit legacy-validate -- <file>` (fallback `pnpm legacy-dynamics:validate`).
 7. Handoff → `/bqa-grill-docs`.
 
 ## Accelerators (optional)
@@ -43,7 +43,7 @@ else: targeted Grep/Read (local fallback)
 if ArtifactGraph available: parity/orphan slices (local-only; never a shared index)
 else: model review from scoped legacy evidence (model fallback)
 
-if Hubdocs available: map module → CMP/CTR docs (HUBDOCS_ROOT)
+if Docskit available: map module → CMP/CTR docs (DOCSKIT_ROOT)
 else: path conventions (deterministic fallback)
 ```
 
@@ -51,9 +51,9 @@ Never use the CodeGraph index of the currently open docs hub as a substitute
 for another repository's index. Route per
 `.cursor/rules/cross-repo-index.mdc` (Platform DNA SSOT).
 Missing optionals never block `/legacy-spec`. After the existing fallback
-completes, emit exactly one `bundlekit.missing-optional` event per `runId` +
+completes, emit exactly one `docskit.missing-optional` event per `runId` +
 optional against
-`.cursor/schemas/bundlekit/missing-optional-event.schema.json`. Deduplicate
+`.cursor/schemas/docskit/missing-optional-event.schema.json`. Deduplicate
 retries and report only actual `fileReads` / `contextBytes`.
 
 **Gaps — missing legacy root:** if archaeology needs a checkout and

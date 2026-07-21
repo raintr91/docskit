@@ -1,5 +1,5 @@
 /**
- * Wire Hubdocs MCP into supported agent configurations.
+ * Wire Docskit MCP into supported agent configurations.
  *
  * Agents: claude | cursor | codex | opencode | hermes | gemini | antigravity | kiro | kilo
  *
@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 
 import path from 'node:path'
 import os from 'node:os'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
-import { packageRoot, defaultHubdocsRoot, looksLikeHub } from '../config/docs-root.js'
+import { packageRoot, defaultDocskitRoot, looksLikeHub } from '../config/docs-root.js'
 import { checkboxPrompt } from './prompt.js'
 import { buildTomlTable, upsertTomlTable, removeTomlTable } from './toml.js'
 
@@ -66,7 +66,7 @@ const AGENT_ALIASES: Record<string, AgentId> = {
   kilo: 'kilo',
 }
 
-const MCP_NAME = 'hubdocs'
+const MCP_NAME = 'docskit'
 
 export interface InstallOptions {
   target?: string
@@ -75,7 +75,7 @@ export interface InstallOptions {
   useWsl?: boolean
   mcpFile?: string
   printConfig?: string
-  /** Override HUBDOCS_ROOT written into agent MCP env */
+  /** Override DOCSKIT_ROOT written into agent MCP env */
   docsRoot?: string
 }
 
@@ -97,26 +97,26 @@ export function buildMcpEntry(
   opts: { useWsl?: boolean; docsRoot?: string; location?: InstallLocation } = {},
 ): StdioEntry {
   const root = packageRoot()
-  const mcpJs = path.join(root, 'bin', 'hubdocs-mcp.mjs')
+  const mcpJs = path.join(root, 'bin', 'docskit-mcp.mjs')
   const nodeBin = process.execPath
   const location = opts.location ?? 'local'
   const hubRoot =
-    opts.docsRoot ? path.resolve(opts.docsRoot) : location === 'local' ? defaultHubdocsRoot() : ''
+    opts.docsRoot ? path.resolve(opts.docsRoot) : location === 'local' ? defaultDocskitRoot() : ''
   if (hubRoot && !looksLikeHub(hubRoot)) {
     throw new Error(`Docs hub missing architecture/: ${hubRoot}`)
   }
   if (location === 'local' && !hubRoot) {
     throw new Error(
       'No docs hub found. cd into a docs hub (folder with architecture/) and run:\n' +
-        '  hubdocs init --location=local --yes\n' +
+        '  docskit init --location=local --yes\n' +
         'Or pass --docs-root=/absolute/path/to/docs-hub.',
     )
   }
-  const env = hubRoot ? { HUBDOCS_ROOT: hubRoot } : undefined
+  const env = hubRoot ? { DOCSKIT_ROOT: hubRoot } : undefined
   const winMcp = detectWindowsCursorMcpPath()
   const forceWsl =
     opts.useWsl ||
-    process.env.HUBDOCS_MCP_WSL === '1' ||
+    process.env.DOCSKIT_MCP_WSL === '1' ||
     Boolean(process.env.WSL_DISTRO_NAME && winMcp)
 
   if (forceWsl) {
@@ -711,7 +711,7 @@ export interface UninstallAgentsResult {
   absent: string[]
 }
 
-/** Reverse of installAgents — strip the hubdocs MCP entry from targeted agent configs. */
+/** Reverse of installAgents — strip the docskit MCP entry from targeted agent configs. */
 export function uninstallAgents(opts: UninstallAgentsOptions = {}): UninstallAgentsResult {
   const dryRun = !opts.yes
   const cwd = opts.cwd ? path.resolve(opts.cwd) : process.cwd()
@@ -744,11 +744,11 @@ export function uninstallAgents(opts: UninstallAgentsOptions = {}): UninstallAge
 export async function promptInstallAgents(
   detected: AgentId[] = detectAgents(),
 ): Promise<AgentId[]> {
-  console.log('hubdocs init — choose agents\n')
+  console.log('docskit init — choose agents\n')
   const pre = detected.length > 0 ? detected : (['cursor'] as AgentId[])
 
   const targets = await checkboxPrompt<AgentId>({
-    message: 'Which agents should get hubdocs MCP?',
+    message: 'Which agents should get docskit MCP?',
     choices: AGENT_IDS.map((id) => ({
       value: id,
       name: detected.includes(id)

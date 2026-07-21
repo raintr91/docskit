@@ -24,12 +24,12 @@ import { forgetInstall, recordInstall } from './ledger.js'
 
 export type { OwnedGitignoreEntry } from './gitignore.js'
 
-export const INSTALL_MANIFEST_PATH = '.hubdocs/install-manifest.json'
+export const INSTALL_MANIFEST_PATH = '.docskit/install-manifest.json'
 export const INSTALL_MANIFEST_SCHEMA = 1
-export type HubdocsHarnessType = 'docs' | 'consumer'
+export type DocskitHarnessType = 'docs' | 'consumer'
 
-export const HUBDOCS_OWNED_SKILLS = [
-  'hubdocs',
+export const DOCSKIT_OWNED_SKILLS = [
+  'docskit',
   'architecture',
   'context',
   'containers',
@@ -60,7 +60,7 @@ export interface HarnessInstallManifest {
   version: string
   hashes: Record<string, string>
   stale: Record<string, StaleHarnessAsset>
-  /** Exact ignore entries Hubdocs ensured; shared kept on deinit. */
+  /** Exact ignore entries Docskit ensured; shared kept on deinit. */
   gitignore?: OwnedGitignoreEntry[]
 }
 
@@ -132,7 +132,7 @@ function packageMetadata(): PackageMetadata {
     !Number.isInteger(mcp.compatibility?.toolApi) ||
     !Number.isInteger(mcp.compatibility?.harnessApi)
   ) {
-    throw new Error('Hubdocs package metadata is inconsistent; reinstall a valid package')
+    throw new Error('Docskit package metadata is inconsistent; reinstall a valid package')
   }
   return {
     package: pkg.name,
@@ -221,7 +221,7 @@ function validateHash(value: unknown, rel: string): asserts value is string {
 function validateManifestGitignore(value: unknown): OwnedGitignoreEntry[] {
   if (value === undefined) return []
   if (!Array.isArray(value)) {
-    throw new Error('Invalid Hubdocs install manifest gitignore')
+    throw new Error('Invalid Docskit install manifest gitignore')
   }
   const seen = new Set<string>()
   const entries: OwnedGitignoreEntry[] = []
@@ -233,13 +233,13 @@ function validateManifestGitignore(value: unknown): OwnedGitignoreEntry[] {
       !(raw as OwnedGitignoreEntry).pattern.trim() ||
       /[\r\n]/.test((raw as OwnedGitignoreEntry).pattern)
     ) {
-      throw new Error('Invalid Hubdocs install manifest gitignore entry')
+      throw new Error('Invalid Docskit install manifest gitignore entry')
     }
     if (
       (raw as OwnedGitignoreEntry).shared !== undefined &&
       typeof (raw as OwnedGitignoreEntry).shared !== 'boolean'
     ) {
-      throw new Error('Invalid Hubdocs install manifest gitignore shared flag')
+      throw new Error('Invalid Docskit install manifest gitignore shared flag')
     }
     const pattern = (raw as OwnedGitignoreEntry).pattern.trim()
     const canonical = canonicalGitignorePattern(pattern)
@@ -262,7 +262,7 @@ function readManifest(
     root,
     realRoot,
     INSTALL_MANIFEST_PATH,
-    'Hubdocs install manifest',
+    'Docskit install manifest',
   )
   if (!existsSync(file)) return undefined
   const raw = JSON.parse(readFileSync(file, 'utf8')) as Partial<HarnessInstallManifest>
@@ -273,7 +273,7 @@ function readManifest(
     raw.harnessApi !== metadata.harnessApi
   ) {
     throw new Error(
-      `Incompatible Hubdocs install manifest at ${file}; run a compatible Hubdocs version or move the manifest aside and reinstall`,
+      `Incompatible Docskit install manifest at ${file}; run a compatible Docskit version or move the manifest aside and reinstall`,
     )
   }
   if (
@@ -284,7 +284,7 @@ function readManifest(
     Array.isArray(raw.hashes) ||
     (raw.stale !== undefined && (typeof raw.stale !== 'object' || Array.isArray(raw.stale)))
   ) {
-    throw new Error(`Invalid Hubdocs install manifest at ${file}`)
+    throw new Error(`Invalid Docskit install manifest at ${file}`)
   }
 
   const hashes: Record<string, string> = {}
@@ -334,7 +334,7 @@ function writeManifest(
     root,
     realRoot,
     INSTALL_MANIFEST_PATH,
-    'Hubdocs install manifest',
+    'Docskit install manifest',
   )
   mkdirSync(path.dirname(file), { recursive: true })
   const temporary = `${file}.tmp-${process.pid}`
@@ -344,20 +344,20 @@ function writeManifest(
 }
 
 const CONSUMER_ASSETS = new Set([
-  path.join('skills', 'hubdocs', 'SKILL.md'),
-  path.join('rules', 'hubdocs.mdc'),
-  path.join('schemas', 'hubdocs', 'missing-optional-event.schema.json'),
-  path.join('extracts', 'hubdocs-phase-hooks.md'),
+  path.join('skills', 'docskit', 'SKILL.md'),
+  path.join('rules', 'docskit.mdc'),
+  path.join('schemas', 'docskit', 'missing-optional-event.schema.json'),
+  path.join('extracts', 'docskit-phase-hooks.md'),
 ])
 
 function currentAssetHashes(
-  type: HubdocsHarnessType,
+  type: DocskitHarnessType,
 ): Map<string, { source: string; hash: string }> {
   const sourceRoot = path.join(packageRoot(), 'harness', 'cursor')
   const assets = new Map<string, { source: string; hash: string }>()
   for (const source of walk(sourceRoot)) {
     const sourceRel = path.relative(sourceRoot, source)
-    if (sourceRel === path.join('extracts', 'extract-registry.hubdocs.json')) continue
+    if (sourceRel === path.join('extracts', 'extract-registry.docskit.json')) continue
     if (type === 'consumer' && !CONSUMER_ASSETS.has(sourceRel)) continue
     const rel = ['.cursor', ...sourceRel.split(path.sep)].join('/')
     assets.set(rel, { source, hash: sha256(readFileSync(source)) })
@@ -368,14 +368,14 @@ function currentAssetHashes(
 function mergeExtractRegistry(
   projectRoot: string,
   realRoot: string,
-  type: HubdocsHarnessType,
+  type: DocskitHarnessType,
 ): string {
   const source = path.join(
     packageRoot(),
     'harness',
     'cursor',
     'extracts',
-    'extract-registry.hubdocs.json',
+    'extract-registry.docskit.json',
   )
   const target = resolveContainedPath(
     projectRoot,
@@ -395,7 +395,7 @@ function mergeExtractRegistry(
     : { version: 1, bundles: {} }
   const bundles =
     type === 'consumer'
-      ? { hubdocs: owned.bundles.hubdocs }
+      ? { docskit: owned.bundles.docskit }
       : owned.bundles
   current.version = Math.max(current.version ?? 1, owned.version ?? 1)
   if (type === 'consumer') delete current.bundles['architecture-core']
@@ -409,13 +409,13 @@ function mergeExtractRegistry(
 }
 
 /**
- * Sync Hubdocs-owned Cursor harness assets into a docs hub.
+ * Sync Docskit-owned Cursor harness assets into a docs hub.
  * Skips package-local registry source files and preserves customized targets.
  */
 export function installHarness(opts: {
   projectRoot?: string
   force?: boolean
-  type?: HubdocsHarnessType
+  type?: DocskitHarnessType
   gitignoreEntries?: OwnedGitignoreEntry[]
 } = {}): HarnessInstallResult {
   const { root, realRoot } = resolveProjectRoot(opts.projectRoot)
@@ -423,7 +423,7 @@ export function installHarness(opts: {
   const metadata = packageMetadata()
   const previous = readManifest(root, realRoot, metadata)
   const assets = currentAssetHashes(type)
-  resolveContainedPath(root, realRoot, INSTALL_MANIFEST_PATH, 'Hubdocs install manifest')
+  resolveContainedPath(root, realRoot, INSTALL_MANIFEST_PATH, 'Docskit install manifest')
   resolveContainedPath(
     root,
     realRoot,
@@ -500,7 +500,7 @@ export function recordManagedGitignore(
   const metadata = packageMetadata()
   const manifest = readManifest(root, realRoot, metadata)
   if (!manifest) {
-    throw new Error(`Hubdocs install manifest not found: ${manifestPath(root)}`)
+    throw new Error(`Docskit install manifest not found: ${manifestPath(root)}`)
   }
   const gitignore = mergeOwnedGitignore(manifest.gitignore, entries)
   const next: HarnessInstallManifest = {
@@ -638,7 +638,7 @@ function pruneEmptyDirs(root: string, files: string[]): void {
 }
 
 /**
- * Remove the hubdocs-owned bundle keys from the shared extract registry.
+ * Remove the docskit-owned bundle keys from the shared extract registry.
  * Deletes the file only when no other toolkit's bundles remain.
  */
 function uninstallExtractRegistry(
@@ -651,7 +651,7 @@ function uninstallExtractRegistry(
     'harness',
     'cursor',
     'extracts',
-    'extract-registry.hubdocs.json',
+    'extract-registry.docskit.json',
   )
   const target = resolveContainedPath(
     projectRoot,
@@ -672,7 +672,7 @@ function uninstallExtractRegistry(
   const present = ownedKeys.filter((key) => key in currentBundles)
   if (present.length === 0) return undefined
   if (dryRun) {
-    return `${target} (would remove ${present.length} hubdocs bundle key(s))`
+    return `${target} (would remove ${present.length} docskit bundle key(s))`
   }
   for (const key of present) delete currentBundles[key]
   current.bundles = currentBundles
@@ -681,11 +681,11 @@ function uninstallExtractRegistry(
     return `${target} (removed; no bundles left)`
   }
   writeFileSync(target, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
-  return `${target} (removed ${present.length} hubdocs bundle key(s))`
+  return `${target} (removed ${present.length} docskit bundle key(s))`
 }
 
 /**
- * Full removal: delete every hubdocs-owned harness file recorded in the manifest
+ * Full removal: delete every docskit-owned harness file recorded in the manifest
  * (current + stale), preserve and report member-modified files, un-merge the
  * shared extract registry, remove exclusive ignore entries (keep shared), then
  * drop the manifest. Dry-run unless `yes`.
@@ -771,7 +771,7 @@ export function uninstallHarness(opts: {
     root,
     realRoot,
     INSTALL_MANIFEST_PATH,
-    'Hubdocs install manifest',
+    'Docskit install manifest',
   )
   if (dryRun) {
     result.wouldDelete.push(manifestFile)

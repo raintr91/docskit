@@ -16,7 +16,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 import {
-  defaultHubdocsRoot,
+  defaultDocskitRoot,
   resolveDocsRoot,
 } from '../dist/config/docs-root.js'
 import {
@@ -46,13 +46,13 @@ import { depsFromFiles, validateMdLinks } from '../dist/scan/links.js'
 import { routeTopic } from '../dist/scan/route.js'
 
 const originalCwd = process.cwd()
-const originalRoot = process.env.HUBDOCS_ROOT
+const originalRoot = process.env.DOCSKIT_ROOT
 
 // Keep the install ledger out of the real ~/.local/state during tests.
-process.env.HUBDOCS_STATE_DIR = mkdtempSync(path.join(os.tmpdir(), 'hubdocs-state-'))
+process.env.DOCSKIT_STATE_DIR = mkdtempSync(path.join(os.tmpdir(), 'docskit-state-'))
 
 function tempDir(name) {
-  return mkdtempSync(path.join(os.tmpdir(), `hubdocs-${name}-`))
+  return mkdtempSync(path.join(os.tmpdir(), `docskit-${name}-`))
 }
 
 function hash(content) {
@@ -74,12 +74,12 @@ function makeHub(name) {
 }
 
 function withoutRootEnv(fn) {
-  delete process.env.HUBDOCS_ROOT
+  delete process.env.DOCSKIT_ROOT
   try {
     return fn()
   } finally {
-    if (originalRoot === undefined) delete process.env.HUBDOCS_ROOT
-    else process.env.HUBDOCS_ROOT = originalRoot
+    if (originalRoot === undefined) delete process.env.DOCSKIT_ROOT
+    else process.env.DOCSKIT_ROOT = originalRoot
   }
 }
 
@@ -89,19 +89,19 @@ test('standalone package behavior', async (t) => {
     const envRoot = makeHub('env')
     const cwdRoot = makeHub('cwd')
 
-    process.env.HUBDOCS_ROOT = envRoot
+    process.env.DOCSKIT_ROOT = envRoot
     process.chdir(cwdRoot)
     assert.equal(resolveDocsRoot(explicit), explicit)
     assert.equal(resolveDocsRoot(), envRoot)
-    delete process.env.HUBDOCS_ROOT
+    delete process.env.DOCSKIT_ROOT
     assert.equal(resolveDocsRoot(), cwdRoot)
-    assert.equal(defaultHubdocsRoot(), cwdRoot)
+    assert.equal(defaultDocskitRoot(), cwdRoot)
 
     const empty = tempDir('empty')
     process.chdir(empty)
     assert.throws(
       () => resolveDocsRoot(),
-      /hubdocs init/,
+      /docskit init/,
     )
     process.chdir(originalCwd)
   })
@@ -117,7 +117,7 @@ test('standalone package behavior', async (t) => {
 
     const hub = makeHub('entry-explicit')
     const namedGlobal = buildMcpEntry({ location: 'global', docsRoot: hub })
-    assert.equal(namedGlobal.env.HUBDOCS_ROOT, hub)
+    assert.equal(namedGlobal.env.DOCSKIT_ROOT, hub)
     process.chdir(originalCwd)
   })
 
@@ -131,7 +131,7 @@ test('standalone package behavior', async (t) => {
       })
       assert.equal(result.location, 'local')
       const config = JSON.parse(readFileSync(path.join(hub, '.cursor', 'mcp.json'), 'utf8'))
-      assert.equal(config.mcpServers.hubdocs.env.HUBDOCS_ROOT, hub)
+      assert.equal(config.mcpServers.docskit.env.DOCSKIT_ROOT, hub)
     }
     process.chdir(originalCwd)
   })
@@ -215,7 +215,7 @@ test('standalone package behavior', async (t) => {
     }
 
     const hub = makeHub('optional-unavailable')
-    const cli = path.resolve(originalCwd, 'bin', 'hubdocs.mjs')
+    const cli = path.resolve(originalCwd, 'bin', 'docskit.mjs')
     const cliResult = spawnSync(
       process.execPath,
       [
@@ -232,13 +232,13 @@ test('standalone package behavior', async (t) => {
         env: {
           ...process.env,
           PATH: '',
-          HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR,
+          DOCSKIT_STATE_DIR: process.env.DOCSKIT_STATE_DIR,
         },
       },
     )
     assert.equal(cliResult.status, 0, cliResult.stderr)
     assert.match(cliResult.stdout, /Optional toolkit unavailable: artifactgraph/)
-    assert.ok(existsSync(path.join(hub, '.hubdocs', 'install-manifest.json')))
+    assert.ok(existsSync(path.join(hub, '.docskit', 'install-manifest.json')))
   })
 
   await t.test('generated local targets merge into .gitignore with DNA semantics', () => {
@@ -256,10 +256,10 @@ test('standalone package behavior', async (t) => {
     })
     assert.deepEqual(
       intended.map((e) => e.pattern).sort(),
-      ['.codex/', '.cursor/', '.hermes/', '.hubdocs/'].sort(),
+      ['.codex/', '.cursor/', '.hermes/', '.docskit/'].sort(),
     )
     assert.equal(intended.find((e) => e.pattern === '.cursor/')?.shared, true)
-    assert.equal(intended.find((e) => e.pattern === '.hubdocs/')?.shared, undefined)
+    assert.equal(intended.find((e) => e.pattern === '.docskit/')?.shared, undefined)
 
     const added = ensureGitignoreEntries(
       hub,
@@ -269,10 +269,10 @@ test('standalone package behavior', async (t) => {
     const content = readFileSync(path.join(hub, '.gitignore'), 'utf8')
     assert.match(content, /\r\n/)
     assert.equal(content.match(/\.cursor\//g)?.length, 1)
-    assert.match(content, /\.hubdocs\//)
+    assert.match(content, /\.docskit\//)
     assert.match(content, /\.codex\//)
     assert.match(content, /\.hermes\//)
-    assert.doesNotMatch(content, /# >>> hubdocs generated files/)
+    assert.doesNotMatch(content, /# >>> docskit generated files/)
 
     const again = ensureGitignoreEntries(
       hub,
@@ -280,12 +280,12 @@ test('standalone package behavior', async (t) => {
     )
     assert.equal(again.changed, false)
 
-    const removed = removeGitignoreEntries(hub, ['.hubdocs/', '.codex/', '.hermes/'])
+    const removed = removeGitignoreEntries(hub, ['.docskit/', '.codex/', '.hermes/'])
     assert.equal(removed.changed, true)
     const after = readFileSync(path.join(hub, '.gitignore'), 'utf8')
     assert.match(after, /node_modules\//)
     assert.match(after, /\.cursor\//)
-    assert.doesNotMatch(after, /\.hubdocs\//)
+    assert.doesNotMatch(after, /\.docskit\//)
     assert.equal(canonicalGitignorePattern('/.cursor/'), '.cursor')
     assert.equal(canonicalGitignorePattern('.cursor'), '.cursor')
     assert.equal(canonicalGitignorePattern('.cursor/'), '.cursor')
@@ -305,37 +305,37 @@ test('standalone package behavior', async (t) => {
       ),
       [
         { pattern: '.cursor/', shared: true },
-        { pattern: '.hubdocs/', shared: false },
+        { pattern: '.docskit/', shared: false },
       ],
     )
   })
 
   await t.test('CLI init installs harness for the selected lane', () => {
     const hub = makeHub('cli-init')
-    const cli = path.resolve(originalCwd, 'bin', 'hubdocs.mjs')
+    const cli = path.resolve(originalCwd, 'bin', 'docskit.mjs')
     const result = spawnSync(
       process.execPath,
       [cli, 'init', '--target=cursor', '--type=docs', '--yes'],
       {
         cwd: hub,
         encoding: 'utf8',
-        env: { ...process.env, HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR },
+        env: { ...process.env, DOCSKIT_STATE_DIR: process.env.DOCSKIT_STATE_DIR },
       },
     )
     assert.equal(result.status, 0, result.stderr)
     assert.match(result.stdout, /Harness \(docs\)/)
     assert.ok(existsSync(path.join(hub, '.cursor', 'mcp.json')))
-    assert.ok(existsSync(path.join(hub, '.hubdocs', 'install-manifest.json')))
+    assert.ok(existsSync(path.join(hub, '.docskit', 'install-manifest.json')))
     const gitignore = readFileSync(path.join(hub, '.gitignore'), 'utf8')
     assert.match(gitignore, /\.cursor\//)
-    assert.match(gitignore, /\.hubdocs\//)
-    assert.doesNotMatch(gitignore, /# >>> hubdocs generated files/)
+    assert.match(gitignore, /\.docskit\//)
+    assert.doesNotMatch(gitignore, /# >>> docskit generated files/)
     const manifest = JSON.parse(
-      readFileSync(path.join(hub, '.hubdocs', 'install-manifest.json'), 'utf8'),
+      readFileSync(path.join(hub, '.docskit', 'install-manifest.json'), 'utf8'),
     )
     assert.ok(Array.isArray(manifest.gitignore))
     assert.ok(manifest.gitignore.some((e) => e.pattern === '.cursor/' && e.shared === true))
-    assert.ok(manifest.gitignore.some((e) => e.pattern === '.hubdocs/' && !e.shared))
+    assert.ok(manifest.gitignore.some((e) => e.pattern === '.docskit/' && !e.shared))
 
     const second = spawnSync(
       process.execPath,
@@ -343,7 +343,7 @@ test('standalone package behavior', async (t) => {
       {
         cwd: hub,
         encoding: 'utf8',
-        env: { ...process.env, HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR },
+        env: { ...process.env, DOCSKIT_STATE_DIR: process.env.DOCSKIT_STATE_DIR },
       },
     )
     assert.equal(second.status, 0, second.stderr)
@@ -352,14 +352,14 @@ test('standalone package behavior', async (t) => {
 
   await t.test('multi-agent local init ignores only written agent paths', () => {
     const hub = makeHub('cli-multi')
-    const cli = path.resolve(originalCwd, 'bin', 'hubdocs.mjs')
+    const cli = path.resolve(originalCwd, 'bin', 'docskit.mjs')
     const result = spawnSync(
       process.execPath,
       [cli, 'init', '--target=cursor,codex,hermes', '--type=docs', '--yes'],
       {
         cwd: hub,
         encoding: 'utf8',
-        env: { ...process.env, HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR },
+        env: { ...process.env, DOCSKIT_STATE_DIR: process.env.DOCSKIT_STATE_DIR },
       },
     )
     assert.equal(result.status, 0, result.stderr)
@@ -389,7 +389,7 @@ test('standalone package behavior', async (t) => {
     })
     writeFileSync(path.join(hub, '.gitignore'), 'node_modules/\n')
     const status = statusHarness({ projectRoot: hub })
-    assert.ok(status.gitignore.some((e) => e.pattern === '.hubdocs/' && e.status === 'missing'))
+    assert.ok(status.gitignore.some((e) => e.pattern === '.docskit/' && e.status === 'missing'))
     assert.ok(status.gitignore.some((e) => e.pattern === '.cursor/' && e.status === 'missing'))
   })
 
@@ -401,7 +401,7 @@ test('standalone package behavior', async (t) => {
     })
     assert.equal(result.location, 'global')
     const config = JSON.parse(readFileSync(file, 'utf8'))
-    assert.equal(config.mcpServers.hubdocs.env, undefined)
+    assert.equal(config.mcpServers.docskit.env, undefined)
   })
 
   await t.test('external hub supports IDs, dependencies, links, and routes', () => {
@@ -419,23 +419,23 @@ test('standalone package behavior', async (t) => {
     const hub = makeHub('mcp')
     const transport = new StdioClientTransport({
       command: process.execPath,
-      args: [path.join(originalCwd, 'bin', 'hubdocs-mcp.mjs')],
-      env: { ...process.env, HUBDOCS_ROOT: hub },
+      args: [path.join(originalCwd, 'bin', 'docskit-mcp.mjs')],
+      env: { ...process.env, DOCSKIT_ROOT: hub },
       stderr: 'pipe',
     })
-    const client = new Client({ name: 'hubdocs-test', version: '1.0.0' })
+    const client = new Client({ name: 'docskit-test', version: '1.0.0' })
     await client.connect(transport)
     try {
       const calls = [
-        ['hubdocs_list_ids', {}],
-        ['hubdocs_get_element', { id: 'FLOW-login' }],
-        ['hubdocs_deps_of', { id: 'FLOW-login' }],
-        ['hubdocs_dependents_of', { id: 'ADR-001' }],
-        ['hubdocs_orphans', {}],
-        ['hubdocs_validate_links', {}],
-        ['hubdocs_route', { topic: 'login sequence' }],
-        ['hubdocs_journeys', {}],
-        ['hubdocs_layout', {}],
+        ['docskit_list_ids', {}],
+        ['docskit_get_element', { id: 'FLOW-login' }],
+        ['docskit_deps_of', { id: 'FLOW-login' }],
+        ['docskit_dependents_of', { id: 'ADR-001' }],
+        ['docskit_orphans', {}],
+        ['docskit_validate_links', {}],
+        ['docskit_route', { topic: 'login sequence' }],
+        ['docskit_journeys', {}],
+        ['docskit_layout', {}],
       ]
       for (const [name, args] of calls) {
         const result = await client.callTool({ name, arguments: args })
@@ -483,7 +483,7 @@ test('standalone package behavior', async (t) => {
         version: firstManifest.version,
       },
       {
-        package: '@platform/hubdocs',
+        package: '@platform/docskit',
         schema: 1,
         toolApi: 1,
         harnessApi: 1,
@@ -493,7 +493,7 @@ test('standalone package behavior', async (t) => {
     assert.ok(Object.keys(firstManifest.hashes).length >= 18)
     assert.equal(firstManifest.hashes['.cursor/extracts/extract-registry.json'], undefined)
     assert.equal(firstManifest.hashes['platform-repos.json'], undefined)
-    const schemaRel = '.cursor/schemas/hubdocs/missing-optional-event.schema.json'
+    const schemaRel = '.cursor/schemas/docskit/missing-optional-event.schema.json'
     const schemaTargets = Object.keys(firstManifest.hashes).filter((rel) =>
       rel.endsWith('/missing-optional-event.schema.json'),
     )
@@ -501,24 +501,24 @@ test('standalone package behavior', async (t) => {
     const installedSchema = JSON.parse(
       readFileSync(path.join(project, ...schemaRel.split('/')), 'utf8'),
     )
-    assert.equal(installedSchema.properties.event.const, 'hubdocs.missing-optional')
-    assert.equal(installedSchema.properties.package.const, '@platform/hubdocs')
+    assert.equal(installedSchema.properties.event.const, 'docskit.missing-optional')
+    assert.equal(installedSchema.properties.package.const, '@platform/docskit')
     assert.deepEqual(installedSchema.properties.metrics.required, ['fileReads', 'contextBytes'])
     assert.equal(installedSchema.properties.metrics.additionalProperties, false)
     const registry = JSON.parse(readFileSync(first.registry, 'utf8'))
     assert.ok(registry.bundles['architecture-core'])
-    // Hubdocs never writes Platform DNA-owned project maps.
+    // Docskit never writes Platform DNA-owned project maps.
     assert.equal(first.platformRepos, undefined)
     assert.equal(existsSync(path.join(project, 'platform-repos.json')), false)
-    assert.ok(registry.bundles.hubdocs)
+    assert.ok(registry.bundles.docskit)
     assert.deepEqual(registry.bundles['foreign-bundle'], ['.cursor/extracts/foreign.md'])
 
     const second = installHarness({ projectRoot: project })
     assert.equal(second.written.length, 0)
     assert.ok(second.unchanged.length >= 18)
 
-    const skill = path.join(project, '.cursor', 'skills', 'hubdocs', 'SKILL.md')
-    const skillRel = '.cursor/skills/hubdocs/SKILL.md'
+    const skill = path.join(project, '.cursor', 'skills', 'docskit', 'SKILL.md')
+    const skillRel = '.cursor/skills/docskit/SKILL.md'
     const packagedSkill = readFileSync(skill, 'utf8')
     const oldPackagedSkill = '# previous package copy\n'
     const upgradeLedger = JSON.parse(readFileSync(manifestFile, 'utf8'))
@@ -547,7 +547,7 @@ test('standalone package behavior', async (t) => {
       'decision',
       'cross-cutting',
       'dynamics',
-      'hubdocs',
+      'docskit',
     ]) {
       const body = readFileSync(
         path.join(project, '.cursor', 'skills', owned, 'SKILL.md'),
@@ -557,15 +557,15 @@ test('standalone package behavior', async (t) => {
       assert.match(body, /Accelerators \(optional\)|never blocks|never requires ArtifactGraph/i)
     }
     const installedRule = readFileSync(
-      path.join(project, '.cursor', 'rules', 'hubdocs.mdc'),
+      path.join(project, '.cursor', 'rules', 'docskit.mdc'),
       'utf8',
     )
-    const installedHubdocsSkill = readFileSync(
-      path.join(project, '.cursor', 'skills', 'hubdocs', 'SKILL.md'),
+    const installedDocskitSkill = readFileSync(
+      path.join(project, '.cursor', 'skills', 'docskit', 'SKILL.md'),
       'utf8',
     )
-    for (const body of [installedRule, installedHubdocsSkill]) {
-      assert.match(body, /hubdocs\.missing-optional/)
+    for (const body of [installedRule, installedDocskitSkill]) {
+      assert.match(body, /docskit\.missing-optional/)
       assert.match(body, /exactly one/)
       assert.match(body, /deduplicate\s+retries/i)
       assert.match(body, /actual `fileReads` and `contextBytes`/)
@@ -630,7 +630,7 @@ test('standalone package behavior', async (t) => {
       ['prune', '--project-root', project, '--yes'],
       ['harness', 'status', '--project-root', project],
     ]) {
-      const cli = spawnSync(process.execPath, [path.join(originalCwd, 'bin', 'hubdocs.mjs'), ...args], {
+      const cli = spawnSync(process.execPath, [path.join(originalCwd, 'bin', 'docskit.mjs'), ...args], {
         cwd: originalCwd,
         encoding: 'utf8',
       })
@@ -650,7 +650,7 @@ test('standalone package behavior', async (t) => {
     writeFileSync(file, `${JSON.stringify({ ...valid, package: '@other/package' }, null, 2)}\n`)
     assert.throws(
       () => statusHarness({ projectRoot: project }),
-      /Incompatible Hubdocs install manifest/,
+      /Incompatible Docskit install manifest/,
     )
 
     const escaping = {
@@ -665,7 +665,7 @@ test('standalone package behavior', async (t) => {
 
     const linkedProject = tempDir('harness-symlink')
     const outside = tempDir('harness-outside')
-    symlinkSync(outside, path.join(linkedProject, '.hubdocs'), 'dir')
+    symlinkSync(outside, path.join(linkedProject, '.docskit'), 'dir')
     assert.throws(
       () => installHarness({ projectRoot: linkedProject }),
       /escapes project root through a symlink/,
@@ -673,15 +673,15 @@ test('standalone package behavior', async (t) => {
     assert.equal(existsSync(path.join(outside, 'install-manifest.json')), false)
   })
 
-  await t.test('consumer harness syncs only lightweight Hubdocs assets', () => {
+  await t.test('consumer harness syncs only lightweight Docskit assets', () => {
     const project = tempDir('harness-consumer')
     const installed = installHarness({ projectRoot: project, type: 'consumer' })
 
-    assert.ok(existsSync(path.join(project, '.cursor', 'skills', 'hubdocs', 'SKILL.md')))
-    assert.ok(existsSync(path.join(project, '.cursor', 'rules', 'hubdocs.mdc')))
+    assert.ok(existsSync(path.join(project, '.cursor', 'skills', 'docskit', 'SKILL.md')))
+    assert.ok(existsSync(path.join(project, '.cursor', 'rules', 'docskit.mdc')))
     assert.ok(
       existsSync(
-        path.join(project, '.cursor', 'schemas', 'hubdocs', 'missing-optional-event.schema.json'),
+        path.join(project, '.cursor', 'schemas', 'docskit', 'missing-optional-event.schema.json'),
       ),
     )
     assert.equal(
@@ -689,10 +689,10 @@ test('standalone package behavior', async (t) => {
       false,
     )
     const registry = JSON.parse(readFileSync(installed.registry, 'utf8'))
-    assert.deepEqual(Object.keys(registry.bundles), ['hubdocs'])
+    assert.deepEqual(Object.keys(registry.bundles), ['docskit'])
   })
 
-  await t.test('missing ArtifactGraph keeps targeted local Hubdocs behavior available', () => {
+  await t.test('missing ArtifactGraph keeps targeted local Docskit behavior available', () => {
     const pkg = JSON.parse(readFileSync(path.join(originalCwd, 'package.json'), 'utf8'))
     const mcpPackage = JSON.parse(readFileSync(path.join(originalCwd, 'mcp-package.json'), 'utf8'))
     assert.ok(mcpPackage.optional.includes('@platform/artifactgraph'))
@@ -702,7 +702,7 @@ test('standalone package behavior', async (t) => {
     const installed = installHarness({ projectRoot: hub })
     assert.ok(
       installed.written.includes(
-        path.join(hub, '.cursor', 'schemas', 'hubdocs', 'missing-optional-event.schema.json'),
+        path.join(hub, '.cursor', 'schemas', 'docskit', 'missing-optional-event.schema.json'),
       ),
     )
     assert.ok(indexIds(hub).has('FLOW-login'))
@@ -720,13 +720,13 @@ test('standalone package behavior', async (t) => {
     const names = report.files.map((file) => file.path)
     assert.equal(names.includes('platform-repos.json'), false)
     assert.equal(names.some((name) => name.startsWith('docs/handoffs/')), false)
-    assert.ok(names.includes('harness/cursor/skills/hubdocs/SKILL.md'))
+    assert.ok(names.includes('harness/cursor/skills/docskit/SKILL.md'))
     assert.ok(names.includes('harness/cursor/skills/architecture/SKILL.md'))
     assert.ok(names.includes('harness/cursor/extracts/architecture-core.md'))
     assert.equal(
       names.filter(
         (name) =>
-          name === 'harness/cursor/schemas/hubdocs/missing-optional-event.schema.json',
+          name === 'harness/cursor/schemas/docskit/missing-optional-event.schema.json',
       ).length,
       1,
     )

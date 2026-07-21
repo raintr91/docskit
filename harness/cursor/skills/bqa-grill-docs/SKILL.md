@@ -44,7 +44,7 @@ disable-model-invocation: true
 if ArtifactGraph available: grill/parity hints
 else: model review from design+legacy slices (model fallback)
 
-if Hubdocs available: ID → doc path for referenced CMP/FLOW
+if Docskit available: ID → doc path for referenced CMP/FLOW
 else: search docs tree (local fallback)
 ```
 

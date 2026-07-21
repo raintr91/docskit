@@ -1,5 +1,5 @@
 export { createServer, main } from './mcp/server.js'
-export { resolveDocsRoot, packageRoot, defaultHubdocsRoot } from './config/docs-root.js'
+export { resolveDocsRoot, packageRoot, defaultDocskitRoot } from './config/docs-root.js'
 export {
   indexIds,
   kindOf,
@@ -17,7 +17,7 @@ export {
   recordManagedGitignore,
   INSTALL_MANIFEST_PATH,
   INSTALL_MANIFEST_SCHEMA,
-  HUBDOCS_OWNED_SKILLS,
+  DOCSKIT_OWNED_SKILLS,
 } from './install/harness.js'
 export type {
   HarnessInstallManifest,

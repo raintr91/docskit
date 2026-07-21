@@ -44,18 +44,18 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 - Vague spec → `/bqa-grill-docs` before `/prototype`.
 - No arc42 chapter prose for a single function — stay C4/code-level.
 
-## Tools (required after bundlekit init)
+## Tools (required after docskit init)
 
-Prefer MCP/CLI when Bundlekit is installed:
+Prefer MCP/CLI when Docskit is installed:
 
-- `bundle_split` / `bundlekit split -- <bundle>`
-- `docs_render` / `bundlekit render …`
+- `bundle_split` / `docskit split -- <bundle>`
+- `docs_render` / `docskit render …`
 - Local fallback only if package not installed: `pnpm spec:split` · `pnpm docs:render`
 
 ## Accelerators (optional)
 
 ```text
-if Hubdocs available: resolve CMP/CTR/FLOW IDs → paths
+if Docskit available: resolve CMP/CTR/FLOW IDs → paths
 else: repository conventions / search (local fallback)
 
 if ArtifactGraph available: tags/parity slice for touched contracts
@@ -63,8 +63,8 @@ else: model review from scoped bundle evidence (model fallback)
 ```
 
 Missing optionals never block `/spec`. After the existing fallback completes,
-emit exactly one `bundlekit.missing-optional` event per `runId` + optional
-against `.cursor/schemas/bundlekit/missing-optional-event.schema.json`.
+emit exactly one `docskit.missing-optional` event per `runId` + optional
+against `.cursor/schemas/docskit/missing-optional-event.schema.json`.
 Deduplicate retries and report only actual `fileReads` / `contextBytes`.
 
 ## Done

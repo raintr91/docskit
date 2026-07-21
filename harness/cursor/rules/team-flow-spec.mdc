@@ -1,5 +1,5 @@
 ---
-description: Bundlekit docs spec/grill/update workflow
+description: Docskit docs spec/grill/update workflow
 globs: product/components/**/code/**, product/legacy-dynamics/**
 alwaysApply: false
 ---

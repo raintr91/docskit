@@ -44,7 +44,7 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 if ArtifactGraph available: reconcile/parity/tag hints + command recommendation
 else: model reconcile from scoped bundle slices (model fallback)
 
-if Hubdocs available: resolve referenced CMP/FLOW IDs
+if Docskit available: resolve referenced CMP/FLOW IDs
 else: repository path conventions (deterministic fallback)
 ```
 

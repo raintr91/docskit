@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { checkboxPrompt, type CheckboxChoice } from './prompt.js'
-import type { HubdocsHarnessType } from './harness.js'
+import type { DocskitHarnessType } from './harness.js'
 
 export const OPTIONAL_TOOLKIT_IDS = ['artifactgraph'] as const
 export type OptionalToolkitId = (typeof OPTIONAL_TOOLKIT_IDS)[number]
@@ -63,7 +63,7 @@ export function optionalToolkitInvocations(opts: {
   selected: OptionalToolkitId[]
   projectRoot: string
   target: string
-  type: HubdocsHarnessType
+  type: DocskitHarnessType
   force?: boolean
   useWsl?: boolean
 }): OptionalToolkitInvocation[] {
@@ -95,7 +95,7 @@ export interface OptionalToolkitRunResult {
 
 /**
  * Run only explicitly selected, already-installed optional toolkits.
- * A missing executable is a non-fatal hint; Hubdocs never clones or installs
+ * A missing executable is a non-fatal hint; Docskit never clones or installs
  * another toolkit implicitly. Other failures are surfaced because the member
  * explicitly requested that initialization.
  */

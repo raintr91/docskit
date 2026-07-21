@@ -52,17 +52,17 @@ Load the child skill + extract bundle `architecture-core`.
 
 ## Accelerators (optional)
 
-Prefer `hubdocs_route` then `hubdocs_list_ids` / `hubdocs_validate_links` / `hubdocs_journeys` before large edits.
+Prefer `docskit_route` then `docskit_list_ids` / `docskit_validate_links` / `docskit_journeys` before large edits.
 
 ```text
-if Hubdocs available: targeted hubdocs_* tools for IDs / deps / journeys / links
+if Docskit available: targeted docskit_* tools for IDs / deps / journeys / links
 else: Glob/search under architecture/ and product/, then Read scoped Markdown
 
-Missing Hubdocs never blocks authoring.
-Missing ArtifactGraph never blocks Hubdocs or architecture skills.
+Missing Docskit never blocks authoring.
+Missing ArtifactGraph never blocks Docskit or architecture skills.
 ```
 
-When ArtifactGraph is missing, follow `/hubdocs` fallback evidence: continue
-targeted local reads, then emit one deduplicated `hubdocs.missing-optional`
+When ArtifactGraph is missing, follow `/docskit` fallback evidence: continue
+targeted local reads, then emit one deduplicated `docskit.missing-optional`
 event per run and optional with actual `fileReads` and `contextBytes` only.
 

@@ -21,7 +21,7 @@ Doc hub: `platform/toolchain/UPDATE-SPEC-FLOW.md` · `platform/toolchain/FEATURE
 
 ## Scope
 
-**In:** patch bundle (+ note plans handoff when E2E scope changes); Bundlekit split/check; emit `#update:*`; bump `specRevision`.
+**In:** patch bundle (+ note plans handoff when E2E scope changes); Docskit split/check; emit `#update:*`; bump `specRevision`.
 
 **Out:** full rewrite (`/spec`), legacy re-mine (`/update-spec-legacy`), production code, direct `ir/` edits.
 

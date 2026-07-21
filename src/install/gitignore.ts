@@ -3,11 +3,11 @@ import path from 'node:path'
 import type { InstallLocation } from './agents.js'
 
 /**
- * Hubdocs `.gitignore` contract — same semantics as Platform DNA
+ * Docskit `.gitignore` contract — same semantics as Platform DNA
  * `ensureGitignoreEntries` / `removeGitignoreEntries`:
  * idempotent, EOL-preserving, equivalence-aware.
  *
- * Destination repos never hand-maintain Hubdocs ignore blocks. Init merges
+ * Destination repos never hand-maintain Docskit ignore blocks. Init merges
  * only the local artifacts this run actually wrote.
  */
 
@@ -15,7 +15,7 @@ export interface OwnedGitignoreEntry {
   pattern: string
   /**
    * Shared entries may be relied on by other toolkits (for example `.cursor/`).
-   * Ensured on init but kept on deinit so removing Hubdocs never breaks another
+   * Ensured on init but kept on deinit so removing Docskit never breaks another
    * toolkit still using them.
    */
   shared?: boolean
@@ -37,7 +37,7 @@ export interface RemoveGitignoreResult {
 export interface GeneratedTargetInput {
   projectRoot: string
   location: InstallLocation
-  /** Absolute paths Hubdocs actually wrote (agent configs, permissions, …). */
+  /** Absolute paths Docskit actually wrote (agent configs, permissions, …). */
   written: string[]
   /** True when this run installed/updated the Cursor harness + manifest. */
   harnessInstalled: boolean
@@ -148,7 +148,7 @@ function isWithin(root: string, candidate: string): boolean {
 }
 
 /**
- * Map a repo-local written path to the coarsest ignore entry Hubdocs should own.
+ * Map a repo-local written path to the coarsest ignore entry Docskit should own.
  * Returns undefined for paths outside the project or that should not be ignored
  * as a top-level agent/harness artifact.
  */
@@ -167,7 +167,7 @@ export function ignorePatternForLocalPath(
   if (!top) return undefined
 
   if (top === '.cursor') return '.cursor/'
-  if (top === '.hubdocs') return '.hubdocs/'
+  if (top === '.docskit') return '.docskit/'
   if (top === '.claude.json') return '.claude.json'
   if (top === '.claude') return '.claude/'
   if (top === '.codex') return '.codex/'
@@ -181,7 +181,7 @@ export function ignorePatternForLocalPath(
 }
 
 /**
- * Single source of truth for ignore entries produced by a Hubdocs init run.
+ * Single source of truth for ignore entries produced by a Docskit init run.
  * Only local, actually-written targets are included; global/home configs never
  * pollute the repo `.gitignore`.
  */
@@ -199,7 +199,7 @@ export function generatedTargets(input: GeneratedTargetInput): OwnedGitignoreEnt
 
   if (input.harnessInstalled) {
     add('.cursor/', true)
-    add('.hubdocs/', false)
+    add('.docskit/', false)
   }
 
   // Global agent wiring lives outside the repo — never claim those paths here.

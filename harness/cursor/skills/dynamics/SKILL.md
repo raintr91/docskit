@@ -14,4 +14,4 @@ extractBundle: architecture-core
 
 Pilot: `FLOW-login` (was `DYN-login`).
 
-Hubdocs ownership note: this redirect ships with Hubdocs; prefer `/journey`.
+Docskit ownership note: this redirect ships with Docskit; prefer `/journey`.

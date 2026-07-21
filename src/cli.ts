@@ -1,9 +1,9 @@
 /**
  * CLI — install / wire agents / version.
  *
- *   hubdocs version
- *   hubdocs init                         # ↑↓ · Space · Enter
- *   hubdocs init --target=cursor,claude --yes
+ *   docskit version
+ *   docskit init                         # ↑↓ · Space · Enter
+ *   docskit init --target=cursor,claude --yes
  */
 
 import { createRequire } from 'node:module'
@@ -11,14 +11,14 @@ import { lstatSync, realpathSync, rmSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
-import { packageRoot, defaultHubdocsRoot, looksLikeHub } from './config/docs-root.js'
+import { packageRoot, defaultDocskitRoot, looksLikeHub } from './config/docs-root.js'
 import { installAgents, promptInstallAgents, uninstallAgents } from './install/agents.js'
 import {
   installHarness,
   pruneHarness,
   statusHarness,
   uninstallHarness,
-  type HubdocsHarnessType,
+  type DocskitHarnessType,
 } from './install/harness.js'
 import { discoverInstalls, ledgerPath, readLedger, removeLedger } from './install/ledger.js'
 import { promptLine, selectPrompt } from './install/prompt.js'
@@ -124,18 +124,18 @@ function requestedOptionalToolkits(): OptionalToolkitId[] | undefined {
 }
 
 async function resolveInitLane(): Promise<{
-  type: HubdocsHarnessType
+  type: DocskitHarnessType
   docsRoot?: string
 }> {
-  const flagged = arg('--type') as HubdocsHarnessType | undefined
+  const flagged = arg('--type') as DocskitHarnessType | undefined
   const docsRootFlag = arg('--docs-root')
   const interactive =
     !has('--yes') && !flagged && Boolean(process.stdin.isTTY && process.stdout.isTTY)
 
-  let type: HubdocsHarnessType = flagged ?? 'docs'
+  let type: DocskitHarnessType = flagged ?? 'docs'
   if (interactive) {
-    type = await selectPrompt<HubdocsHarnessType>({
-      message: 'Which Hubdocs lane?',
+    type = await selectPrompt<DocskitHarnessType>({
+      message: 'Which Docskit lane?',
       defaultIndex: 0,
       choices: [
         { value: 'docs', name: 'docs — architecture authoring hub' },
@@ -152,10 +152,10 @@ async function resolveInitLane(): Promise<{
     const cwdLooksLikeHub = looksLikeHub(process.cwd())
     if (!cwdLooksLikeHub && interactive) {
       docsRoot = await promptLine(
-        'Docs hub path for HUBDOCS_ROOT (absolute path with architecture/): ',
+        'Docs hub path for DOCSKIT_ROOT (absolute path with architecture/): ',
       )
       if (!docsRoot) throw new Error('consumer lane requires --docs-root when cwd is not a docs hub')
-    } else if (!cwdLooksLikeHub && !defaultHubdocsRoot()) {
+    } else if (!cwdLooksLikeHub && !defaultDocskitRoot()) {
       throw new Error('consumer lane requires --docs-root when cwd is not a docs hub')
     }
   }
@@ -164,7 +164,7 @@ async function resolveInitLane(): Promise<{
 
 async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<void> {
   if (opts.deprecatedAlias) {
-    console.error('note: `install` is deprecated — use `hubdocs init`')
+    console.error('note: `install` is deprecated — use `docskit init`')
   }
   try {
     if (arg('--print-config')) {
@@ -215,7 +215,7 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
       mcpFile: arg('--mcp-file'),
       docsRoot: lane.docsRoot ?? arg('--docs-root'),
     })
-    console.log(`Wired hubdocs → ${result.targets.join(', ') || '(none)'} (${result.location})`)
+    console.log(`Wired docskit → ${result.targets.join(', ') || '(none)'} (${result.location})`)
     for (const w of result.written) {
       console.log(`  ${w.agent}: ${w.path}`)
     }
@@ -278,9 +278,9 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
       console.log('Optional toolkits: skipped (add later with --with=artifactgraph)')
     }
 
-    const configuredRoot = lane.docsRoot ?? arg('--docs-root') ?? defaultHubdocsRoot()
-    console.log(`HUBDOCS_ROOT: ${configuredRoot || '(rootless; use tool docsRoot)'}`)
-    console.log('Restart agent(s), then try tool hubdocs_list_ids')
+    const configuredRoot = lane.docsRoot ?? arg('--docs-root') ?? defaultDocskitRoot()
+    console.log(`DOCSKIT_ROOT: ${configuredRoot || '(rootless; use tool docsRoot)'}`)
+    console.log('Restart agent(s), then try tool docskit_list_ids')
   } catch (err) {
     console.error(err instanceof Error ? err.message : err)
     process.exit(1)
@@ -411,11 +411,11 @@ interface UninstallFlags {
 }
 
 function cliLayout(): { installDir: string; binDir: string } {
-  const installDir = process.env.HUBDOCS_INSTALL_DIR
-    ? path.resolve(process.env.HUBDOCS_INSTALL_DIR)
-    : path.join(os.homedir(), '.hubdocs')
-  const binDir = process.env.HUBDOCS_BIN_DIR
-    ? path.resolve(process.env.HUBDOCS_BIN_DIR)
+  const installDir = process.env.DOCSKIT_INSTALL_DIR
+    ? path.resolve(process.env.DOCSKIT_INSTALL_DIR)
+    : path.join(os.homedir(), '.docskit')
+  const binDir = process.env.DOCSKIT_BIN_DIR
+    ? path.resolve(process.env.DOCSKIT_BIN_DIR)
     : path.join(os.homedir(), '.local', 'bin')
   return { installDir, binDir }
 }
@@ -447,7 +447,7 @@ function removeCliToolkit(dryRun: boolean): {
   const wouldRemove: string[] = []
   const skipped: string[] = []
   const here = realOrSelf(process.cwd())
-  const targets = [path.join(binDir, 'hubdocs'), path.join(binDir, 'hubdocs-mcp'), installDir]
+  const targets = [path.join(binDir, 'docskit'), path.join(binDir, 'docskit-mcp'), installDir]
 
   for (const target of targets) {
     if (!lexists(target)) continue
@@ -492,7 +492,7 @@ function runScope(scope: UninstallScope, flags: UninstallFlags): void {
   const doMcp = (location: 'local' | 'global', root: string): void => {
     const agents = uninstallAgents({ target: flags.target ?? 'all', location, yes, cwd: root })
     if (!agents.removed.length) {
-      console.log(`  mcp (${location}): no hubdocs entry`)
+      console.log(`  mcp (${location}): no docskit entry`)
       return
     }
     for (const entry of agents.removed) {
@@ -581,8 +581,8 @@ async function runUninstall(defaultScope: 'repo' | 'all'): Promise<void> {
       const confirm = await selectPrompt<'yes' | 'no'>({
         message:
           defaultScope === 'repo'
-            ? 'Apply hubdocs deinit for this repo?'
-            : 'Apply global hubdocs uninstall (all repos + MCP + CLI)?',
+            ? 'Apply docskit deinit for this repo?'
+            : 'Apply global docskit uninstall (all repos + MCP + CLI)?',
         defaultIndex: 1,
         choices: [
           { value: 'no', name: 'No — cancel' },
@@ -636,7 +636,7 @@ async function main(): Promise<void> {
   if (cmd === 'version' || cmd === '--version' || cmd === '-V') {
     console.log(`docskit ${pkgVersion()}`)
     console.log(`packageRoot ${packageRoot()}`)
-    console.log(`DOCSKIT_ROOT ${defaultHubdocsRoot()}`)
+    console.log(`DOCSKIT_ROOT ${defaultDocskitRoot()}`)
     return
   }
 

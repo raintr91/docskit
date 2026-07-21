@@ -21,7 +21,7 @@ Doc hub: `platform/toolchain/UPDATE-SPEC-FLOW.md` · `platform/toolchain/FEATURE
 
 ## Scope
 
-**In:** patch bundle (+ note plans handoff when E2E scope changes); Bundlekit split/check; emit `#update:*`; bump `specRevision`.
+**In:** patch bundle (+ note plans handoff when E2E scope changes); Docskit split/check; emit `#update:*`; bump `specRevision`.
 
 **Out:** full rewrite (`/spec`), legacy re-mine (`/update-spec-legacy`), production code, direct `ir/` edits.
 
@@ -32,9 +32,9 @@ Doc hub: `platform/toolchain/UPDATE-SPEC-FLOW.md` · `platform/toolchain/FEATURE
 3. Emit matching `#update:*` tags; bump `specRevision`.
 4. If `featureStatus` was `wire` → `need-update`.
 5. Record harness notes when present.
-6. `bundle_split` / `bundlekit split -- <bundle>` (fallback `pnpm spec:split`)
-7. `bundle_check` / `bundlekit split --check -- <bundle>` (fallback `pnpm spec:split:check`)
-8. User runs `docs_render` / `bundlekit render` (manual; fallback `pnpm docs:render`)
+6. `bundle_split` / `docskit split -- <bundle>` (fallback `pnpm spec:split`)
+7. `bundle_check` / `docskit split --check -- <bundle>` (fallback `pnpm spec:split:check`)
+8. User runs `docs_render` / `docskit render` (manual; fallback `pnpm docs:render`)
 9. Follow-up per matrix: handoff FE `/prototype` or `/dev-grill-docs` / `/bqa-grill-docs` — do not assume sibling codegen.
 
 ## Accelerators (optional)
@@ -47,9 +47,9 @@ Codegenkit / portal:gen is FE-lane only — never required on docs hub
 ```
 
 Missing optionals never block `/update-spec`. After the existing fallback
-completes, emit exactly one `bundlekit.missing-optional` event per `runId` +
+completes, emit exactly one `docskit.missing-optional` event per `runId` +
 optional against
-`.cursor/schemas/bundlekit/missing-optional-event.schema.json`. Deduplicate
+`.cursor/schemas/docskit/missing-optional-event.schema.json`. Deduplicate
 retries and report only actual `fileReads` / `contextBytes`.
 
 ## Path examples

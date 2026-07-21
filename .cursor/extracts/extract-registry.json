@@ -8,9 +8,9 @@
       ".cursor/extracts/docs-hub-graph.md",
       ".cursor/extracts/extract-registry.json"
     ],
-    "hubdocs": [
+    "docskit": [
       ".cursor/extracts/core/agent-discipline.md",
-      ".cursor/extracts/hubdocs-phase-hooks.md",
+      ".cursor/extracts/docskit-phase-hooks.md",
       ".cursor/extracts/docs-hub-graph.md"
     ]
   }

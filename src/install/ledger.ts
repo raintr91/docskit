@@ -1,9 +1,9 @@
 /**
- * Install ledger — remembers which repos received the hubdocs harness so
+ * Install ledger — remembers which repos received the docskit harness so
  * `uninstall --all` can clean every location without a manual `cd` per repo.
  *
  * State lives outside the CLI install dir (survives `install.sh` upgrades):
- *   $HUBDOCS_STATE_DIR | $XDG_STATE_HOME/hubdocs | ~/.local/state/hubdocs/installs.json
+ *   $DOCSKIT_STATE_DIR | $XDG_STATE_HOME/docskit | ~/.local/state/docskit/installs.json
  */
 import {
   existsSync,
@@ -18,14 +18,14 @@ import {
 import os from 'node:os'
 import path from 'node:path'
 
-const MANIFEST_REL = '.hubdocs/install-manifest.json'
+const MANIFEST_REL = '.docskit/install-manifest.json'
 
 export function stateDir(): string {
-  if (process.env.HUBDOCS_STATE_DIR) return path.resolve(process.env.HUBDOCS_STATE_DIR)
+  if (process.env.DOCSKIT_STATE_DIR) return path.resolve(process.env.DOCSKIT_STATE_DIR)
   const base = process.env.XDG_STATE_HOME
     ? path.resolve(process.env.XDG_STATE_HOME)
     : path.join(os.homedir(), '.local', 'state')
-  return path.join(base, 'hubdocs')
+  return path.join(base, 'docskit')
 }
 
 export function ledgerPath(): string {
@@ -100,7 +100,7 @@ export function removeLedger(): boolean {
 }
 
 /**
- * Scan a directory tree for repos carrying a hubdocs manifest — used to recover
+ * Scan a directory tree for repos carrying a docskit manifest — used to recover
  * install locations for ledger-less older installs (`uninstall --discover`).
  */
 export function discoverInstalls(dir: string, maxDepth = 5): string[] {

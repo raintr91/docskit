@@ -1,7 +1,7 @@
 /**
  * Resolve docs hub root (any arc42 × C4 MD tree with architecture/).
  *
- * Order: explicit tool argument → project MCP HUBDOCS_ROOT → cwd (if hub) → error.
+ * Order: explicit tool argument → project MCP DOCSKIT_ROOT → cwd (if hub) → error.
  * The package never remembers or searches for a target repository.
  */
 import fs from 'node:fs'
@@ -25,8 +25,8 @@ export function looksLikeHub(abs: string): boolean {
 /**
  * Best-effort root for local wiring. Empty when no project root is available.
  */
-export function defaultHubdocsRoot(): string {
-  if (process.env.HUBDOCS_ROOT) return path.resolve(process.env.HUBDOCS_ROOT)
+export function defaultDocskitRoot(): string {
+  if (process.env.DOCSKIT_ROOT) return path.resolve(process.env.DOCSKIT_ROOT)
   if (looksLikeHub(process.cwd())) return process.cwd()
   return ''
 }
@@ -40,17 +40,17 @@ export function resolveDocsRoot(explicit?: string): string {
     }
     return abs
   }
-  if (process.env.HUBDOCS_ROOT) {
-    const abs = path.resolve(process.env.HUBDOCS_ROOT)
-    if (!fs.existsSync(abs)) throw new Error(`HUBDOCS_ROOT not found: ${abs}`)
+  if (process.env.DOCSKIT_ROOT) {
+    const abs = path.resolve(process.env.DOCSKIT_ROOT)
+    if (!fs.existsSync(abs)) throw new Error(`DOCSKIT_ROOT not found: ${abs}`)
     if (!looksLikeHub(abs)) {
-      throw new Error(`HUBDOCS_ROOT missing architecture/: ${abs}`)
+      throw new Error(`DOCSKIT_ROOT missing architecture/: ${abs}`)
     }
     return abs
   }
   if (looksLikeHub(process.cwd())) return process.cwd()
   throw new Error(
-    'Cannot resolve docs root. Pass docsRoot to the tool, configure a project-local HUBDOCS_ROOT, ' +
+    'Cannot resolve docs root. Pass docsRoot to the tool, configure a project-local DOCSKIT_ROOT, ' +
       'or cd into a docs hub (must contain architecture/). Setup: docskit init',
   )
 }

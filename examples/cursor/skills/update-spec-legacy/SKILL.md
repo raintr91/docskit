@@ -22,7 +22,7 @@ disable-model-invocation: true
 1. Receive delta from `/update-spec` or grill gap.
 2. Patch trace slice + `bundle.legacy` (behaviors, fields, ui) with confidence.
 3. **Micro-read** legacy file/symbol only when tagged `#legacy-recheck`.
-4. `bundle_split` + `legacy_dynamics_validate` if trace changed (CLI: `bundlekit split` / `bundlekit legacy-validate`; fallback pnpm scripts).
+4. `bundle_split` + `legacy_dynamics_validate` if trace changed (CLI: `docskit split` / `docskit legacy-validate`; fallback pnpm scripts).
 5. Handoff → `/bqa-grill-docs` or `/dev-grill-docs` per section touched.
 
 ## Accelerators (optional)
@@ -43,9 +43,9 @@ Never use the CodeGraph index of the currently open docs hub for another
 repository. Route per `.cursor/rules/cross-repo-index.mdc` (Platform DNA SSOT).
 
 Missing optionals never block `/update-spec-legacy`. After the existing
-fallback completes, emit exactly one `bundlekit.missing-optional` event per
+fallback completes, emit exactly one `docskit.missing-optional` event per
 `runId` + optional against
-`.cursor/schemas/bundlekit/missing-optional-event.schema.json`. Deduplicate
+`.cursor/schemas/docskit/missing-optional-event.schema.json`. Deduplicate
 retries and report only actual `fileReads` / `contextBytes`.
 
 ## Done

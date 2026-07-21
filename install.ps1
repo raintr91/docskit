@@ -1,17 +1,17 @@
-# hubdocs installer for Windows (PowerShell).
+# docskit installer for Windows (PowerShell).
 #
-#   irm https://raw.githubusercontent.com/raintr91/hubdocs/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/raintr91/docskit/main/install.ps1 | iex
 #
 # Prefers WSL if available. Falls back to native Windows when Node ≥ 22 is on PATH.
 #
 # Env:
-#   HUBDOCS_REPO, HUBDOCS_INSTALL_DIR, HUBDOCS_REF
-#   HUBDOCS_USE_WSL=0 to force native Windows install
+#   DOCSKIT_REPO, DOCSKIT_INSTALL_DIR, DOCSKIT_REF
+#   DOCSKIT_USE_WSL=0 to force native Windows install
 
 $ErrorActionPreference = 'Stop'
-$repo = if ($env:HUBDOCS_REPO) { $env:HUBDOCS_REPO } else { 'raintr91/hubdocs' }
-$ref = if ($env:HUBDOCS_REF) { $env:HUBDOCS_REF } else { 'main' }
-$useWsl = $env:HUBDOCS_USE_WSL -ne '0'
+$repo = if ($env:DOCSKIT_REPO) { $env:DOCSKIT_REPO } else { 'raintr91/docskit' }
+$ref = if ($env:DOCSKIT_REF) { $env:DOCSKIT_REF } else { 'main' }
+$useWsl = $env:DOCSKIT_USE_WSL -ne '0'
 
 function Test-Wsl {
   try {
@@ -21,7 +21,7 @@ function Test-Wsl {
 }
 
 if ($useWsl -and (Test-Wsl)) {
-  Write-Host "Installing hubdocs inside WSL (github.com/$repo @$ref)..."
+  Write-Host "Installing docskit inside WSL (github.com/$repo @$ref)..."
   $bash = @"
 set -euo pipefail
 curl -fsSL https://raw.githubusercontent.com/$repo/$ref/install.sh | bash
@@ -31,15 +31,15 @@ curl -fsSL https://raw.githubusercontent.com/$repo/$ref/install.sh | bash
 
   Write-Host ""
   Write-Host "Package installed. From WSL, cd into a docs hub and run:"
-  Write-Host "  hubdocs init --location=local --yes --wsl"
-  Write-Host "Then restart the agent and try MCP tool hubdocs_list_ids."
-  Write-Host "CLI (WSL): wsl hubdocs version"
+  Write-Host "  docskit init --location=local --yes --wsl"
+  Write-Host "Then restart the agent and try MCP tool docskit_list_ids."
+  Write-Host "CLI (WSL): wsl docskit version"
   return
 }
 
 # --- Native Windows (Node required) ---
-$installDir = if ($env:HUBDOCS_INSTALL_DIR) { $env:HUBDOCS_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA 'hubdocs' }
-Write-Host "Installing hubdocs natively → $installDir"
+$installDir = if ($env:DOCSKIT_INSTALL_DIR) { $env:DOCSKIT_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA 'docskit' }
+Write-Host "Installing docskit natively → $installDir"
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
   throw "Node.js ≥ 22 required on PATH (or use WSL install)."
@@ -77,12 +77,12 @@ if (($userPath -split ';') -notcontains $binDir) {
   Write-Host "Added $binDir to User PATH (restart terminal)."
 }
 
-$cmdShim = Join-Path $binDir 'hubdocs.cmd'
+$cmdShim = Join-Path $binDir 'docskit.cmd'
 @"
 @echo off
-node "%~dp0hubdocs.mjs" %*
+node "%~dp0docskit.mjs" %*
 "@ | Set-Content -Path $cmdShim -Encoding ASCII
 
-Write-Host "Run: hubdocs version"
-Write-Host "Then cd into a docs hub and run: hubdocs init --location=local --yes"
+Write-Host "Run: docskit version"
+Write-Host "Then cd into a docs hub and run: docskit init --location=local --yes"
 Write-Host "Or: npx --yes github:$repo"

@@ -48,7 +48,7 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 if ArtifactGraph available: analyze/grill/tag hints + recommend genDry
 else: model review from scoped bundle/design/legacy evidence (model fallback)
 
-if Hubdocs available: resolve CMP/CTR IDs
+if Docskit available: resolve CMP/CTR IDs
 else: repository path conventions (deterministic fallback)
 ```
 

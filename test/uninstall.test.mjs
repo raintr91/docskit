@@ -12,7 +12,7 @@ import path from 'node:path'
 import test from 'node:test'
 
 // Isolate the install ledger so tests never touch the real ~/.local/state.
-process.env.HUBDOCS_STATE_DIR = mkdtempSync(path.join(os.tmpdir(), 'hubdocs-state-'))
+process.env.DOCSKIT_STATE_DIR = mkdtempSync(path.join(os.tmpdir(), 'docskit-state-'))
 
 const { uninstallAgents } = await import('../dist/install/agents.js')
 const { INSTALL_MANIFEST_PATH, installHarness, statusHarness, uninstallHarness } = await import(
@@ -27,7 +27,7 @@ const { discoverInstalls, ledgerPath, readLedger } = await import('../dist/insta
 const originalCwd = process.cwd()
 
 function tempDir(name) {
-  return mkdtempSync(path.join(os.tmpdir(), `hubdocs-uninstall-${name}-`))
+  return mkdtempSync(path.join(os.tmpdir(), `docskit-uninstall-${name}-`))
 }
 
 test('uninstall dry-run lists files but changes nothing', () => {
@@ -59,8 +59,8 @@ test('uninstall --yes removes owned files and manifest', () => {
 
   for (const file of install.written) assert.equal(existsSync(file), false)
   assert.equal(existsSync(path.join(root, ...INSTALL_MANIFEST_PATH.split('/'))), false)
-  // .hubdocs dir pruned
-  assert.equal(existsSync(path.join(root, '.hubdocs')), false)
+  // .docskit dir pruned
+  assert.equal(existsSync(path.join(root, '.docskit')), false)
 
   const after = statusHarness({ projectRoot: root })
   assert.equal(after.installed, false)
@@ -78,7 +78,7 @@ test('uninstall preserves member-modified files and reports them', () => {
   assert.equal(result.deleted.includes(victim), false)
 })
 
-test('uninstall un-merges only hubdocs bundles from a shared registry', () => {
+test('uninstall un-merges only docskit bundles from a shared registry', () => {
   const root = tempDir('registry')
   installHarness({ projectRoot: root, type: 'docs' })
   const registry = path.join(root, '.cursor', 'extracts', 'extract-registry.json')
@@ -109,7 +109,7 @@ test('install records the repo in the ledger; uninstall rewrites the file to for
   assert.ok(raw.repos.includes(other), 'other repo entry preserved')
 })
 
-test('discoverInstalls finds repos carrying a hubdocs manifest', () => {
+test('discoverInstalls finds repos carrying a docskit manifest', () => {
   const base = tempDir('discover')
   const repo = path.join(base, 'nested', 'my-repo')
   mkdirSync(repo, { recursive: true })
@@ -123,7 +123,7 @@ test('discoverInstalls finds repos carrying a hubdocs manifest', () => {
 })
 
 test('CLI contract: deinit is repo-local; uninstall defaults to global all', () => {
-  const cli = path.resolve('bin', 'hubdocs.mjs')
+  const cli = path.resolve('bin', 'docskit.mjs')
   const root = tempDir('cli-deinit')
   const state = tempDir('cli-state')
   installHarness({ projectRoot: root, type: 'docs' })
@@ -133,7 +133,7 @@ test('CLI contract: deinit is repo-local; uninstall defaults to global all', () 
     [cli, 'deinit', '--project-root', root, '--yes'],
     {
       encoding: 'utf8',
-      env: { ...process.env, HUBDOCS_STATE_DIR: process.env.HUBDOCS_STATE_DIR },
+      env: { ...process.env, DOCSKIT_STATE_DIR: process.env.DOCSKIT_STATE_DIR },
     },
   )
   assert.equal(deinit.status, 0, deinit.stderr)
@@ -146,16 +146,16 @@ test('CLI contract: deinit is repo-local; uninstall defaults to global all', () 
     env: {
       ...process.env,
       HOME: fakeHome,
-      HUBDOCS_STATE_DIR: state,
-      HUBDOCS_INSTALL_DIR: path.join(fakeHome, '.hubdocs'),
-      HUBDOCS_BIN_DIR: path.join(fakeHome, '.local', 'bin'),
+      DOCSKIT_STATE_DIR: state,
+      DOCSKIT_INSTALL_DIR: path.join(fakeHome, '.docskit'),
+      DOCSKIT_BIN_DIR: path.join(fakeHome, '.local', 'bin'),
     },
   })
   assert.equal(globalUninstall.status, 0, globalUninstall.stderr)
   assert.match(globalUninstall.stdout, /Dry-run \(all\)/)
 })
 
-test('uninstallAgents strips the hubdocs MCP entry (cursor local)', () => {
+test('uninstallAgents strips the docskit MCP entry (cursor local)', () => {
   const root = tempDir('mcp')
   const cursorDir = path.join(root, '.cursor')
   mkdirSync(cursorDir, { recursive: true })
@@ -163,7 +163,7 @@ test('uninstallAgents strips the hubdocs MCP entry (cursor local)', () => {
   writeFileSync(
     mcpFile,
     `${JSON.stringify(
-      { mcpServers: { hubdocs: { command: 'node', args: ['x'] }, keep: { command: 'k' } } },
+      { mcpServers: { docskit: { command: 'node', args: ['x'] }, keep: { command: 'k' } } },
       null,
       2,
     )}\n`,
@@ -174,12 +174,12 @@ test('uninstallAgents strips the hubdocs MCP entry (cursor local)', () => {
     const dry = uninstallAgents({ target: 'cursor', location: 'local' })
     assert.equal(dry.dryRun, true)
     assert.ok(dry.removed.some((r) => r.startsWith('cursor:')))
-    assert.ok('hubdocs' in JSON.parse(readFileSync(mcpFile, 'utf8')).mcpServers)
+    assert.ok('docskit' in JSON.parse(readFileSync(mcpFile, 'utf8')).mcpServers)
 
     const applied = uninstallAgents({ target: 'cursor', location: 'local', yes: true })
     assert.ok(applied.removed.some((r) => r.startsWith('cursor:')))
     const parsed = JSON.parse(readFileSync(mcpFile, 'utf8'))
-    assert.equal('hubdocs' in parsed.mcpServers, false)
+    assert.equal('docskit' in parsed.mcpServers, false)
     assert.equal('keep' in parsed.mcpServers, true)
 
     const again = uninstallAgents({ target: 'cursor', location: 'local', yes: true })
@@ -219,11 +219,11 @@ test('deinit removes exclusive gitignore entries but keeps shared .cursor/', () 
 
   const before = readFileSync(path.join(root, '.gitignore'), 'utf8')
   assert.match(before, /\.cursor\//)
-  assert.match(before, /\.hubdocs\//)
+  assert.match(before, /\.docskit\//)
   assert.match(before, /\.codex\//)
 
   const result = uninstallHarness({ projectRoot: root, yes: true })
-  assert.ok(result.deleted.some((line) => line.includes('entry: .hubdocs/')))
+  assert.ok(result.deleted.some((line) => line.includes('entry: .docskit/')))
   assert.ok(result.deleted.some((line) => line.includes('entry: .codex/')))
   assert.equal(
     result.deleted.some((line) => line.includes('entry: .cursor/')),
@@ -233,7 +233,7 @@ test('deinit removes exclusive gitignore entries but keeps shared .cursor/', () 
 
   const after = readFileSync(path.join(root, '.gitignore'), 'utf8')
   assert.match(after, /\.cursor\//)
-  assert.doesNotMatch(after, /\.hubdocs\//)
+  assert.doesNotMatch(after, /\.docskit\//)
   assert.doesNotMatch(after, /\.codex\//)
   assert.match(after, /other-toolkit note/)
 })

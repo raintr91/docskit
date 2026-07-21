@@ -1,5 +1,5 @@
 ---
-description: Bundlekit grill metadata — list/form/detail profiles
+description: Docskit grill metadata — list/form/detail profiles
 globs: product/components/**/code/**
 alwaysApply: false
 ---
