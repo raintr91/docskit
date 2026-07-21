@@ -44,6 +44,14 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 - Vague spec → `/bqa-grill-docs` before `/prototype`.
 - No arc42 chapter prose for a single function — stay C4/code-level.
 
+## Modifiers (If /legacy is used)
+Khi người dùng gọi `... /legacy /spec`, Agent PHẢI:
+- Đọc source từ `legacy-repos.local.json` thay vì source hiện tại.
+- Trích xuất function logic từ source code cũ.
+- Viết/cập nhật `product/legacy-dynamics/{module}/_legacy.dynamics.yaml` (`portal-legacy-dynamics/v1`).
+- Viết `*.bundle.yaml` cho function đó vào `product/components/.../code/` với `specOrigin: legacy`.
+- **Không** tạo codegen tags. Hỗ trợ chạy validate: `legacy_dynamics_validate` / `pnpm legacy-dynamics:validate`.
+
 ## Tools (required after docskit init)
 
 Prefer MCP/CLI when Bundlekit is installed:

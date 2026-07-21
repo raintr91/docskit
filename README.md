@@ -73,9 +73,15 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 ### 4. Legacy Trace (Archaeology)
 | Skill | Chức năng chính |
 |-------|-----------------|
-| `/legacy-spec` | Truy xuất/phân tích source code hệ thống cũ để trích xuất `legacy.dynamics`. |
+| `/legacy-overview` | Phân tích tài liệu hệ thống cũ để map các actor/persona thành Operational areas mới. |
+| `/legacy-surfaces` | Truy vết và ánh xạ các web app / frontend client cũ vào lớp Surfaces mới. |
+| `/legacy-module` | Phân tích subsystem/component cũ để map thành cấu trúc Modules (`CMP-*`). |
+| `/legacy-business-process` | Truy vết flow nghiệp vụ cũ để chuyển đổi thành business processes (`FLOW-*`). |
+| `/legacy-system-context` | Phân tích sơ đồ ngữ cảnh (System Context), external dependencies cũ. |
+| `/legacy-db-erd` | Ánh xạ cấu trúc bảng/cột từ schema database cũ sang Data model mới. |
+| `/legacy-cross-service` | Phân tích luồng tích hợp, giao tiếp giữa các service (RPC/Message) cũ. |
+| `/legacy-spec` | Truy xuất/phân tích source code hệ thống cũ để trích xuất `legacy.dynamics` cho Function. |
 | `/update-spec-legacy` | Cập nhật delta spec dựa trên các bằng chứng (evidence) mới tìm thấy từ mã nguồn cũ. |
-| `/legacy-*` | Nhóm skill chuyên biệt để phân tích mã nguồn cũ tương ứng từng tầng (VD: `legacy-system-context`, `legacy-overview`, `legacy-db-erd`, `legacy-business-process`...). |
 
 ### 5. Tiện ích (Utilities)
 | Skill | Chức năng chính |

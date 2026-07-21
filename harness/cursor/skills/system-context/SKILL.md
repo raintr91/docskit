@@ -6,4 +6,9 @@ extractBundle: architecture-core
 ---
 # /system-context
 **Target Paths:** `Architecture/System Context/`
-**Guidelines:** Focus on context models, landscape boundaries (`CTX-*`, `LND-*`).
+**Guidelines:** Use arc42 chapter 3 (Context).
+
+## Modifiers (If /legacy is used)
+Khi gọi kèm `/legacy` (vd: `/legacy /system-context`):
+- Tham chiếu source từ `legacy-repos.local.json`.
+- Khảo cổ: phân tích external dependencies, các integration partner của hệ thống cũ.

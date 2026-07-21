@@ -43,16 +43,7 @@
     "dev-grill-docs",
     "grill-with-docs",
     "update-spec",
-    "update-spec-legacy",
-    "configure-repo-maps",
-    "legacy-spec",
-    "legacy-system-context",
-    "legacy-overview",
-    "legacy-surfaces",
-    "legacy-module",
-    "legacy-business-process",
-    "legacy-db-erd",
-    "legacy-cross-service"
+    "update-spec-legacy"
   ],
   "compatibility": {
     "node": ">=22",

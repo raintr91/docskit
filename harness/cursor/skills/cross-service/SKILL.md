@@ -6,4 +6,9 @@ extractBundle: architecture-core
 ---
 # /cross-service
 **Target Paths:** `[Target Path]/Common/Cross-service flows`
-**Guidelines:** Focus on Mermaid sequence diagrams detailing cross-service API interactions.
+**Guidelines:** Use Mermaid `sequenceDiagram` for sync/async RPC.
+
+## Modifiers (If /legacy is used)
+Khi gọi kèm `/legacy` (vd: `/legacy /cross-service`):
+- Tham chiếu source từ `legacy-repos.local.json`.
+- Khảo cổ: trace các luồng giao tiếp nội bộ giữa các service cũ.

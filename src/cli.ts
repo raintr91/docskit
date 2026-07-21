@@ -8,6 +8,7 @@
 
 import { createRequire } from 'node:module'
 import { lstatSync, realpathSync, rmSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
 import { packageRoot, defaultHubdocsRoot, looksLikeHub } from './config/docs-root.js'
@@ -179,6 +180,19 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
       return
     }
 
+    const projectRoot = path.resolve(arg('--project-root') ?? process.cwd())
+
+    // --- Ensure Platform DNA ---
+    try {
+      execSync('platform-dna version', { stdio: 'ignore' })
+    } catch {
+      console.log('\\n[docskit] platform-dna not found globally. Installing...')
+      execSync('curl -fsSL https://raw.githubusercontent.com/raintr91/platform-dna/main/install.sh | bash', { stdio: 'inherit' })
+    }
+    console.log('[docskit] Ensuring platform-dna is initialized in workspace...')
+    execSync('platform-dna init --yes', { cwd: projectRoot, stdio: 'inherit' })
+    // ---------------------------
+
     let target = arg('--target')
     const interactiveAgents =
       !has('--yes') && !target && Boolean(process.stdin.isTTY && process.stdout.isTTY)
@@ -206,7 +220,6 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
     }
     for (const s of result.skipped) console.log(`  skip: ${s}`)
 
-    const projectRoot = path.resolve(arg('--project-root') ?? process.cwd())
     const intended = generatedTargets({
       projectRoot,
       location: result.location,
