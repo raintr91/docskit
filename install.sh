@@ -68,8 +68,26 @@ case ":$PATH:" in
   *":$BIN_DIR:"*) ;;
   *)
     echo ""
-    echo "$BIN_DIR is not on PATH. Add:"
-    echo "  export PATH=\"$BIN_DIR:\$PATH\""
+    echo "$BIN_DIR is not on PATH. Attempting to add to shell config..."
+    ADDED=0
+    for rc in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.bash_profile"; do
+      if [ -f "$rc" ]; then
+        if ! grep -q "$BIN_DIR" "$rc"; then
+          echo "" >> "$rc"
+          echo "# Added by docskit installer" >> "$rc"
+          echo "export PATH=\"$BIN_DIR:\$PATH\"" >> "$rc"
+          echo "  -> Added to $rc"
+          ADDED=1
+        fi
+      fi
+    done
+    
+    if [ "$ADDED" -eq 1 ]; then
+      echo "  Please restart your terminal or run 'source ~/.zshrc' (or your respective shell config) to apply."
+    else
+      echo "  Could not automatically add to shell config. Please add manually:"
+      echo "  export PATH=\"$BIN_DIR:\$PATH\""
+    fi
     ;;
 esac
 
