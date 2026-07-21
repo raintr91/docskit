@@ -21,6 +21,17 @@ REF="${DOCSKIT_REF:-main}"
 if [ "${1:-}" = "--uninstall" ]; then
   rm -f "$BIN_DIR/docskit" "$BIN_DIR/docskit-mcp"
   rm -rf "$INSTALL_DIR"
+  
+  # Remove path from shell configs
+  for rc in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.bash_profile"; do
+    if [ -f "$rc" ] && grep -q "# --- docskit start ---" "$rc"; then
+      # Delete lines from start to end marker
+      sed -i.bak '/# --- docskit start ---/,/# --- docskit end ---/d' "$rc"
+      rm -f "${rc}.bak"
+      echo "Removed docskit PATH from $rc"
+    fi
+  done
+  
   echo "docskit uninstalled ($INSTALL_DIR)."
   exit 0
 fi
@@ -74,8 +85,9 @@ case ":$PATH:" in
       if [ -f "$rc" ]; then
         if ! grep -q "$BIN_DIR" "$rc"; then
           echo "" >> "$rc"
-          echo "# Added by docskit installer" >> "$rc"
+          echo "# --- docskit start ---" >> "$rc"
           echo "export PATH=\"$BIN_DIR:\$PATH\"" >> "$rc"
+          echo "# --- docskit end ---" >> "$rc"
           echo "  -> Added to $rc"
           ADDED=1
         fi
