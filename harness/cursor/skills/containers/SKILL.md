@@ -1,22 +1,22 @@
 ---
 name: containers
-description: /containers — arc42 §05 Building blocks; CTR-* views + CMP index links.
+description: /containers — Runtime Containers; CTR-* views + CMP index links.
 disable-model-invocation: true
 extractBundle: architecture-core
 ---
 
-# /containers — C4 Containers / building blocks (§05)
+# /containers — C4 Containers / building blocks
 
 **Architecture layer:** Runtime containers (Portal · Client/HMI · API service · Gateway)
-**Standards:** prose → **arc42**-lite; diagrams → **C4** `CTR-*`
+**Standards:** prose → **Architecture/Product**-lite; diagrams → **C4** `CTR-*`
 
 ## Write
 
-- Path: `architecture/05-building-blocks/`
+- Path: `Architecture/Runtime Containers/`
 - IDs: `CTR-*` (description + flowchart + Code refs table)
 - Name runtime ownership explicitly: `*-web`, `*-api`, `*-client`, `*-gateway`
-- Keep operational areas/personas in `/context`; do not classify Admin/Worker as C4 Containers
-- CMP: **index/link only** → `product/components/CMP-*` (use `/component` for README)
+- Keep operational areas/personas in `/overview` or `/system-context`; do not classify Admin/Worker as C4 Containers
+- CMP: **index/link only** → `Surfaces/[Surface]/Modules/CMP-*` (use `/module` for README)
 - Format: MD + Mermaid only
 
 ## Do not
@@ -27,16 +27,18 @@ extractBundle: architecture-core
 
 ## Pilot
 
-[`architecture/05-building-blocks/`](../../../architecture/05-building-blocks/) · `CTR-admin-web` · `CTR-admin-api`
+## Pilot
 
-Parent router: `/architecture` · CMP skill: `/component` · [Start now](../../../platform/guide/start-now.md)
+[`Architecture/Runtime Containers/`](../../../Architecture/Runtime Containers/) · `CTR-admin-web` · `CTR-admin-api`
+
+Parent router: `/architecture` · CMP skill: `/module` · [Start now](../../../platform/guide/start-now.md)
 
 ## Accelerators (optional)
 
-Prefer `hubdocs_list_ids` kind `CTR` and `hubdocs_dependents_of`.
+Prefer `docskit_list_ids` kind `CTR` and `docskit_dependents_of`.
 
 ```text
-if Hubdocs available: targeted hubdocs_* tools for IDs / deps / journeys / links
+if Hubdocs available: targeted docskit_* tools for IDs / deps / journeys / links
 else: Glob/search under architecture/ and product/, then Read scoped Markdown
 
 Missing Hubdocs never blocks authoring.

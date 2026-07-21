@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hubdocs installer (Linux / WSL) — git clone + npm/pnpm build (needs Node ≥ 22).
+# docskit installer (Linux / WSL) — git clone + npm/pnpm build (needs Node ≥ 22).
 #
 #   curl -fsSL https://raw.githubusercontent.com/raintr91/hubdocs/main/install.sh | bash
 #
@@ -7,34 +7,34 @@
 # Uninstall: bash install.sh --uninstall
 #
 # Env:
-#   HUBDOCS_REPO          default: raintr91/hubdocs
-#   HUBDOCS_INSTALL_DIR   default: ~/.hubdocs
-#   HUBDOCS_BIN_DIR       default: ~/.local/bin
-#   HUBDOCS_REF           git ref (default: main)
+#   DOCSKIT_REPO          default: raintr91/hubdocs
+#   DOCSKIT_INSTALL_DIR   default: ~/.docskit
+#   DOCSKIT_BIN_DIR       default: ~/.local/bin
+#   DOCSKIT_REF           git ref (default: main)
 set -euo pipefail
 
-REPO="${HUBDOCS_REPO:-raintr91/hubdocs}"
-INSTALL_DIR="${HUBDOCS_INSTALL_DIR:-$HOME/.hubdocs}"
-BIN_DIR="${HUBDOCS_BIN_DIR:-$HOME/.local/bin}"
-REF="${HUBDOCS_REF:-main}"
+REPO="${DOCSKIT_REPO:-raintr91/hubdocs}"
+INSTALL_DIR="${DOCSKIT_INSTALL_DIR:-$HOME/.docskit}"
+BIN_DIR="${DOCSKIT_BIN_DIR:-$HOME/.local/bin}"
+REF="${DOCSKIT_REF:-main}"
 
 if [ "${1:-}" = "--uninstall" ]; then
-  rm -f "$BIN_DIR/hubdocs" "$BIN_DIR/hubdocs-mcp"
+  rm -f "$BIN_DIR/docskit" "$BIN_DIR/docskit-mcp"
   rm -rf "$INSTALL_DIR"
-  echo "hubdocs uninstalled ($INSTALL_DIR)."
+  echo "docskit uninstalled ($INSTALL_DIR)."
   exit 0
 fi
 
 if ! command -v node >/dev/null 2>&1; then
-  echo "hubdocs: Node.js ≥ 22 required (node not found)." >&2
+  echo "docskit: Node.js ≥ 22 required (node not found)." >&2
   exit 1
 fi
 if ! command -v git >/dev/null 2>&1; then
-  echo "hubdocs: git required." >&2
+  echo "docskit: git required." >&2
   exit 1
 fi
 
-echo "Installing hubdocs from github.com/$REPO @$REF → $INSTALL_DIR"
+echo "Installing docskit from github.com/$REPO @$REF → $INSTALL_DIR"
 
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
@@ -53,16 +53,16 @@ elif command -v npm >/dev/null 2>&1; then
   npm install
   npm run build
 else
-  echo "hubdocs: pnpm or npm required." >&2
+  echo "docskit: pnpm or npm required." >&2
   exit 1
 fi
 
 mkdir -p "$BIN_DIR"
-ln -sf "$INSTALL_DIR/bin/hubdocs.mjs" "$BIN_DIR/hubdocs"
-ln -sf "$INSTALL_DIR/bin/hubdocs-mcp.mjs" "$BIN_DIR/hubdocs-mcp"
+ln -sf "$INSTALL_DIR/bin/docskit.mjs" "$BIN_DIR/docskit"
+ln -sf "$INSTALL_DIR/bin/docskit-mcp.mjs" "$BIN_DIR/docskit-mcp"
 chmod +x "$INSTALL_DIR/bin/"*.mjs
 
-echo "Linked $BIN_DIR/hubdocs"
+echo "Linked $BIN_DIR/docskit"
 
 case ":$PATH:" in
   *":$BIN_DIR:"*) ;;
@@ -75,6 +75,6 @@ esac
 
 echo ""
 echo "Done. Next:"
-echo "  hubdocs version"
-echo "  cd /path/to/your/docs-hub && hubdocs init --location=local --yes"
+echo "  docskit version"
+echo "  cd /path/to/your/docs-hub && docskit init --location=local --yes"
 echo "Docs: docs/INIT.md"

@@ -17,9 +17,33 @@ import {
 import { depsFromFiles, dependentsOf, validateMdLinks } from '../scan/links.js'
 import { routeTopic } from '../scan/route.js'
 
+import { runEngine, type EngineName } from '../cli/engines.js'
+
 function text(data: unknown) {
   return {
     content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }],
+  }
+}
+
+async function toolEngine(
+  name: EngineName,
+  paths: string[] | undefined,
+  projectRoot: string | undefined,
+  extraArgs: string[] = [],
+) {
+  try {
+    const cwd = resolveDocsRoot(projectRoot)
+    const result = await runEngine(name, paths ?? [], { cwd, extraArgs })
+    return text({
+      ok: result.ok,
+      engine: name,
+      cwd,
+      code: result.code,
+      stdout: result.stdout.trim(),
+      stderr: result.stderr.trim(),
+    })
+  } catch (err) {
+    return text({ ok: false, error: err instanceof Error ? err.message : String(err) })
   }
 }
 
@@ -50,7 +74,7 @@ function chapterHasId(docsRoot: string, id: string): boolean {
 
 export function registerTools(server: McpServer): void {
   server.tool(
-    'hubdocs_list_ids',
+    'docskit_list_ids',
     'List architecture/product IDs (LND/CTX/CTR/CMP/FLOW/DEP/ADR/W/API/UI) from docs hub MD (skips redirect stubs)',
     {
       docsRoot: z
@@ -78,7 +102,7 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'hubdocs_get_element',
+    'docskit_get_element',
     'Get primary + related files and short excerpts for one ID (canonical path first)',
     {
       id: z.string(),
@@ -112,7 +136,7 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'hubdocs_deps_of',
+    'docskit_deps_of',
     'IDs referenced from files that define/mention this ID',
     {
       id: z.string(),
@@ -134,7 +158,7 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'hubdocs_dependents_of',
+    'docskit_dependents_of',
     'Other IDs whose files mention this ID',
     {
       id: z.string(),
@@ -154,7 +178,7 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'hubdocs_orphans',
+    'docskit_orphans',
     'Heuristic orphans vs arc42 layout: missing FLOW/ADR/CMP/W/API files; heading IDs missing from chapter',
     {
       docsRoot: z.string().optional(),
@@ -226,7 +250,7 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'hubdocs_validate_links',
+    'docskit_validate_links',
     'Find broken MD links under architecture/ + product (skips redirect-stub sources)',
     {
       docsRoot: z.string().optional(),
@@ -255,7 +279,7 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'hubdocs_route',
+    'docskit_route',
     'Map a natural-language topic to arc42 chapter path + skill (/architecture router helper)',
     {
       topic: z.string().describe('e.g. "login sequence", "containers", "ADR auth"'),
@@ -266,7 +290,7 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'hubdocs_journeys',
+    'docskit_journeys',
     'List FLOW-* journeys under architecture/06-runtime/journeys (catalog §06)',
     {
       docsRoot: z.string().optional(),
@@ -305,7 +329,7 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'hubdocs_layout',
+    'docskit_layout',
     'Describe expected arc42 × C4 docs hub layout (canonical paths per ID kind)',
     {},
     async () => {
@@ -331,5 +355,115 @@ export function registerTools(server: McpServer): void {
         ],
       })
     },
+  )
+  const rootField = {
+    projectRoot: z
+      .string()
+      .optional()
+      .describe('Docs hub root; defaults to DOCSKIT_ROOT or cwd'),
+  }
+
+  server.tool(
+    'docskit_bundle_split',
+    'Split one or more *.bundle.yaml files into ir/* (docs-hub)',
+    {
+      ...rootField,
+      paths: z.array(z.string()).describe('Bundle YAML paths relative to project root or absolute'),
+    },
+    async ({ projectRoot, paths }) => toolEngine('split', paths, projectRoot),
+  )
+
+  server.tool(
+    'docskit_bundle_merge',
+    'Merge ir/* back into *.bundle.yaml',
+    {
+      ...rootField,
+      paths: z.array(z.string()),
+    },
+    async ({ projectRoot, paths }) => toolEngine('merge', paths, projectRoot),
+  )
+
+  server.tool(
+    'docskit_bundle_check',
+    'Check that ir/* matches split output for bundles',
+    {
+      ...rootField,
+      paths: z.array(z.string()),
+    },
+    async ({ projectRoot, paths }) => toolEngine('check', paths, projectRoot),
+  )
+
+  server.tool(
+    'docskit_bundle_split_all',
+    'Split all bundles under a yaml root (default product or --root)',
+    {
+      ...rootField,
+      root: z.string().optional().describe('Optional yaml root relative to project'),
+      check: z.boolean().optional(),
+    },
+    async ({ projectRoot, root, check }) => {
+      const extra: string[] = []
+      if (root) extra.push('--root', root)
+      if (check) extra.push('--check')
+      return toolEngine('split_all', [], projectRoot, extra)
+    },
+  )
+
+  server.tool(
+    'docskit_bundle_normalize',
+    'Normalize bundle.gen sections',
+    {
+      ...rootField,
+      paths: z.array(z.string()),
+    },
+    async ({ projectRoot, paths }) => toolEngine('normalize', paths, projectRoot),
+  )
+
+  server.tool(
+    'docskit_docs_render',
+    'Render design Markdown from product YAML/bundles (no testcase MD)',
+    {
+      ...rootField,
+      yamlRoot: z.string().optional(),
+      mdRoot: z.string().optional(),
+      legacyRoot: z.string().optional(),
+      noIndex: z.boolean().optional().default(true),
+    },
+    async ({ projectRoot, yamlRoot, mdRoot, legacyRoot, noIndex }) => {
+      const extra: string[] = []
+      if (yamlRoot) extra.push('--yaml-root', yamlRoot)
+      if (mdRoot) extra.push('--md-root', mdRoot)
+      if (legacyRoot) extra.push('--legacy-root', legacyRoot)
+      if (noIndex !== false) extra.push('--no-index')
+      return toolEngine('render', [], projectRoot, extra)
+    },
+  )
+
+  server.tool(
+    'docskit_docs_render_common',
+    'Render common UI design MD under product/common',
+    {
+      ...rootField,
+    },
+    async ({ projectRoot }) =>
+      toolEngine('render', [], projectRoot, [
+        '--yaml-root',
+        'product/common/yaml',
+        '--md-root',
+        'product/common/md',
+        '--legacy-root',
+        'product/common',
+        '--no-index',
+      ]),
+  )
+
+  server.tool(
+    'docskit_legacy_dynamics_validate',
+    'Validate portal-legacy-dynamics YAML module files',
+    {
+      ...rootField,
+      paths: z.array(z.string()),
+    },
+    async ({ projectRoot, paths }) => toolEngine('legacy_validate', paths, projectRoot),
   )
 }

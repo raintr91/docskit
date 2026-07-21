@@ -1,18 +1,18 @@
 ---
 name: journey
-description: /journey — product runtime journeys (FLOW-*) under arc42 §06; replaces /dynamics for new work.
+description: /journey — product runtime journeys (FLOW-*).
 disable-model-invocation: true
 extractBundle: architecture-core
 ---
 
 # /journey — Flow (`FLOW-*` / `*_flow`)
 
-**Business layer:** Flow (optional node on the tree)  
-**Standards:** 1–2 lines purpose OK (arc42-lite); body diagram → **C4 `sequenceDiagram`**. Skill name stays **`/journey`** — do not say *dynamics* on new docs trees.
+**Business layer:** Runtime Journeys  
+**Standards:** 1–2 lines purpose OK; body diagram → **C4 `sequenceDiagram`**. Skill name stays **`/journey`** — do not say *dynamics* on new docs trees.
 
 ## Write
 
-- Path: `architecture/06-runtime/journeys/` — files `FLOW-*.md` (catalog: `06-runtime/index.md`)
+- Path: `Architecture/Runtime Journeys/` — files `FLOW-*.md`
 - Format: **MD + Mermaid only** — `sequenceDiagram` preferred
 - May reference Code IDs (`W-*`, `API-*`, `CTR-*`) on steps/diagram only
 - Apply curated criteria (extract `tpl-journey.md` / `architecture-core.md`)
@@ -34,10 +34,10 @@ extractBundle: architecture-core
 
 ## Accelerators (optional)
 
-Prefer `hubdocs_journeys`, `hubdocs_deps_of`, `hubdocs_orphans` before adding a journey.
+Prefer `docskit_journeys`, `docskit_deps_of`, `docskit_orphans` before adding a journey.
 
 ```text
-if Hubdocs available: targeted hubdocs_* tools for IDs / deps / journeys / links
+if Hubdocs available: targeted docskit_* tools for IDs / deps / journeys / links
 else: Glob/search under architecture/ and product/, then Read scoped Markdown
 
 Missing Hubdocs never blocks authoring.
@@ -49,4 +49,4 @@ targeted local reads, then emit one deduplicated `hubdocs.missing-optional`
 event per run and optional with actual `fileReads` and `contextBytes` only.
 
 
-Pilot: [`FLOW-login`](../../../architecture/06-runtime/journeys/FLOW-login.md) · [Start now](../../../platform/guide/start-now.md)
+Pilot: [`FLOW-login`](../../../Architecture/Runtime Journeys/FLOW-login.md) · [Start now](../../../platform/guide/start-now.md)

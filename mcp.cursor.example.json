@@ -1,10 +1,10 @@
 {
   "mcpServers": {
-    "hubdocs": {
+    "docskit": {
       "command": "node",
-      "args": ["/ABS/PATH/to/hubdocs/bin/hubdocs-mcp.mjs"],
+      "args": ["/ABS/PATH/to/docskit/bin/docskit-mcp.mjs"],
       "env": {
-        "HUBDOCS_ROOT": "/ABS/PATH/to/your/docs-hub"
+        "DOCSKIT_ROOT": "/ABS/PATH/to/your/docs-hub"
       }
     }
   }

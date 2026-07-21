@@ -34,6 +34,7 @@ import {
   runOptionalToolkits,
   type OptionalToolkitId,
 } from './install/optional.js'
+import { runEngine, type EngineName } from './cli/engines.js'
 
 const require = createRequire(import.meta.url)
 
@@ -47,11 +48,11 @@ function pkgVersion(): string {
 }
 
 function usage(): void {
-  console.log(`hubdocs ${pkgVersion()}
+  console.log(`docskit ${pkgVersion()}
 
-Local MCP for arc42 × C4 docs hubs — index IDs, deps, orphans, links, route.
+Local MCP for arc42 × C4 docs hubs — index IDs, route, and bundle IR engines.
 
-Wire agents + harness (member UX — just run hubdocs init):
+Wire agents + harness (member UX — just run docskit init):
   init [--target=…] [--type=docs|consumer] [--docs-root <path>] [--yes] [--wsl]
        [--with=artifactgraph|none] [--artifactgraph | --no-artifactgraph]
        [--location=local|global] [--print-config <agent>] [--mcp-file <path>]
@@ -71,6 +72,15 @@ Advanced/backward-compatible uninstall filters:
   uninstall --scope=all-repos|mcp-local|mcp-global|cli|all
             [--project-root <path>] [--target=<agents>] [--location=local|global]
 
+Engines (cwd or --project-root):
+  split [--check] -- <bundle.yaml...>
+  merge -- <bundle.yaml...>
+  split-all [--root <dir>] [--check]
+  normalize -- <bundle.yaml...>
+  render [--yaml-root ...] [--md-root ...] [--legacy-root ...] [--no-index]
+  render-common
+  legacy-validate -- <_legacy.dynamics.yaml...>
+
 Other:
   version
   help
@@ -78,7 +88,7 @@ Other:
 Docs: docs/INIT.md · docs/INSTALL.md · README.md
 
 Env:
-  HUBDOCS_ROOT   project docs hub; otherwise cwd if it has architecture/
+  DOCSKIT_ROOT   project docs hub; otherwise cwd if it has architecture/
 
 Init always writes project-local MCP configs into the current repo.
 --location=global remains available for CI/rootless wiring.
@@ -591,14 +601,28 @@ async function runUninstall(defaultScope: 'repo' | 'all'): Promise<void> {
   }
 }
 
+function afterDashDash(): string[] {
+  const i = process.argv.indexOf('--')
+  return i >= 0 ? process.argv.slice(i + 1) : process.argv.slice(3).filter((a) => !a.startsWith('-'))
+}
+
+async function runNamedEngine(name: EngineName, extraArgs: string[] = []): Promise<void> {
+  const cwd = path.resolve(arg('--project-root') ?? process.cwd())
+  const paths = afterDashDash()
+  const result = await runEngine(name, paths, { cwd, extraArgs })
+  if (result.stdout) process.stdout.write(result.stdout)
+  if (result.stderr) process.stderr.write(result.stderr)
+  process.exit(result.ok ? 0 : 1)
+}
+
 async function main(): Promise<void> {
   const cmd = process.argv[2]
   if (!cmd || cmd === 'help' || cmd === '--help' || cmd === '-h') usage()
 
   if (cmd === 'version' || cmd === '--version' || cmd === '-V') {
-    console.log(`hubdocs ${pkgVersion()}`)
+    console.log(`docskit ${pkgVersion()}`)
     console.log(`packageRoot ${packageRoot()}`)
-    console.log(`HUBDOCS_ROOT ${defaultHubdocsRoot()}`)
+    console.log(`DOCSKIT_ROOT ${defaultHubdocsRoot()}`)
     return
   }
 
@@ -634,6 +658,52 @@ async function main(): Promise<void> {
 
   if (cmd === 'uninstall') {
     await runUninstall('all')
+    return
+  }
+
+  if (cmd === 'split') {
+    await runNamedEngine(has('--check') ? 'check' : 'split')
+    return
+  }
+  if (cmd === 'merge') {
+    await runNamedEngine('merge')
+    return
+  }
+  if (cmd === 'split-all') {
+    const extra: string[] = []
+    if (arg('--root')) extra.push('--root', arg('--root')!)
+    if (has('--check')) extra.push('--check')
+    await runNamedEngine('split_all', extra)
+    return
+  }
+  if (cmd === 'normalize') {
+    await runNamedEngine('normalize')
+    return
+  }
+  if (cmd === 'render') {
+    const extra: string[] = []
+    for (const flag of ['--yaml-root', '--md-root', '--legacy-root'] as const) {
+      const v = arg(flag)
+      if (v) extra.push(flag, v)
+    }
+    if (has('--no-index')) extra.push('--no-index')
+    await runNamedEngine('render', extra)
+    return
+  }
+  if (cmd === 'render-common') {
+    await runNamedEngine('render', [
+      '--yaml-root',
+      'product/common/yaml',
+      '--md-root',
+      'product/common/md',
+      '--legacy-root',
+      'product/common',
+      '--no-index',
+    ])
+    return
+  }
+  if (cmd === 'legacy-validate') {
+    await runNamedEngine('legacy_validate')
     return
   }
 

@@ -17,13 +17,13 @@ member-selected docs repo, never the current code repo.
 ## Protocol
 
 ```text
-hubdocs_layout / hubdocs_route / hubdocs_list_ids
-  → hubdocs_get_element
-  → hubdocs_deps_of / hubdocs_dependents_of
-  → hubdocs_orphans / hubdocs_validate_links
+docskit_layout / docskit_route / docskit_list_ids
+  → docskit_get_element
+  → docskit_deps_of / docskit_dependents_of
+  → docskit_orphans / docskit_validate_links
 ```
 
-Use `hubdocs_journeys` before reading every journey file. Prefer targeted tool
+Use `docskit_journeys` before reading every journey file. Prefer targeted tool
 results over dumping `architecture/**`.
 
 ## Root and setup
@@ -63,9 +63,9 @@ Do not merge repositories into one workspace graph. Route by intent:
 
 ## Owned architecture family
 
-Docs `harness install --type=docs` also syncs `/architecture` `/context` `/containers`
-`/component` `/journey` `/deployment` `/decision` `/cross-cutting` and the
-deprecated `/dynamics` redirect, plus the `architecture-core` extract bundle.
+Docs `harness install --type=docs` also syncs `/architecture`, `/system-context`, `/containers`,
+`/overview`, `/surfaces`, `/module`, `/business-process`, `/db-erd`, `/cross-service`, `/architecture-grill`,
+`/deployment`, `/journey`, `/spec`, `/legacy-spec` and all `/legacy-*` variants, plus the `architecture-core` extract bundle.
 Consumer mode syncs only `/hubdocs`, its rule/schema, and targeted phase hook.
 
 ## Accelerators (optional)

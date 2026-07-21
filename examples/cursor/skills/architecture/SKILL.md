@@ -16,34 +16,32 @@ Tree + standards: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/g
 
 | Layer | Prose (text) | Diagrams / DB / sequence |
 |-------|--------------|---------------------------|
-| Overview · Common · **Module+** | **arc42** spirit (short — not full 01–12) | **C4** |
+| Overview · Surfaces · **Module+** | **Architecture/Product** spirit | **C4** / **Mermaid** |
 | **Function** | **C4** only | **C4** only |
 
-No **dynamics** on new trees — use **flow** / `FLOW-*` / **`/journey`**.
+No **dynamics** on new trees — use **flow** / `FLOW-*` / **`/journey`** or **`/business-process`**.
 
-Architecture folder: prefer **§01 intro** + **§07 deploy** for team; other chapters stub OK.
+Architecture folder: prefer **System Context** + **Deployment** for team; other chapters stub OK.
 
 ## Route map (business → skill)
 
 | Ask / topic | Business layer | Next skill |
 |-------------|----------------|------------|
-| System purpose / overview / landscape / CTX | Overview | **`/context`** (+ short §01 if needed) |
-| Operational area / persona / interaction channel | Context / operating model | **`/context`** |
-| Portal · Client · API service · Gateway / CTR | C4 Containers | **`/containers`** |
-| Module / CMP box | Module | **`/component`** |
-| Screen / API detail / CRUD | Function | **`/spec`** (Bundlekit; grill as needed) — C4 only. If `/spec` unavailable: leave Function as CMP README stub + handoff note |
-| `*_flow` / sequence / journey | Flow | **`/journey`** |
-| Where it runs | Deploy | **`/deployment`** (stub-first) |
-| ADR / decision | — | **`/decision`** |
-| Cross-cutting | — | **`/cross-cutting`** |
-| Constraints / strategy / quality… | — | Stub chapter only — no waffle |
-
-Legacy arc42 chapter numbers still map the same paths under `architecture/01`…`12`.
+| Operational area / persona / business purpose | Overview | **`/overview`** |
+| Common scope / Cross-service / Database / Business processes | Surfaces / Modules | **`/business-process`**, **`/db-erd`**, **`/cross-service`** |
+| Admin Web · Client · Gateway / App level | Surfaces | **`/surfaces`** |
+| System Context / Landscape / CTX | Architecture Context | **`/system-context`** |
+| Portal · Client · API service · Gateway / CTR | Architecture Containers | **`/containers`** |
+| Module / CMP box | Module | **`/module`** |
+| Screen / API detail / CRUD | Function | **`/spec`** (grill with **`/spec-grill`** as needed) |
+| `*_flow` / sequence / runtime journey | Flow / Journey | **`/journey`** |
+| Where it runs | Deploy | **`/deployment`** |
+| Architecture discussion / grilling | High-level Design | **`/architecture-grill`** |
 
 ## Rules
 
-- Format under `architecture/`: MD + Mermaid (`flowchart` / `sequenceDiagram`; avoid Mermaid `C4Context`)
-- Product Code (`W-*`/`API-*`) stays in `product/components/…/code/` — never under `05/CODE`
+- Format: MD + Mermaid (`flowchart` / `sequenceDiagram`; avoid Mermaid `C4Context`)
+- Product Code (`W-*`/`API-*`) stays in `product/components/…/code/`
 - API service belongs to C4 Containers; API endpoint/contract belongs to Function detail
 - Prefer `/journey` over `/dynamics`
 - One concern per edit

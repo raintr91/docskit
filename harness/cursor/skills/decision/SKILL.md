@@ -27,10 +27,10 @@ Parent: `/architecture`
 
 ## Accelerators (optional)
 
-Prefer `hubdocs_list_ids` kind `ADR` and `hubdocs_validate_links` after a new ADR.
+Prefer `docskit_list_ids` kind `ADR` and `docskit_validate_links` after a new ADR.
 
 ```text
-if Hubdocs available: targeted hubdocs_* tools for IDs / deps / journeys / links
+if Hubdocs available: targeted docskit_* tools for IDs / deps / journeys / links
 else: Glob/search under architecture/ and product/, then Read scoped Markdown
 
 Missing Hubdocs never blocks authoring.

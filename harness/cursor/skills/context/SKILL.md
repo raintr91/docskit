@@ -33,10 +33,10 @@ Parent router: `/architecture` · People: [Start now](../../../platform/guide/st
 
 ## Accelerators (optional)
 
-Prefer `hubdocs_list_ids` kind `CTX`|`LND` and `hubdocs_route`.
+Prefer `docskit_list_ids` kind `CTX`|`LND` and `docskit_route`.
 
 ```text
-if Hubdocs available: targeted hubdocs_* tools for IDs / deps / journeys / links
+if Hubdocs available: targeted docskit_* tools for IDs / deps / journeys / links
 else: Glob/search under architecture/ and product/, then Read scoped Markdown
 
 Missing Hubdocs never blocks authoring.

@@ -24,10 +24,10 @@ Security · Logging · Observability · Caching · Messaging · Configuration ·
 
 ## Accelerators (optional)
 
-Prefer `hubdocs_route` for §08 topics and `hubdocs_validate_links` after a new section.
+Prefer `docskit_route` for §08 topics and `docskit_validate_links` after a new section.
 
 ```text
-if Hubdocs available: targeted hubdocs_* tools for IDs / deps / journeys / links
+if Hubdocs available: targeted docskit_* tools for IDs / deps / journeys / links
 else: Glob/search under architecture/ and product/, then Read scoped Markdown
 
 Missing Hubdocs never blocks authoring.

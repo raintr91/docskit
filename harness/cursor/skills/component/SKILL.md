@@ -34,10 +34,10 @@ Parent: `/architecture` · sequences → `/journey` · [Start now](../../../plat
 
 ## Accelerators (optional)
 
-Prefer `hubdocs_get_element` / `hubdocs_deps_of` for `CMP-*` before editing README.
+Prefer `docskit_get_element` / `docskit_deps_of` for `CMP-*` before editing README.
 
 ```text
-if Hubdocs available: targeted hubdocs_* tools for IDs / deps / journeys / links
+if Hubdocs available: targeted docskit_* tools for IDs / deps / journeys / links
 else: Glob/search under architecture/ and product/, then Read scoped Markdown
 
 Missing Hubdocs never blocks authoring.

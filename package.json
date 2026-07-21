@@ -1,28 +1,30 @@
 {
-  "name": "@platform/hubdocs",
-  "version": "1.1.0",
-  "description": "Local MCP: arc42/C4 docs hub — list IDs, deps, orphans, validate links, route chapter",
+  "name": "@platform/docskit",
+  "version": "0.0.1",
+  "description": "Local MCP: docs hub & spec engine — architecture and bundle IR",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "hubdocs": "./bin/hubdocs.mjs",
-    "hubdocs-mcp": "./bin/hubdocs-mcp.mjs"
+    "docskit": "./bin/docskit.mjs",
+    "docskit-mcp": "./bin/docskit-mcp.mjs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/raintr91/hubdocs.git"
+    "url": "git+https://github.com/raintr91/docskit.git"
   },
-  "homepage": "https://github.com/raintr91/hubdocs#readme",
+  "homepage": "https://github.com/raintr91/docskit#readme",
   "bugs": {
-    "url": "https://github.com/raintr91/hubdocs/issues"
+    "url": "https://github.com/raintr91/docskit/issues"
   },
   "files": [
     "bin",
     "dist",
     "docs/INIT.md",
     "docs/INSTALL.md",
+    "engines",
     "examples",
     "harness",
+    "templates",
     "install.sh",
     "install.ps1",
     "mcp-package.json",
@@ -32,8 +34,8 @@
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
-    "mcp": "node bin/hubdocs-mcp.mjs",
-    "cli": "node bin/hubdocs.mjs",
+    "mcp": "node bin/docskit-mcp.mjs",
+    "cli": "node bin/docskit.mjs",
     "dev": "tsx src/mcp/server.ts",
     "test": "npm run build && node --test test/*.test.mjs",
     "harness:sync": "node scripts/sync-harness-examples.mjs",
@@ -47,7 +49,9 @@
     "arc42",
     "c4",
     "docs",
-    "hubdocs"
+    "docskit",
+    "bundle",
+    "spec"
   ],
   "license": "MIT",
   "dependencies": {

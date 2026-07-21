@@ -15,11 +15,11 @@ only.
 - Consumer installs sync only `/hubdocs` + this lightweight rule; architecture
   authoring skills stay in docs.
 
-1. Use `hubdocs_layout`, `hubdocs_route`, or `hubdocs_list_ids` to narrow scope.
-2. Use `hubdocs_get_element` for one ID.
-3. Use `hubdocs_deps_of` and `hubdocs_dependents_of` for reference impact.
-4. Run `hubdocs_orphans` and `hubdocs_validate_links` before claiming completeness.
-5. Use `hubdocs_journeys` before reading all journey files.
+1. Use `docskit_layout`, `docskit_route`, or `docskit_list_ids` to narrow scope.
+2. Use `docskit_get_element` for one ID.
+3. Use `docskit_deps_of` and `docskit_dependents_of` for reference impact.
+4. Run `docskit_orphans` and `docskit_validate_links` before claiming completeness.
+5. Use `docskit_journeys` before reading all journey files.
 
 Do not require Hubdocs for architecture work: if the MCP is unavailable, inspect
 the repository Markdown directly or explain how to run project-local setup.
