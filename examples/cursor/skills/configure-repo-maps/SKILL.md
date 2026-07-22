@@ -59,6 +59,6 @@ legacy ERP cũ ở D:\legacy\erp, key legacy-erp
 
 ## Gaps handoff
 
-Skills that need a checkout root (`/legacy-spec`, cross-repo traces) and find
+Skills that need a checkout root (cross-repo traces) and find
 maps empty / missing key → tell the member to run `/configure-repo-maps` with a
 short NL description. Do not instruct copy/paste of JSON.

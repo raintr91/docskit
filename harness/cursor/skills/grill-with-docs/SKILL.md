@@ -25,7 +25,7 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 ## When to use
 
 - After `/bqa-grill-docs` + `/dev-grill-docs` when **contradiction** remains
-- **Not** default after `/legacy-spec`
+- **Not** default
 
 ## Workflow
 

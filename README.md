@@ -80,7 +80,6 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 | `/legacy-system-context` | Phân tích sơ đồ ngữ cảnh (System Context), external dependencies cũ. |
 | `/legacy-db-erd` | Ánh xạ cấu trúc bảng/cột từ schema database cũ sang Data model mới. |
 | `/legacy-cross-service` | Phân tích luồng tích hợp, giao tiếp giữa các service (RPC/Message) cũ. |
-| `/legacy-spec` | Truy xuất/phân tích source code hệ thống cũ để trích xuất `legacy.dynamics` cho Function. |
 | `/update-spec-legacy` | Cập nhật delta spec dựa trên các bằng chứng (evidence) mới tìm thấy từ mã nguồn cũ. |
 
 ### 5. Tiện ích (Utilities)

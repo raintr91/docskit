@@ -19,4 +19,4 @@ extractBundle: architecture-core
 ## Modifiers (If /legacy is used)
 Khi gọi kèm `/legacy` (vd: `/legacy /surfaces`):
 - Tham chiếu source từ `legacy-repos.local.json`.
-- Khảo cổ: truy vết và ánh xạ các frontend client / app cũ vào lớp Surfaces hiện tại, ghi nhận vào `legacy/surface.md`.
+- Khảo cổ: truy vết và ánh xạ các frontend client / app cũ vào lớp Surfaces hiện tại, ghi nhận vào cùng thư mục đang thao tác nhưng tên file thêm tiền tố `legacy-` ở đầu (vd: `Surfaces/legacy-surface.md` hoặc `Surfaces/Admin Web/legacy-surface.md`).

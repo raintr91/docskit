@@ -19,7 +19,7 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 **In:** Code bundle / `--id` under `Surfaces/.../Modules/CMP-*/Functions/[Screen | API]`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
 
-**Out:** E2E plans → **`base-tests` `/testcase`**. Legacy → `/legacy-spec`. UI → `/prototype` after grill-docs. Overview/CTR → `/architecture` children.
+**Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. Overview/CTR → `/architecture` children.
 
 ## Workflow
 

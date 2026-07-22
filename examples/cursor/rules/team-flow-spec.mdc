@@ -6,12 +6,12 @@ alwaysApply: false
 
 # Team Flow — Spec
 
-Active commands: `/spec`, `/legacy-spec`, `/bqa-grill-docs`, `/dev-grill-docs`, `/grill-with-docs`, `/update-spec`, `/update-spec-legacy` — one per session.
+Active commands: `/spec`, `/bqa-grill-docs`, `/dev-grill-docs`, `/grill-with-docs`, `/update-spec`, `/update-spec-legacy` — one per session.
 
 | Command | Skill |
 |---------|-------|
 | `/spec` | `.cursor/skills/spec/SKILL.md` |
-| `/legacy-spec` | `.cursor/skills/legacy-spec/SKILL.md` |
+
 | `/bqa-grill-docs` | `.cursor/skills/bqa-grill-docs/SKILL.md` |
 | `/dev-grill-docs` | `.cursor/skills/dev-grill-docs/SKILL.md` |
 | `/grill-with-docs` | `.cursor/skills/grill-with-docs/SKILL.md` |
@@ -23,7 +23,7 @@ Shared: resolve skill `extractBundle` → `.cursor/extracts/extract-registry.jso
 
 ## Pipeline
 
-1. **`/legacy-spec` or `/spec`** — `*.bundle.yaml` design v1 + testcase round 1. No `gen` / `codegen`.
+1. **`/spec`** — `*.bundle.yaml` design v1 + testcase round 1. No `gen` / `codegen`.
 2. **`/bqa-grill-docs`** — UI, acceptance, breadcrumb, delete rules.
 3. **`/dev-grill-docs`** — codegen-ready bundle + `tags`; emit FE Codegenkit dry-run handoff.
 4. **`/grill-with-docs`** — optional reconcile when BQA↔Dev contradict.

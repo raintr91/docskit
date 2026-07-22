@@ -120,15 +120,7 @@ const ROUTES: { keys: string[]; hit: RouteHit }[] = [
       note: 'stub',
     },
   },
-  {
-    keys: ['legacy', 'archaeolog'],
-    hit: {
-      chapter: '—',
-      path: 'product/legacy-dynamics/',
-      skill: '/legacy-spec',
-      note: '≠ FLOW-* product journeys',
-    },
-  },
+
 ]
 
 export function routeTopic(topic: string): RouteHit[] {

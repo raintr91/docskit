@@ -17,4 +17,4 @@ extractBundle: architecture-core
 ## Modifiers (If /legacy is used)
 Khi gọi kèm `/legacy` (vd: `/legacy /module`):
 - Tham chiếu source từ `legacy-repos.local.json`.
-- Khảo cổ: phân tích subsystem/component cũ và map sang cấu trúc Modules (`CMP-*`) mới, ghi nhận vào `legacy/module.md`.
+- Khảo cổ: phân tích subsystem/component cũ và map sang cấu trúc Modules (`CMP-*`) mới, ghi nhận vào cùng thư mục đang thao tác nhưng tên file thêm tiền tố `legacy-` ở đầu (vd: `Surfaces/[Tên Surface]/Modules/[CMP-ID]/legacy-module.md`).
