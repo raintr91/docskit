@@ -8,6 +8,12 @@ extractBundle: architecture-core
 **Target Paths:** `Overview/Operational areas/[Admin operations | Workforce operations | ...]`
 **Guidelines:** Focus on personas, operational areas, and high-level system purpose.
 
+## Workflow / Luồng thực thi
+1. Kiểm tra xem thư mục `Overview` đã tồn tại chưa. Nếu chưa, tạo mới.
+2. Nếu gọi kèm `common` (vd: `/overview common`):
+   - Kiểm tra xem `Overview/Common` đã có chưa.
+   - Nếu có, tiến hành cập nhật. Nếu chưa, tạo mới thư mục/file tương ứng rồi mới cập nhật.
+
 ## Modifiers (If /legacy is used)
 Khi gọi kèm `/legacy` (vd: `/legacy /overview`):
 - Tham chiếu source từ `legacy-repos.local.json`.

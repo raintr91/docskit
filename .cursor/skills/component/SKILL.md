@@ -12,6 +12,7 @@ extractBundle: architecture-core
 
 ## Write
 
+- **CRITICAL DIRECTORY STRUCTURE**: You MUST create a dedicated directory for the module (`product/components/CMP-{NN}-{slug}/`) and place the documentation inside `index.md`. **DO NOT** create a single file like `CMP-{NN}-{slug}.md`.
 - Path: `product/components/CMP-{NN}-{slug}/index.md`
 - Update `product/components/index.md` table
 - Update `architecture/05-building-blocks/` Components index when adding CMP

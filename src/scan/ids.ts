@@ -32,6 +32,9 @@ const ID_RE =
 /** Scan roots for MD (arc42 × product). */
 export const SCAN_MD_DIRS = [
   'architecture',
+  'Overview',
+  'Surfaces',
+  'Architecture',
   'product/components',
   'product/shared',
   'product/common',
@@ -46,10 +49,10 @@ export const CANONICAL_DIR: Partial<Record<IdKind, string>> = {
   FLOW: 'architecture/06-runtime/journeys',
   DEP: 'architecture/07-deployment',
   ADR: 'architecture/09-decisions',
-  CMP: 'product/components',
-  W: 'product',
-  API: 'product',
-  UI: 'product',
+  CMP: 'Surfaces',
+  W: 'Surfaces',
+  API: 'Surfaces',
+  UI: 'Surfaces',
 }
 
 export function kindOf(id: string): IdKind {
@@ -134,15 +137,15 @@ export function indexIds(docsRoot: string): Map<string, HubId> {
       add(map, base, f) // ADR-001-arc42-toc slug form
     }
 
-    const cmpFolder = f.match(/[\\/]product[\\/]components[\\/](CMP-\d+[-\w]*)[\\/]/)
+    const cmpFolder = f.match(/[\\/](?:product[\\/]components|Surfaces[\\/][^\\/]+[\\/]Modules)[\\/](CMP-\d+[-\w]*)[\\/]/i)
     if (cmpFolder) {
       add(map, cmpFolder[1], f)
       const short = cmpFolder[1].match(/^(CMP-\d+)/)
       if (short) add(map, short[1], f)
     }
 
-    // Code folders: product/**/code/{W|API|UI}-*
-    const codeFolder = f.match(/[\\/]code[\\/]((?:W|API|UI)-[A-Z]{2}-[A-Z0-9]+-\d{3})[\\/]/)
+    // Code folders: product/**/code/{W|API|UI}-* or Surfaces/.../Functions/*/{W|API|UI}-*
+    const codeFolder = f.match(/[\\/](?:code|Functions[\\/](?:Screen|API contract))[\\/]((?:W|API|UI)-[A-Z]{2}-[A-Z0-9]+-\d{3})[\\/]/i)
     if (codeFolder) add(map, codeFolder[1], f)
   }
 
@@ -187,12 +190,14 @@ export function expectedCanonicalPath(docsRoot: string, id: string): string | nu
   }
   if (kind === 'CMP') {
     const base = path.join(docsRoot, 'product/components')
-    if (!fs.existsSync(base)) return null
-    const folder = fs.readdirSync(base).find((n) => n === id || n.startsWith(id + '-'))
-    return folder ? path.join(base, folder, 'index.md') : null
+    if (fs.existsSync(base)) {
+      const folder = fs.readdirSync(base).find((n) => n === id || n.startsWith(id + '-'))
+      if (folder) return path.join(base, folder, 'index.md')
+    }
+    return null
   }
   if (kind === 'W' || kind === 'API' || kind === 'UI') {
-    // Prefer folder under product/**/code/<id>/
+    // Prefer folder under product/**/code/<id>/ or Surfaces/**/Functions/*/<id>/
     const hits: string[] = []
     const walkCode = (dir: string) => {
       if (!fs.existsSync(dir)) return
@@ -206,6 +211,7 @@ export function expectedCanonicalPath(docsRoot: string, id: string): string | nu
       }
     }
     walkCode(path.join(docsRoot, 'product'))
+    walkCode(path.join(docsRoot, 'Surfaces'))
     return hits[0] ?? null
   }
   // LND/CTX/CTR/DEP live as headings inside chapter index — return chapter file

@@ -705,11 +705,11 @@ async function main(): Promise<void> {
   if (cmd === 'render-common') {
     await runNamedEngine('render', [
       '--yaml-root',
-      'product/common/yaml',
+      'Surfaces/Common/yaml',
       '--md-root',
-      'product/common/md',
+      'Surfaces/Common/md',
       '--legacy-root',
-      'product/common',
+      'Surfaces/Common',
       '--no-index',
     ])
     return

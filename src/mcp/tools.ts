@@ -260,7 +260,7 @@ export function registerTools(server: McpServer): void {
       try {
         const root = resolveDocsRoot(docsRoot)
         const dirs = includeProduct
-          ? ['architecture', 'product/components', 'product/shared', 'product/common']
+          ? ['architecture', 'Overview', 'Surfaces', 'Architecture']
           : ['architecture']
         const files = walkMdFiles(root, dirs).filter((f) => !isRedirectStub(f, root))
         const broken = validateMdLinks(root, files).map((h) => ({
@@ -350,7 +350,7 @@ export function registerTools(server: McpServer): void {
           'LND/CTX/CTR/DEP are headings inside chapter index.md — not separate files',
           'FLOW-* files under architecture/06-runtime/journeys/',
           'ADR-* under architecture/09-decisions/',
-          'CMP/W/API/UI under product/ — never under architecture/05 code/',
+          'CMP/W/API/UI under Surfaces/ — never under architecture/05 code/',
           'DYN-* deprecated — use FLOW-* + /journey',
         ],
       })
@@ -441,18 +441,18 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     'docskit_docs_render_common',
-    'Render common UI design MD under product/common',
+    'Render common UI design MD under Surfaces/Common',
     {
       ...rootField,
     },
     async ({ projectRoot }) =>
       toolEngine('render', [], projectRoot, [
         '--yaml-root',
-        'product/common/yaml',
+        'Surfaces/Common/yaml',
         '--md-root',
-        'product/common/md',
+        'Surfaces/Common/md',
         '--legacy-root',
-        'product/common',
+        'Surfaces/Common',
         '--no-index',
       ]),
   )

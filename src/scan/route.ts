@@ -43,8 +43,8 @@ const ROUTES: { keys: string[]; hit: RouteHit }[] = [
     },
   },
   {
-    keys: ['component', 'cmp'],
-    hit: { chapter: '05', path: 'product/components/', skill: '/component' },
+    keys: ['component', 'cmp', 'module'],
+    hit: { chapter: '05', path: 'Surfaces/', skill: '/module' },
   },
   {
     keys: ['journey', 'flow', 'runtime', 'sequence', '06'],
