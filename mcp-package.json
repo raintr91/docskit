@@ -1,10 +1,17 @@
 {
   "schemaVersion": 1,
   "package": "@platform/docskit",
-  "version": "1.1.0",
-  "types": ["docs", "fe", "be", "tests"],
+  "version": "0.0.2",
+  "types": [
+    "docs",
+    "fe",
+    "be",
+    "tests"
+  ],
   "requires": [],
-  "optional": ["@platform/artifactgraph"],
+  "optional": [
+    "@platform/artifactgraph"
+  ],
   "tools": [
     "docskit_list_ids",
     "docskit_get_element",
