@@ -1,6 +1,6 @@
 {
   "name": "@platform/docskit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Local MCP: docs hub & spec engine — architecture and bundle IR",
   "type": "module",
   "main": "./dist/index.js",

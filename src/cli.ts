@@ -182,24 +182,7 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
 
     const projectRoot = path.resolve(arg('--project-root') ?? process.cwd())
 
-    // --- Ensure Platform DNA ---
-    if (!has('--yes')) {
-      let isDnaInstalled = false
-      try {
-        execSync('platform-dna version', { stdio: 'ignore' })
-        isDnaInstalled = true
-      } catch {}
 
-      const isDnaInitialized = existsSync(path.join(projectRoot, '.platform-dna', 'install-manifest.json'))
-
-      if (!isDnaInstalled || !isDnaInitialized) {
-        console.error('\\n[docskit] Cần cài đặt và khởi tạo toolkit platform-dna trước:')
-        console.error('  1. curl -fsSL https://raw.githubusercontent.com/raintr91/platform-dna/main/install.sh | bash')
-        console.error('  2. platform-dna init')
-        process.exit(1)
-      }
-    }
-    // ---------------------------
 
     let target = arg('--target')
     const interactiveAgents =
@@ -288,6 +271,14 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
     const configuredRoot = lane.docsRoot ?? arg('--docs-root') ?? defaultDocskitRoot()
     console.log(`DOCSKIT_ROOT: ${configuredRoot || '(rootless; use tool docsRoot)'}`)
     console.log('Restart agent(s), then try tool docskit_list_ids')
+    console.log(`
+  ---
+  tip: Docskit cross-repo routing relies on Platform DNA.
+       If not already done, please install and initialize it:
+       1. curl -fsSL https://raw.githubusercontent.com/raintr91/platform-dna/main/install.sh | bash
+       2. platform-dna init
+       Then use /configure-repo-maps to set up your repository roots.
+  ---`)
   } catch (err) {
     console.error(err instanceof Error ? err.message : err)
     process.exit(1)
