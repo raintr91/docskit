@@ -7,7 +7,7 @@
  */
 
 import { createRequire } from 'node:module'
-import { lstatSync, realpathSync, rmSync } from 'node:fs'
+import { existsSync, lstatSync, realpathSync, rmSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
@@ -183,15 +183,22 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
     const projectRoot = path.resolve(arg('--project-root') ?? process.cwd())
 
     // --- Ensure Platform DNA ---
-    try {
-      execSync('platform-dna version', { stdio: 'ignore' })
-    } catch {
-      console.log('\\n[docskit] platform-dna not found globally. Installing...')
-      execSync('curl -fsSL https://raw.githubusercontent.com/raintr91/platform-dna/main/install.sh | bash', { stdio: 'inherit' })
+    if (!has('--yes')) {
+      let isDnaInstalled = false
+      try {
+        execSync('platform-dna version', { stdio: 'ignore' })
+        isDnaInstalled = true
+      } catch {}
+
+      const isDnaInitialized = existsSync(path.join(projectRoot, '.platform-dna', 'install-manifest.json'))
+
+      if (!isDnaInstalled || !isDnaInitialized) {
+        console.error('\\n[docskit] Cần cài đặt và khởi tạo toolkit platform-dna trước:')
+        console.error('  1. curl -fsSL https://raw.githubusercontent.com/raintr91/platform-dna/main/install.sh | bash')
+        console.error('  2. platform-dna init')
+        process.exit(1)
+      }
     }
-    console.log('[docskit] Ensuring platform-dna is initialized in workspace...')
-    const dnaForceFlag = has('--force') ? ' --force' : ''
-    execSync(`platform-dna init --yes${dnaForceFlag}`, { cwd: projectRoot, stdio: 'inherit' })
     // ---------------------------
 
     let target = arg('--target')

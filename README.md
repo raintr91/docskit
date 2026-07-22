@@ -93,6 +93,11 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 
 ## Quick start
 
+**Prerequisites:**
+Yêu cầu cài đặt toolkit **platform-dna** (cung cấp nền tảng cấu hình cross-repo và quản lý agentic skills cốt lõi) trước khi cài đặt `docskit`:
+1. `curl -fsSL https://raw.githubusercontent.com/raintr91/platform-dna/main/install.sh | bash`
+2. `platform-dna init`
+
 **Linux / WSL**
 
 ```bash
