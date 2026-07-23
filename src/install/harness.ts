@@ -352,15 +352,23 @@ const CONSUMER_ASSETS = new Set([
 
 function currentAssetHashes(
   type: DocskitHarnessType,
+  targets?: string[],
 ): Map<string, { source: string; hash: string }> {
   const sourceRoot = path.join(packageRoot(), 'harness', 'cursor')
   const assets = new Map<string, { source: string; hash: string }>()
+  const dirs = new Set<string>()
+  if (!targets || targets.length === 0 || targets.includes('cursor')) dirs.add('.cursor')
+  if (targets?.includes('antigravity')) dirs.add('.agents')
+
   for (const source of walk(sourceRoot)) {
     const sourceRel = path.relative(sourceRoot, source)
     if (sourceRel === path.join('extracts', 'extract-registry.docskit.json')) continue
     if (type === 'consumer' && !CONSUMER_ASSETS.has(sourceRel)) continue
-    const rel = ['.cursor', ...sourceRel.split(path.sep)].join('/')
-    assets.set(rel, { source, hash: sha256(readFileSync(source)) })
+    
+    for (const dir of dirs) {
+      const rel = [dir, ...sourceRel.split(path.sep)].join('/')
+      assets.set(rel, { source, hash: sha256(readFileSync(source)) })
+    }
   }
   return assets
 }
@@ -369,7 +377,8 @@ function mergeExtractRegistry(
   projectRoot: string,
   realRoot: string,
   type: DocskitHarnessType,
-): string {
+  targets?: string[],
+): string[] {
   const source = path.join(
     packageRoot(),
     'harness',
@@ -377,35 +386,45 @@ function mergeExtractRegistry(
     'extracts',
     'extract-registry.docskit.json',
   )
-  const target = resolveContainedPath(
-    projectRoot,
-    realRoot,
-    '.cursor/extracts/extract-registry.json',
-    'Shared extract registry',
-  )
+  const dirs = new Set<string>()
+  if (!targets || targets.length === 0 || targets.includes('cursor')) dirs.add('.cursor')
+  if (targets?.includes('antigravity')) dirs.add('.agents')
+
+  const results: string[] = []
   const owned = JSON.parse(readFileSync(source, 'utf8')) as {
     version: number
     bundles: Record<string, string[]>
   }
-  const current = existsSync(target)
-    ? (JSON.parse(readFileSync(target, 'utf8')) as {
-        version: number
-        bundles: Record<string, string[]>
-      })
-    : { version: 1, bundles: {} }
   const bundles =
     type === 'consumer'
       ? { docskit: owned.bundles.docskit }
       : owned.bundles
-  current.version = Math.max(current.version ?? 1, owned.version ?? 1)
-  if (type === 'consumer') delete current.bundles['architecture-core']
-  current.bundles = {
-    ...current.bundles,
-    ...bundles,
+
+  for (const dir of dirs) {
+    const target = resolveContainedPath(
+      projectRoot,
+      realRoot,
+      `${dir}/extracts/extract-registry.json`,
+      'Shared extract registry',
+    )
+    const current = existsSync(target)
+      ? (JSON.parse(readFileSync(target, 'utf8')) as {
+          version: number
+          bundles: Record<string, string[]>
+        })
+      : { version: 1, bundles: {} }
+    
+    current.version = Math.max(current.version ?? 1, owned.version ?? 1)
+    if (type === 'consumer') delete current.bundles['architecture-core']
+    current.bundles = {
+      ...current.bundles,
+      ...bundles,
+    }
+    mkdirSync(path.dirname(target), { recursive: true })
+    writeFileSync(target, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
+    results.push(target)
   }
-  mkdirSync(path.dirname(target), { recursive: true })
-  writeFileSync(target, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
-  return target
+  return results
 }
 
 /**
@@ -417,19 +436,25 @@ export function installHarness(opts: {
   force?: boolean
   type?: DocskitHarnessType
   gitignoreEntries?: OwnedGitignoreEntry[]
+  targets?: string[]
 } = {}): HarnessInstallResult {
   const { root, realRoot } = resolveProjectRoot(opts.projectRoot)
   const type = opts.type ?? 'docs'
   const metadata = packageMetadata()
   const previous = readManifest(root, realRoot, metadata)
-  const assets = currentAssetHashes(type)
+  const assets = currentAssetHashes(type, opts.targets)
   resolveContainedPath(root, realRoot, INSTALL_MANIFEST_PATH, 'Docskit install manifest')
-  resolveContainedPath(
-    root,
-    realRoot,
-    '.cursor/extracts/extract-registry.json',
-    'Shared extract registry',
-  )
+  const dirs = new Set<string>()
+  if (!opts.targets || opts.targets.length === 0 || opts.targets.includes('cursor')) dirs.add('.cursor')
+  if (opts.targets?.includes('antigravity')) dirs.add('.agents')
+  for (const dir of dirs) {
+    resolveContainedPath(
+      root,
+      realRoot,
+      `${dir}/extracts/extract-registry.json`,
+      'Shared extract registry',
+    )
+  }
   for (const rel of assets.keys()) resolveManagedPath(root, realRoot, rel)
   const hashes = Object.fromEntries([...assets].map(([rel, asset]) => [rel, asset.hash]))
   const stale: Record<string, StaleHarnessAsset> = { ...(previous?.stale ?? {}) }
@@ -483,7 +508,7 @@ export function installHarness(opts: {
     ...(gitignore.length ? { gitignore } : {}),
   }
   result.manifest = writeManifest(root, realRoot, nextManifest)
-  result.registry = mergeExtractRegistry(root, realRoot, type)
+  result.registry = mergeExtractRegistry(root, realRoot, type, opts.targets)
   recordInstall(root)
   return result
 }
@@ -645,7 +670,7 @@ function uninstallExtractRegistry(
   projectRoot: string,
   realRoot: string,
   dryRun: boolean,
-): string | undefined {
+): string[] {
   const source = path.join(
     packageRoot(),
     'harness',
@@ -653,35 +678,40 @@ function uninstallExtractRegistry(
     'extracts',
     'extract-registry.docskit.json',
   )
-  const target = resolveContainedPath(
-    projectRoot,
-    realRoot,
-    '.cursor/extracts/extract-registry.json',
-    'Shared extract registry',
-  )
-  if (!existsSync(source) || !existsSync(target)) return undefined
   const owned = JSON.parse(readFileSync(source, 'utf8')) as {
-    bundles?: Record<string, string[]>
-  }
-  const current = JSON.parse(readFileSync(target, 'utf8')) as {
-    version?: number
-    bundles?: Record<string, string[]>
+    version: number
+    bundles: Record<string, string[]>
   }
   const ownedKeys = Object.keys(owned.bundles ?? {})
-  const currentBundles = current.bundles ?? {}
-  const present = ownedKeys.filter((key) => key in currentBundles)
-  if (present.length === 0) return undefined
-  if (dryRun) {
-    return `${target} (would remove ${present.length} docskit bundle key(s))`
+
+  const results: string[] = []
+  for (const dir of ['.cursor', '.agents']) {
+    const target = path.join(projectRoot, dir, 'extracts', 'extract-registry.json')
+    if (!existsSync(target)) continue
+
+    const current = JSON.parse(readFileSync(target, 'utf8')) as {
+      version: number
+      bundles: Record<string, string[]>
+    }
+    const currentBundles = current.bundles ?? {}
+    const present = ownedKeys.filter((key) => key in currentBundles)
+    if (present.length === 0) continue
+    
+    if (dryRun) {
+      results.push(`${target} (would remove ${present.length} docskit bundle key(s))`)
+      continue
+    }
+    for (const key of present) delete currentBundles[key]
+    current.bundles = currentBundles
+    if (Object.keys(currentBundles).length === 0) {
+      unlinkSync(target)
+      results.push(`${target} (removed; no bundles left)`)
+      continue
+    }
+    writeFileSync(target, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
+    results.push(`${target} (removed ${present.length} docskit bundle key(s))`)
   }
-  for (const key of present) delete currentBundles[key]
-  current.bundles = currentBundles
-  if (Object.keys(currentBundles).length === 0) {
-    unlinkSync(target)
-    return `${target} (removed; no bundles left)`
-  }
-  writeFileSync(target, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
-  return `${target} (removed ${present.length} docskit bundle key(s))`
+  return results
 }
 
 /**
@@ -733,8 +763,8 @@ export function uninstallHarness(opts: {
     result.deleted.push(target)
   }
 
-  const registry = uninstallExtractRegistry(root, realRoot, dryRun)
-  if (registry) result.registry = registry
+  const registries = uninstallExtractRegistry(root, realRoot, dryRun)
+  for (const r of registries) result.registry = (result.registry ? result.registry + '\n' + r : r)
 
   // Remove only exclusively-owned ignore entries; shared entries (for example
   // `.cursor/`) may still be relied on by another toolkit, so keep them.

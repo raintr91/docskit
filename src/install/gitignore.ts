@@ -39,8 +39,8 @@ export interface GeneratedTargetInput {
   location: InstallLocation
   /** Absolute paths Docskit actually wrote (agent configs, permissions, …). */
   written: string[]
-  /** True when this run installed/updated the Cursor harness + manifest. */
-  harnessInstalled: boolean
+  harnessInstalled?: boolean
+  targets?: string[]
 }
 
 /**
@@ -168,6 +168,7 @@ export function ignorePatternForLocalPath(
 
   if (top === '.cursor') return '.cursor/'
   if (top === '.docskit') return '.docskit/'
+  if (top === '.agents') return '.agents/'
   if (top === '.claude.json') return '.claude.json'
   if (top === '.claude') return '.claude/'
   if (top === '.codex') return '.codex/'
@@ -198,7 +199,12 @@ export function generatedTargets(input: GeneratedTargetInput): OwnedGitignoreEnt
   }
 
   if (input.harnessInstalled) {
-    add('.cursor/', true)
+    if (!input.targets || input.targets.length === 0 || input.targets.includes('cursor')) {
+      add('.cursor/', true)
+    }
+    if (input.targets?.includes('antigravity')) {
+      add('.agents/', true)
+    }
     add('.docskit/', false)
   }
 
@@ -207,7 +213,9 @@ export function generatedTargets(input: GeneratedTargetInput): OwnedGitignoreEnt
     for (const file of input.written) {
       const pattern = ignorePatternForLocalPath(input.projectRoot, file)
       if (!pattern) continue
-      const shared = canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.cursor/')
+      const shared =
+        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.cursor/') ||
+        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.agents/')
       add(pattern, shared)
     }
   }

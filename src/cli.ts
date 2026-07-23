@@ -216,6 +216,7 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
       location: result.location,
       written: result.written.map((w) => w.path),
       harnessInstalled: true,
+      targets: result.targets,
     })
     const ensured = ensureGitignoreEntries(
       projectRoot,
@@ -232,6 +233,7 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
       force: has('--force'),
       type: lane.type,
       gitignoreEntries: claimed,
+      targets: result.targets,
     })
     for (const file of harness.written) console.log(`  wrote: ${file}`)
     for (const file of harness.unchanged) console.log(`  unchanged: ${file}`)
