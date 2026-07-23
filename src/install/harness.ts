@@ -70,7 +70,7 @@ export interface HarnessInstallResult {
   skipped: string[]
   stale: string[]
   manifest: string
-  registry?: string
+  registry?: string[]
 }
 
 export interface HarnessStatusResult {
