@@ -205,6 +205,12 @@ export function generatedTargets(input: GeneratedTargetInput): OwnedGitignoreEnt
     if (input.targets?.includes('antigravity')) {
       add('.agents/', true)
     }
+    if (input.targets?.includes('kiro')) {
+      add('.kiro/', true)
+    }
+    if (input.targets?.includes('kilo')) {
+      add('.kilocode/', true)
+    }
     add('.docskit/', false)
   }
 
@@ -215,7 +221,9 @@ export function generatedTargets(input: GeneratedTargetInput): OwnedGitignoreEnt
       if (!pattern) continue
       const shared =
         canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.cursor/') ||
-        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.agents/')
+        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.agents/') ||
+        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.kiro/') ||
+        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.kilocode/')
       add(pattern, shared)
     }
   }

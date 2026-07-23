@@ -350,15 +350,22 @@ const CONSUMER_ASSETS = new Set([
   path.join('extracts', 'docskit-phase-hooks.md'),
 ])
 
+function harnessDirsForTargets(targets?: string[]): string[] {
+  const dirs = new Set<string>()
+  if (!targets || targets.length === 0 || targets.includes('cursor')) dirs.add('.cursor')
+  if (targets?.includes('antigravity')) dirs.add('.agents')
+  if (targets?.includes('kiro')) dirs.add('.kiro')
+  if (targets?.includes('kilo')) dirs.add('.kilocode')
+  return [...dirs]
+}
+
 function currentAssetHashes(
   type: DocskitHarnessType,
   targets?: string[],
 ): Map<string, { source: string; hash: string }> {
   const sourceRoot = path.join(packageRoot(), 'harness', 'cursor')
   const assets = new Map<string, { source: string; hash: string }>()
-  const dirs = new Set<string>()
-  if (!targets || targets.length === 0 || targets.includes('cursor')) dirs.add('.cursor')
-  if (targets?.includes('antigravity')) dirs.add('.agents')
+  const dirs = harnessDirsForTargets(targets)
 
   for (const source of walk(sourceRoot)) {
     const sourceRel = path.relative(sourceRoot, source)
@@ -386,9 +393,7 @@ function mergeExtractRegistry(
     'extracts',
     'extract-registry.docskit.json',
   )
-  const dirs = new Set<string>()
-  if (!targets || targets.length === 0 || targets.includes('cursor')) dirs.add('.cursor')
-  if (targets?.includes('antigravity')) dirs.add('.agents')
+  const dirs = harnessDirsForTargets(targets)
 
   const results: string[] = []
   const owned = JSON.parse(readFileSync(source, 'utf8')) as {
@@ -444,9 +449,7 @@ export function installHarness(opts: {
   const previous = readManifest(root, realRoot, metadata)
   const assets = currentAssetHashes(type, opts.targets)
   resolveContainedPath(root, realRoot, INSTALL_MANIFEST_PATH, 'Docskit install manifest')
-  const dirs = new Set<string>()
-  if (!opts.targets || opts.targets.length === 0 || opts.targets.includes('cursor')) dirs.add('.cursor')
-  if (opts.targets?.includes('antigravity')) dirs.add('.agents')
+  const dirs = harnessDirsForTargets(opts.targets)
   for (const dir of dirs) {
     resolveContainedPath(
       root,
@@ -685,7 +688,7 @@ function uninstallExtractRegistry(
   const ownedKeys = Object.keys(owned.bundles ?? {})
 
   const results: string[] = []
-  for (const dir of ['.cursor', '.agents']) {
+  for (const dir of harnessDirsForTargets(undefined).concat(['.agents', '.kiro', '.kilocode'])) {
     const target = path.join(projectRoot, dir, 'extracts', 'extract-registry.json')
     if (!existsSync(target)) continue
 
