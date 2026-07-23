@@ -32,27 +32,27 @@ const ID_RE =
 /** Scan roots for MD (arc42 × product). */
 export const SCAN_MD_DIRS = [
   'architecture',
-  'Overview',
-  'Surfaces',
-  'Architecture',
+  'product/overview',
+  'product/surfaces',
+  'product/architecture',
   'product/components',
   'product/shared',
-  'product/common',
+  'product/surfaces/common',
   'product/legacy-dynamics',
 ] as const
 
 /** Canonical home for each ID kind (architecture-core). */
 export const CANONICAL_DIR: Partial<Record<IdKind, string>> = {
-  LND: 'architecture/03-context',
-  CTX: 'architecture/03-context',
-  CTR: 'architecture/05-building-blocks',
-  FLOW: 'architecture/06-runtime/journeys',
-  DEP: 'architecture/07-deployment',
+  LND: 'product/architecture/system-context',
+  CTX: 'product/architecture/system-context',
+  CTR: 'product/architecture/runtime-containers',
+  FLOW: 'product/architecture/runtime-journeys',
+  DEP: 'product/architecture/deployment',
   ADR: 'architecture/09-decisions',
-  CMP: 'Surfaces',
-  W: 'Surfaces',
-  API: 'Surfaces',
-  UI: 'Surfaces',
+  CMP: 'product/surfaces',
+  W: 'product/surfaces',
+  API: 'product/surfaces',
+  UI: 'product/surfaces',
 }
 
 export function kindOf(id: string): IdKind {
@@ -137,7 +137,7 @@ export function indexIds(docsRoot: string): Map<string, HubId> {
       add(map, base, f) // ADR-001-arc42-toc slug form
     }
 
-    const cmpFolder = f.match(/[\\/](?:product[\\/]components|Surfaces[\\/][^\\/]+[\\/]Modules)[\\/](CMP-\d+[-\w]*)[\\/]/i)
+    const cmpFolder = f.match(/[\\/](?:product[\\/]components|product[\\/]surfaces[\\/][^\\/]+[\\/]modules)[\\/](CMP-\d+[-\w]*)[\\/]/i)
     if (cmpFolder) {
       add(map, cmpFolder[1], f)
       const short = cmpFolder[1].match(/^(CMP-\d+)/)
@@ -179,7 +179,7 @@ export function relToRoot(docsRoot: string, abs: string): string {
 export function expectedCanonicalPath(docsRoot: string, id: string): string | null {
   const kind = kindOf(id)
   if (kind === 'FLOW') {
-    return path.join(docsRoot, 'architecture/06-runtime/journeys', `${id}.md`)
+    return path.join(docsRoot, 'product/architecture/runtime-journeys', `${id}.md`)
   }
   if (kind === 'ADR') {
     const dir = path.join(docsRoot, 'architecture/09-decisions')
@@ -211,7 +211,7 @@ export function expectedCanonicalPath(docsRoot: string, id: string): string | nu
       }
     }
     walkCode(path.join(docsRoot, 'product'))
-    walkCode(path.join(docsRoot, 'Surfaces'))
+    walkCode(path.join(docsRoot, 'product/surfaces'))
     return hits[0] ?? null
   }
   // LND/CTX/CTR/DEP live as headings inside chapter index — return chapter file

@@ -487,7 +487,7 @@ test('standalone package behavior', async (t) => {
         schema: 1,
         toolApi: 1,
         harnessApi: 1,
-        version: '1.1.0',
+        version: JSON.parse(readFileSync(path.join(originalCwd, 'package.json'), 'utf8')).version,
       },
     )
     assert.ok(Object.keys(firstManifest.hashes).length >= 18)
@@ -505,7 +505,7 @@ test('standalone package behavior', async (t) => {
     assert.equal(installedSchema.properties.package.const, '@platform/docskit')
     assert.deepEqual(installedSchema.properties.metrics.required, ['fileReads', 'contextBytes'])
     assert.equal(installedSchema.properties.metrics.additionalProperties, false)
-    const registry = JSON.parse(readFileSync(first.registry, 'utf8'))
+    const registry = JSON.parse(readFileSync(first.registry[0], 'utf8'))
     assert.ok(registry.bundles['architecture-core'])
     // Docskit never writes Platform DNA-owned project maps.
     assert.equal(first.platformRepos, undefined)
@@ -592,7 +592,7 @@ test('standalone package behavior', async (t) => {
     const staleManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
     assert.equal(staleManifest.hashes[retiredRel], undefined)
     assert.equal(staleManifest.stale[retiredRel].hash, hash(retiredBody))
-    assert.equal(staleManifest.stale[retiredRel].sinceVersion, '1.1.0')
+    assert.equal(staleManifest.stale[retiredRel].sinceVersion, JSON.parse(readFileSync(path.join(originalCwd, 'package.json'), 'utf8')).version)
     installHarness({ projectRoot: project })
     const retainedManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
     assert.deepEqual(retainedManifest.stale, staleManifest.stale)
@@ -601,7 +601,7 @@ test('standalone package behavior', async (t) => {
     const unmanaged = path.join(project, '.cursor', 'skills', 'unmanaged', 'SKILL.md')
     mkdirSync(path.dirname(unmanaged), { recursive: true })
     writeFileSync(unmanaged, '# unmanaged\n')
-    const registryBeforePrune = readFileSync(first.registry, 'utf8')
+    const registryBeforePrune = readFileSync(first.registry[0], 'utf8')
     const lifecycleStatus = statusHarness({ projectRoot: project })
     assert.deepEqual(lifecycleStatus.stale, [retired])
     assert.deepEqual(lifecycleStatus.staleModified, [retiredModified])
@@ -618,7 +618,7 @@ test('standalone package behavior', async (t) => {
     assert.equal(existsSync(retired), false)
     assert.equal(readFileSync(retiredModified, 'utf8'), '# locally modified after retirement\n')
     assert.equal(readFileSync(unmanaged, 'utf8'), '# unmanaged\n')
-    assert.equal(readFileSync(first.registry, 'utf8'), registryBeforePrune)
+    assert.equal(readFileSync(first.registry[0], 'utf8'), registryBeforePrune)
     assert.equal(existsSync(path.join(project, 'platform-repos.json')), false)
     const prunedManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
     assert.equal(prunedManifest.stale[retiredRel], undefined)
@@ -688,7 +688,7 @@ test('standalone package behavior', async (t) => {
       existsSync(path.join(project, '.cursor', 'skills', 'architecture', 'SKILL.md')),
       false,
     )
-    const registry = JSON.parse(readFileSync(installed.registry, 'utf8'))
+    const registry = JSON.parse(readFileSync(installed.registry[0], 'utf8'))
     assert.deepEqual(Object.keys(registry.bundles), ['docskit'])
   })
 

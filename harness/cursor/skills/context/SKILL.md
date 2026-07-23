@@ -12,10 +12,10 @@ extractBundle: architecture-core
 
 ## Write
 
-- Path: `architecture/03-context/`
+- Path: `product/architecture/system-context/`
 - IDs: `LND-*`, `CTX-*` (D3: landscape lives here)
 - Format: MD + Mermaid; prefer `flowchart`
-- Template: `tpl-arc42-chapter.md` + pilot sections in `03-context/index.md`
+- Template: `tpl-arc42-chapter.md` + pilot sections in `system-context/index.md`
 - Keep text concise: purpose, actors, operational areas, interaction channels, boundary, and constraints
 - Keep Portal/Client/API/Gateway runtime decomposition in `/containers`
 
@@ -27,7 +27,7 @@ extractBundle: architecture-core
 
 ## Pilot
 
-[`architecture/03-context/`](../../../architecture/03-context/) · `LND-base` · `CTX-admin`
+[`product/architecture/system-context/`](../../../product/architecture/system-context/) · `LND-base` · `CTX-admin`
 
 Parent router: `/architecture` · People: [Start now](../../../platform/guide/start-now.md)
 

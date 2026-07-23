@@ -114,6 +114,19 @@ function walk(root: string): string[] {
   return out
 }
 
+function copyDir(src: string, dest: string, overwrite = false) {
+  if (!existsSync(dest)) mkdirSync(dest, { recursive: true })
+  for (const name of readdirSync(src)) {
+    const srcPath = path.join(src, name)
+    const destPath = path.join(dest, name)
+    if (statSync(srcPath).isDirectory()) {
+      copyDir(srcPath, destPath, overwrite)
+    } else if (overwrite || !existsSync(destPath)) {
+      writeFileSync(destPath, readFileSync(srcPath))
+    }
+  }
+}
+
 function packageMetadata(): PackageMetadata {
   const root = packageRoot()
   const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')) as {
@@ -435,6 +448,63 @@ function mergeExtractRegistry(
   return results
 }
 
+export function scaffoldProductSkeleton(root: string) {
+  const sourceRoot = path.join(packageRoot(), 'templates', 'product-skeleton')
+  if (!existsSync(sourceRoot)) return
+  const destRoot = path.join(root, 'product')
+  if (!existsSync(destRoot)) mkdirSync(destRoot, { recursive: true })
+  
+  copyDir(sourceRoot, destRoot)
+}
+
+function injectVitepressScripts(root: string) {
+  const pkgPath = path.join(root, 'package.json')
+  if (!existsSync(pkgPath)) return
+  try {
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, any>
+    let changed = false
+    if (pkg.scripts['docs:build'] !== 'vitepress build') { pkg.scripts['docs:build'] = 'vitepress build'; changed = true }
+    if (pkg.scripts['docs:dev'] !== 'vitepress dev') { pkg.scripts['docs:dev'] = 'vitepress dev'; changed = true }
+    if (pkg.scripts['docs:preview'] !== 'vitepress preview') { pkg.scripts['docs:preview'] = 'vitepress preview'; changed = true }
+    
+    if (!pkg.devDependencies) pkg.devDependencies = {}
+    
+    const requiredDeps = {
+      '@braintree/sanitize-url': '^7.1.2',
+      'cytoscape': '^3.34.0',
+      'cytoscape-cose-bilkent': '^4.1.0',
+      'dayjs': '^1.11.21',
+      'debug': '^4.4.3',
+      'mermaid': '^11.16.0',
+      'vitepress': 'latest',
+      'vitepress-mermaid-renderer': '^1.1.28',
+      'vitepress-plugin-mermaid': '^2.0.17'
+    }
+
+    for (const [dep, version] of Object.entries(requiredDeps)) {
+      if (!pkg.devDependencies[dep]) {
+        pkg.devDependencies[dep] = version
+        changed = true
+      }
+    }
+    
+    if (changed) {
+      writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+    }
+  } catch (e) {
+    // Ignore invalid package.json
+  }
+
+  const vitepressDir = path.join(root, '.vitepress')
+  if (!existsSync(vitepressDir)) mkdirSync(vitepressDir, { recursive: true })
+  
+  const sourceVitepressDir = path.join(packageRoot(), 'engines', 'docs', 'vitepress')
+  copyDir(sourceVitepressDir, vitepressDir, true)
+
+  const vitepressGitignorePath = path.join(vitepressDir, '.gitignore')
+  writeFileSync(vitepressGitignorePath, 'cache\ndist\n')
+}
+
 /**
  * Sync Docskit-owned Cursor harness assets into a docs hub.
  * Skips package-local registry source files and preserves customized targets.
@@ -515,6 +585,12 @@ export function installHarness(opts: {
   }
   result.manifest = writeManifest(root, realRoot, nextManifest)
   result.registry = mergeExtractRegistry(root, realRoot, type, opts.targets)
+  
+  if (type === 'docs') {
+    scaffoldProductSkeleton(root)
+    injectVitepressScripts(root)
+  }
+
   recordInstall(root)
   return result
 }

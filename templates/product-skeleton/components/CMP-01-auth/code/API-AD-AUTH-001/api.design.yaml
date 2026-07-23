@@ -1,0 +1,28 @@
+# Admin login API — design stub (pilot)
+
+id: API-AD-AUTH-001
+title: Admin login
+ownedBy: CMP-01
+method: POST
+path: /api/auth/login
+
+request:
+  contentType: application/json
+  body:
+    email: string
+    password: string
+
+response:
+  200:
+    description: Authenticated
+    body:
+      token: string
+      user:
+        id: string
+        name: string
+  401:
+    description: Invalid credentials
+
+notes:
+  - Non-enumerating error message for bad credentials
+  - Session cookie or bearer — product choice at BE base

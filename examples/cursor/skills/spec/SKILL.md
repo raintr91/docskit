@@ -17,15 +17,15 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ## Scope
 
-**In:** Code bundle / `--id` under `Surfaces/.../Modules/CMP-*/Functions/[Screen | API]`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
+**In:** Code bundle / `--id` under `product/surfaces/.../modules/CMP-*/functions/[Screen | API]`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
 
-**Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. Overview/CTR → `/architecture` children.
+**Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. product/overview / CTR → `product/architecture` children.
 
 ## Workflow
 
 1. Confirm **module (`CMP-*`) exists**, its operational-area mapping is known, and the implementing `CTR-*` is identified — otherwise stop for lead/owner.
 2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance.
-3. If new, draft from user bullets — `*.bundle.yaml` with `specOrigin: requirement` under `Functions/...`.
+3. If new, draft from user bullets — `*.bundle.yaml` with `specOrigin: requirement` under `product/surfaces/.../functions/...`.
 4. Incremental blocks per extracts when needed.
 5. Apply common UI / spec-split extracts.
 6. `pnpm spec:split -- <bundle>` then `pnpm docs:render` (**no** testcase MD emit).

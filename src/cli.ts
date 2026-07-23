@@ -1,5 +1,6 @@
 /**
  * CLI — install / wire agents / version.
+ * 
  *
  *   docskit version
  *   docskit init                         # ↑↓ · Space · Enter
@@ -11,13 +12,14 @@ import { existsSync, lstatSync, realpathSync, rmSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
-import { packageRoot, defaultDocskitRoot, looksLikeHub } from './config/docs-root.js'
+import { packageRoot, defaultDocskitRoot, looksLikeHub, enginesRoot } from './config/docs-root.js'
 import { installAgents, promptInstallAgents, uninstallAgents } from './install/agents.js'
 import {
   installHarness,
   pruneHarness,
   statusHarness,
   uninstallHarness,
+  scaffoldProductSkeleton,
   type DocskitHarnessType,
 } from './install/harness.js'
 import { discoverInstalls, ledgerPath, readLedger, removeLedger } from './install/ledger.js'
@@ -197,6 +199,10 @@ async function runInitAgents(opts: { deprecatedAlias?: boolean } = {}): Promise<
       interactive: !has('--yes') && Boolean(process.stdin.isTTY && process.stdout.isTTY),
       requested: requestedOptionalToolkits(),
     })
+    if (lane.type === 'docs') {
+      scaffoldProductSkeleton(projectRoot)
+    }
+
     const result = await installAgents({
       target,
       location: (arg('--location') as 'global' | 'local' | undefined) ?? 'local',
@@ -639,6 +645,7 @@ async function main(): Promise<void> {
     console.log(`DOCSKIT_ROOT ${defaultDocskitRoot()}`)
     return
   }
+
 
   if (cmd === 'init') {
     await runInitAgents()

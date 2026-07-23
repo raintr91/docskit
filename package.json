@@ -1,6 +1,6 @@
 {
   "name": "@platform/docskit",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Local MCP: docs hub & spec engine — architecture and bundle IR",
   "type": "module",
   "main": "./dist/index.js",
@@ -55,7 +55,17 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@braintree/sanitize-url": "^7.1.2",
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "cytoscape": "^3.34.0",
+    "cytoscape-cose-bilkent": "^4.1.0",
+    "dayjs": "^1.11.21",
+    "debug": "^4.4.3",
+    "mermaid": "^11.16.0",
+    "vitepress": "latest",
+    "vitepress-mermaid-renderer": "^1.1.28",
+    "vitepress-plugin-mermaid": "^2.0.17",
+    "vue": "^3.4.21",
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },

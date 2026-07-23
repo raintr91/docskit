@@ -224,7 +224,10 @@ test('deinit removes exclusive gitignore entries but keeps shared .cursor/', () 
 
   const result = uninstallHarness({ projectRoot: root, yes: true })
   assert.ok(result.deleted.some((line) => line.includes('entry: .docskit/')))
-  assert.ok(result.deleted.some((line) => line.includes('entry: .codex/')))
+  assert.equal(
+    result.deleted.some((line) => line.includes('entry: .codex/')),
+    false,
+  )
   assert.equal(
     result.deleted.some((line) => line.includes('entry: .cursor/')),
     false,
@@ -234,6 +237,6 @@ test('deinit removes exclusive gitignore entries but keeps shared .cursor/', () 
   const after = readFileSync(path.join(root, '.gitignore'), 'utf8')
   assert.match(after, /\.cursor\//)
   assert.doesNotMatch(after, /\.docskit\//)
-  assert.doesNotMatch(after, /\.codex\//)
+  assert.match(after, /\.codex\//)
   assert.match(after, /other-toolkit note/)
 })

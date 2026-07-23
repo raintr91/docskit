@@ -12,11 +12,11 @@ extractBundle: architecture-core
 
 ## Write
 
-- Path: `Architecture/Runtime Containers/`
+- Path: `product/architecture/runtime-containers/`
 - IDs: `CTR-*` (description + flowchart + Code refs table)
 - Name runtime ownership explicitly: `*-web`, `*-api`, `*-client`, `*-gateway`
 - Keep operational areas/personas in `/overview` or `/system-context`; do not classify Admin/Worker as C4 Containers
-- CMP: **index/link only** → `Surfaces/[Surface]/Modules/CMP-*` (use `/module` for README)
+- CMP: **index/link only** → `product/surfaces/[surface]/modules/CMP-*` (use `/module` for README)
 - Format: MD + Mermaid only
 
 ## Do not
@@ -29,7 +29,7 @@ extractBundle: architecture-core
 
 ## Pilot
 
-[`Architecture/Runtime Containers/`](../../../Architecture/Runtime Containers/) · `CTR-admin-web` · `CTR-admin-api`
+[`product/architecture/runtime-containers/`](../../../product/architecture/runtime-containers/) · `CTR-admin-web` · `CTR-admin-api`
 
 Parent router: `/architecture` · CMP skill: `/module` · [Start now](../../../platform/guide/start-now.md)
 

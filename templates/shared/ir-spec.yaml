@@ -1,0 +1,38 @@
+# Derived from bundle.spec — portal:gen reads this file
+# Do not add review prose or legacy evidence here
+
+id: role-domain-function
+title: Feature title
+status: draft
+owner: portal-team
+summary: Short summary
+
+specOrigin: requirement
+
+codegen:
+  profile: list
+  entity: entity
+  module: entities
+  skip: []
+
+tags: []
+
+actors: []
+entities: []
+relationships: []
+requirements: []
+
+ui:
+  composition:
+    pattern: DataListPage
+  routes: []
+  filters: []
+  columns: []
+  testIds:
+    module: entities
+
+api:
+  endpoints: []
+
+acceptance: []
+openQuestions: []

@@ -16,10 +16,12 @@ export function packageRoot(): string {
 
 export function looksLikeHub(abs: string): boolean {
   try {
-    return fs.statSync(path.join(abs, 'architecture')).isDirectory()
-  } catch {
-    return false
-  }
+    if (fs.statSync(path.join(abs, 'architecture')).isDirectory()) return true
+  } catch {}
+  try {
+    if (fs.statSync(path.join(abs, 'product', 'architecture')).isDirectory()) return true
+  } catch {}
+  return false
 }
 
 /**
@@ -58,4 +60,3 @@ export function resolveDocsRoot(explicit?: string): string {
 export function enginesRoot(): string {
   return path.join(packageRoot(), 'engines')
 }
-

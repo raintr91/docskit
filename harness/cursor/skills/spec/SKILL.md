@@ -17,9 +17,9 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ## Scope
 
-**In:** Code bundle / `--id` under `Surfaces/.../Modules/CMP-*/Functions/[Screen | API]`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
+**In:** Code bundle / `--id` under `product/surfaces/.../modules/CMP-*/functions/[Screen | API]`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
 
-**Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. Overview/CTR → `/architecture` children.
+**Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. product/overview / CTR → `product/architecture` children.
 
 ## Workflow
 
@@ -49,7 +49,7 @@ Khi người dùng gọi `... /legacy /spec`, Agent PHẢI:
 - Đọc source từ `legacy-repos.local.json` thay vì source hiện tại.
 - Trích xuất function logic từ source code cũ.
 - Viết/cập nhật `product/legacy-dynamics/{module}/_legacy.dynamics.yaml` (`portal-legacy-dynamics/v1`).
-- Viết `*.bundle.yaml` cho function đó vào `product/components/.../code/` với `specOrigin: legacy`.
+- Viết `*.bundle.yaml` cho function đó vào `product/surfaces/.../functions/` với `specOrigin: legacy`.
 - **Không** tạo codegen tags. Hỗ trợ chạy validate: `legacy_dynamics_validate` / `pnpm legacy-dynamics:validate`.
 
 ## Tools (required after docskit init)
