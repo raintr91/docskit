@@ -505,6 +505,16 @@ function injectVitepressScripts(root: string) {
   writeFileSync(vitepressGitignorePath, 'cache\ndist\n')
 }
 
+function syncDocskitTemplates(root: string) {
+  const templatesDir = path.join(root, '.docskit', 'templates')
+  if (!existsSync(templatesDir)) mkdirSync(templatesDir, { recursive: true })
+  
+  const sourceTemplatesDir = path.join(packageRoot(), 'templates', 'shared', 'templates')
+  if (existsSync(sourceTemplatesDir)) {
+    copyDir(sourceTemplatesDir, templatesDir, false)
+  }
+}
+
 /**
  * Sync Docskit-owned Cursor harness assets into a docs hub.
  * Skips package-local registry source files and preserves customized targets.
@@ -589,6 +599,7 @@ export function installHarness(opts: {
   if (type === 'docs') {
     scaffoldProductSkeleton(root)
     injectVitepressScripts(root)
+    syncDocskitTemplates(root)
   }
 
   recordInstall(root)
@@ -893,6 +904,15 @@ export function uninstallHarness(opts: {
   if (existsSync(manifestFile)) {
     unlinkSync(manifestFile)
     result.manifestRemoved = true
+  }
+  // Remove .docskit/templates/ — these are synced by syncDocskitTemplates
+  // but not tracked in manifest hashes, so must be cleaned up explicitly.
+  const docskitTemplatesDir = path.join(root, '.docskit', 'templates')
+  if (existsSync(docskitTemplatesDir)) {
+    for (const file of walk(docskitTemplatesDir)) {
+      unlinkSync(file)
+      result.deleted.push(file)
+    }
   }
   forgetInstall(root)
   pruneEmptyDirs(root, [...result.deleted.filter((p) => !p.includes(' entry: ')), manifestFile])

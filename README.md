@@ -86,6 +86,7 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 | Skill | Chức năng chính |
 |-------|-----------------|
 | `/configure-repo-maps` | Cấu hình đường dẫn checkout local (repo map) bằng ngôn ngữ tự nhiên. |
+| `/build-templates` | Quét codebase (FE/BE) và tự động sinh EJS templates + common specs phù hợp. |
 | `/docskit` | Đồng bộ hóa kiến thức tổng quát và danh sách skill của bộ công cụ. |
 
 ---
@@ -221,6 +222,25 @@ Docs root: tool `docsRoot` → project MCP `DOCSKIT_ROOT` → valid cwd → setu
 error. Hub phải có `architecture/`.
 
 Redirect stubs (old flat C4) bị bỏ qua khi index. `DYN-*` không còn được index — dùng `FLOW-*`.
+
+---
+
+## Customizing Templates (Tùy biến Giao diện)
+
+Docskit sử dụng engine template **EJS** để sinh tài liệu Markdown từ các file đặc tả YAML. Member có thể tùy biến hoàn toàn layout hiển thị (ví dụ: đổi sang phong cách UI của Vuetify/Material thay vì mặc định, ẩn/hiện breadcrumbs,...) mà không sợ làm lỗi các script kiểm tra hoặc AI Skill.
+
+### Cách thực hiện:
+1. **Lấy file mẫu:** Sau khi chạy `docskit init`, các template mặc định sẽ được đồng bộ vào thư mục `.docskit/templates/` trong repo của bạn (bao gồm `default-layout.ejs` và `breadcrumb-flow.ejs`).
+2. **Chỉnh sửa:** Member có thể chỉnh sửa trực tiếp các thẻ HTML/CSS hoặc layout Markdown trong các file `.ejs` này.
+3. **Đổi tên / Thêm mới:**
+   - Bạn có thể tạo thêm các file layout tùy biến khác (ví dụ: `my-custom-layout.ejs`) trong thư mục `.docskit/templates/`.
+   - Để áp dụng layout này cho một tính năng cụ thể, hãy khai báo trường `template` trong file spec (`*.bundle.yaml`):
+     ```yaml
+     id: feature-slug
+     title: Feature Title
+     template: my-custom-layout  # <-- Tên file template (không cần đuôi .ejs)
+     ```
+4. **Biên dịch:** Khi chạy `pnpm docs:render`, Docskit sẽ ưu tiên quét và sử dụng template tùy biến trong thư mục `.docskit/templates/` trước khi fallback về template mặc định của hệ thống.
 
 ---
 

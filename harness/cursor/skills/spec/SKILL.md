@@ -43,6 +43,7 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 - Do not run `portal:gen` / `testcase:gen`.
 - Vague spec → `/bqa-grill-docs` before `/prototype`.
 - No arc42 chapter prose for a single function — stay C4/code-level.
+- If a custom template/layout is required, specify the template name in the bundle YAML's `template` field (e.g., `template: breadcrumb-flow`). Do not edit the generated Markdown output directly.
 
 ## Modifiers (If /legacy is used)
 Khi người dùng gọi `... /legacy /spec`, Agent PHẢI:

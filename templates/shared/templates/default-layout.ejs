@@ -1,0 +1,335 @@
+# <%= spec.title || spec.id %>
+
+<% if (context.testcases && context.testcases.length) { %>
+- **Testcase plans:** <%= context.testcases.map(tc => '`' + (tc.data.title || tc.data.id || tc.file) + '`').join(' · ') %> (hub: [base_test](https://github.com/raintr91/base_test))
+<% } else { %>
+- **Testcase plans:** [base_test](https://github.com/raintr91/base_test) (`pnpm cases:render` on tests hub) — see docs-hub TESTS-HUB
+<% } %>
+
+<% 
+  const route = spec.ui?.routes?.[0];
+  const path = route?.path || '';
+  const testId = route?.pageTestId || '';
+  let screenLine = '- **Screen:** None';
+  if (path) {
+    const screen = context.renderScreenLink ? context.renderScreenLink(path) : '`' + path + '`';
+    const suffix = testId ? ` · \`${testId}\`` : '';
+    screenLine = `- **Screen:** ${screen}${suffix}`;
+  }
+%>
+<%= screenLine %>
+
+<% if (spec.summary) { %>
+<%= spec.summary %>
+<% } %>
+
+<% 
+  // Render other spec sections
+  const skipKeys = new Set(['id', 'title', 'summary', 'acceptance', 'ui', 'design', 'legacy', 'review', 'template']);
+  Object.entries(spec).forEach(([key, value]) => {
+    if (skipKeys.has(key) || value == null) return;
+%>
+## <%= key %>
+
+<% if (typeof value === 'string') { %>
+<%= value %>
+<% } else { %>
+```yaml
+<%= context.stringify(value).trim() %>
+```
+<% } %>
+
+<% }); %>
+
+<% if (spec.ui && Object.keys(spec.ui).length) { %>
+## ui
+
+<% if (spec.ui.routes) { %>
+### routes
+
+```yaml
+<%= context.stringify(spec.ui.routes).trim() %>
+```
+<% } %>
+
+<% if (spec.ui.validationMessages) { %>
+### validationMessages
+
+```yaml
+<%= context.stringify(spec.ui.validationMessages).trim() %>
+```
+<% } %>
+
+<% if (spec.ui.list && Object.keys(spec.ui.list).length) { %>
+### list
+
+<% if (spec.ui.list.titleField) { %>
+**Title field:** `<%= spec.ui.list.titleField %>`
+<% } %>
+<% if (spec.ui.list.subtitleField) { %>
+**Subtitle field:** `<%= spec.ui.list.subtitleField %>`
+<% } %>
+<% if (spec.ui.list.filters && spec.ui.list.filters.length) { %>
+**Filters:**
+
+```yaml
+<%= context.stringify(spec.ui.list.filters).trim() %>
+```
+<% } %>
+
+**Columns:**
+
+<% if (spec.ui.list.columns && spec.ui.list.columns.length) { %>
+| Key | Title | Sortable | Render | Component | Prop |
+| --- | --- | --- | --- | --- | --- |
+<% spec.ui.list.columns.forEach(col => { %>
+| <%= col.key || '' %> | <%= col.title || '' %> | <%= col.sortable ? 'yes' : '' %> | <%= col.render || '' %> | <%= col.component || '' %> | <%= col.componentProp || '' %> |
+<% }); %>
+<% } else { %>
+None
+<% } %>
+
+<% if (spec.ui.list.rowActions && spec.ui.list.rowActions.length) { %>
+**Row actions:**
+
+```yaml
+<%= context.stringify(spec.ui.list.rowActions).trim() %>
+```
+<% } %>
+<% if (spec.ui.list.bulkActions && spec.ui.list.bulkActions.length) { %>
+**Bulk actions:**
+
+```yaml
+<%= context.stringify(spec.ui.list.bulkActions).trim() %>
+```
+<% } %>
+<% if (spec.ui.list.pagination) { %>
+**Pagination:**
+
+```yaml
+<%= context.stringify(spec.ui.list.pagination).trim() %>
+```
+<% } %>
+<% if (spec.ui.list.emptyState) { %>
+**Empty state:**
+
+```yaml
+<%= context.stringify(spec.ui.list.emptyState).trim() %>
+```
+<% } %>
+<% } %>
+
+<% if (spec.ui.form && Object.keys(spec.ui.form).length) { %>
+### form
+
+<% if (spec.ui.form.layout) { %>
+**Layout:**
+
+```yaml
+<%= context.stringify(spec.ui.form.layout).trim() %>
+```
+<% } %>
+
+<% if (spec.ui.form.sections && spec.ui.form.sections.length) { %>
+**Sections:**
+
+```yaml
+<%= context.stringify(spec.ui.form.sections).trim() %>
+```
+<% } %>
+
+**Fields:**
+
+<% if (spec.ui.form.fields && spec.ui.form.fields.length) { %>
+| Key | Label | Type | Widget | Req | Source | Validation | Messages |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+<% spec.ui.form.fields.forEach(f => { 
+  let srcStr = '';
+  if (f.source && typeof f.source === 'object') {
+    srcStr = [f.source.kind, f.source.ref].filter(Boolean).join(': ');
+  }
+  let valStr = '';
+  if (f.validation && typeof f.validation === 'object') {
+    valStr = Object.entries(f.validation).map(([k, v]) => `${k}=${v}`).join(', ');
+  }
+  let msgStr = '';
+  if (f.messages && typeof f.messages === 'object') {
+    msgStr = Object.entries(f.messages).map(([k, v]) => `${k}: ${v}`).join(' | ');
+  }
+%>
+| <%= f.key || '' %> | <%= f.label || '' %> | <%= f.type || '' %> | <%= f.widget || '' %> | <%= f.required ? 'yes' : '' %> | <%= srcStr %> | <%= valStr %> | <%= msgStr %> |
+<% }); %>
+<% } else { %>
+None
+<% } %>
+
+<% if (spec.ui.form.submit) { %>
+**Submit:**
+
+```yaml
+<%= context.stringify(spec.ui.form.submit).trim() %>
+```
+<% } %>
+<% if (spec.ui.form.emptyState) { %>
+**Empty state:**
+
+```yaml
+<%= context.stringify(spec.ui.form.emptyState).trim() %>
+```
+<% } %>
+<% } %>
+
+<% if (spec.ui.detail && Object.keys(spec.ui.detail).length) { %>
+### detail
+
+<% if (spec.ui.detail.header) { %>
+**Header:**
+
+```yaml
+<%= context.stringify(spec.ui.detail.header).trim() %>
+```
+<% } %>
+
+<% if (spec.ui.detail.sections && spec.ui.detail.sections.length) { %>
+**Sections:**
+
+```yaml
+<%= context.stringify(spec.ui.detail.sections).trim() %>
+```
+<% } %>
+
+<% if (spec.ui.detail.actions && spec.ui.detail.actions.length) { %>
+**Actions:**
+
+```yaml
+<%= context.stringify(spec.ui.detail.actions).trim() %>
+```
+<% } %>
+
+<% if (spec.ui.detail.emptyState) { %>
+**Empty state:**
+
+```yaml
+<%= context.stringify(spec.ui.detail.emptyState).trim() %>
+```
+<% } %>
+<% } %>
+
+<% 
+  const uiOther = { ...spec.ui };
+  delete uiOther.routes;
+  delete uiOther.validationMessages;
+  delete uiOther.list;
+  delete uiOther.form;
+  delete uiOther.detail;
+  if (Object.keys(uiOther).length) {
+%>
+### ui (other)
+
+```yaml
+<%= context.stringify(uiOther).trim() %>
+```
+<% } %>
+<% } %>
+
+<% if (spec.review && (spec.review.layoutNotes || spec.review.summary)) { %>
+## Review — layout notes
+
+<% if (spec.review.layoutNotes) { %>
+<% if (Array.isArray(spec.review.layoutNotes)) { %>
+<%= spec.review.layoutNotes.map(n => `- ${n}`).join('\n') %>
+<% } else { %>
+- <%= spec.review.layoutNotes %>
+<% } %>
+<% } %>
+<% } %>
+
+<% if (spec.design && Object.keys(spec.design).length) { %>
+## Design intent
+
+<% if (spec.design.inherits) { %>
+**Inherits:** `<%= spec.design.inherits %>`
+<% } %>
+
+<% if (spec.design.shell && spec.design.shell.tag) { %>
+**Shell:** <%= spec.design.shell.tag %>
+<% } %>
+
+<% if (spec.design.patterns && spec.design.patterns.length) { %>
+**Patterns:**
+
+<%= spec.design.patterns.map(p => `- ${p}`).join('\n') %>
+<% } %>
+
+<% if (spec.design.zones && spec.design.zones.length) { %>
+### Zones
+
+| ID | Title | Component | Type | Spans | Spans (H) |
+| --- | --- | --- | --- | --- | --- |
+<% spec.design.zones.forEach(z => { %>
+| <%= z.id || '' %> | <%= z.title || '' %> | <%= z.component || '' %> | <%= z.type || '' %> | <%= z.spans || '' %> | <%= z.spansH || '' %> |
+<% }); %>
+<% } %>
+
+<% if (spec.design.behavior && Object.keys(spec.design.behavior).length) { %>
+### CRUD behavior
+
+| API | Method | Path | Request | Response |
+| --- | --- | --- | --- | --- |
+<% Object.entries(spec.design.behavior).forEach(([k, b]) => { %>
+| <%= k %> | <%= b.method || '' %> | <%= b.path || '' %> | <%= b.request || '' %> | <%= b.response || '' %> |
+<% }); %>
+<% } %>
+
+<% if (spec.design.actions && spec.design.actions.length) { %>
+### Actions
+
+| Label | Trigger | Target | API | Redirect |
+| --- | --- | --- | --- | --- |
+<% spec.design.actions.forEach(act => { %>
+| <%= act.label || '' %> | <%= act.trigger || '' %> | <%= act.target || '' %> | <%= act.api || '' %> | <%= act.redirect || '' %> |
+<% }); %>
+<% } %>
+
+<% if (spec.design.deviations && spec.design.deviations.length) { %>
+### Deviations
+
+<%= spec.design.deviations.map(d => `- ${d.tag || 'deviation'}: legacy \`${d.legacy || ''}\` → portal \`${d.portal || ''}\``).join('\n') %>
+<% } %>
+
+<%
+  const designOther = { ...spec.design };
+  ['inherits', 'shell', 'patterns', 'zones', 'behavior', 'actions', 'deviations', 'id'].forEach(k => delete designOther[k]);
+  if (Object.keys(designOther).length) {
+%>
+### Design (other)
+
+```yaml
+<%= context.stringify(designOther).trim() %>
+```
+<% } %>
+<% } %>
+
+<% if (spec.legacy && Object.keys(spec.legacy).length) { %>
+## Legacy evidence
+
+<% if (spec.legacy.behaviors && spec.legacy.behaviors.length) { %>
+### Behaviors
+
+| ID | Fact | Confidence |
+| --- | --- | --- |
+<% spec.legacy.behaviors.forEach(b => { %>
+| <%= b.id || '' %> | `<%= JSON.stringify(b.fact || {}) %>` | <%= b.confidence || '' %> |
+<% }); %>
+<% } %>
+
+<% if (spec.legacy.fields && spec.legacy.fields.length) { %>
+### Fields
+
+| Name | Via | Confidence |
+| --- | --- | --- |
+<% spec.legacy.fields.forEach(f => { %>
+| <%= f.name || '' %> | <%= f.via || '' %> | <%= f.confidence || '' %> |
+<% }); %>
+<% } %>
+<% } %>
