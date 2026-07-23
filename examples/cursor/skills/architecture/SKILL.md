@@ -41,7 +41,7 @@ Architecture folder: prefer **System Context** + **Deployment** for team; other 
 ## Rules
 
 - Format: MD + Mermaid (`flowchart` / `sequenceDiagram`; avoid Mermaid `C4Context`)
-- Product Code (`W-*`/`API-*`) stays in `product/components/…/code/`
+- Product Code (`W-*`/`API-*`) stays in `product/surfaces/…/modules/CMP-*/code/`
 - API service belongs to C4 Containers; API endpoint/contract belongs to Function detail
 - Prefer `/journey` over `/dynamics`
 - One concern per edit

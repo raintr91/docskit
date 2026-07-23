@@ -1,0 +1,381 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Portal Feature Spec",
+  "type": "object",
+  "required": ["id", "title", "requirements"],
+  "properties": {
+    "id": { "type": "string", "description": "Stable feature slug." },
+    "title": { "type": "string", "description": "Human-readable feature title." },
+    "status": { "type": "string", "description": "Feature lifecycle status." },
+    "owner": { "type": "string", "description": "Feature owner." },
+    "summary": { "type": "string", "description": "Short business summary." },
+    "requirements": {
+      "type": "array",
+      "description": "Business requirements for the feature.",
+      "items": { "$ref": "#/$defs/requirement" }
+    },
+    "ui": {
+      "type": "object",
+      "description": "Frontend contract and page-level intent.",
+      "properties": {
+        "routes": {
+          "type": "array",
+          "description": "Canonical route entries for the feature.",
+          "items": { "$ref": "#/$defs/route" }
+        },
+        "list": {
+          "type": "object",
+          "description": "List page contract.",
+          "properties": {
+            "titleField": { "type": "string" },
+            "subtitleField": { "type": "string" },
+            "columns": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/listColumn" }
+            },
+            "filters": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/filterField" }
+            },
+            "rowActions": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/actionItem" }
+            },
+            "bulkActions": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/actionItem" }
+            },
+            "pagination": { "$ref": "#/$defs/pagination" },
+            "emptyState": { "$ref": "#/$defs/emptyState" }
+          },
+          "additionalProperties": true
+        },
+        "form": {
+          "type": "object",
+          "description": "Create/edit form contract.",
+          "properties": {
+            "layout": { "$ref": "#/$defs/formLayout" },
+            "sections": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/formSection" }
+            },
+            "fields": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/formField" }
+            },
+            "submit": { "$ref": "#/$defs/formSubmit" },
+            "emptyState": { "$ref": "#/$defs/emptyState" }
+          },
+          "additionalProperties": true
+        },
+        "detail": {
+          "type": "object",
+          "description": "Detail/read-only page contract.",
+          "properties": {
+            "header": { "$ref": "#/$defs/detailHeader" },
+            "sections": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/detailSection" }
+            },
+            "actions": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/actionItem" }
+            },
+            "emptyState": { "$ref": "#/$defs/emptyState" }
+          },
+          "additionalProperties": true
+        },
+        "validationMessages": {
+          "type": "object",
+          "description": "Common UI validation copy defaults for the feature.",
+          "$ref": "#/$defs/validationMessages"
+        },
+        "composition": { "type": "object" },
+        "filters": { "type": "array" },
+        "columns": { "type": "array" },
+        "testIds": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "api": {
+      "type": "object",
+      "description": "Backend API contract.",
+      "additionalProperties": true
+    },
+    "acceptance": {
+      "type": "array",
+      "description": "Acceptance criteria.",
+      "items": { "type": "string" }
+    },
+    "notes": {
+      "type": "array",
+      "description": "Optional implementation notes.",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "requirement": {
+      "type": "object",
+      "required": ["id", "title", "description"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "priority": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "route": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string" },
+        "legacyPath": { "type": "string" },
+        "pageTestId": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "listColumn": {
+      "type": "object",
+      "required": ["key"],
+      "properties": {
+        "key": { "type": "string" },
+        "title": { "type": "string" },
+        "sortable": { "type": "boolean" },
+        "render": { "type": "string" },
+        "component": { "type": "string" },
+        "componentProp": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "filterField": {
+      "type": "object",
+      "required": ["name", "label", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "label": { "type": "string" },
+        "type": { "type": "string" },
+        "placeholder": { "type": "string" },
+        "source": { "$ref": "#/$defs/fieldSource" },
+        "validation": { "$ref": "#/$defs/fieldValidation" },
+        "messages": { "$ref": "#/$defs/fieldMessages" }
+      },
+      "additionalProperties": true
+    },
+    "actionItem": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "icon": { "type": "string" },
+        "variant": { "type": "string" },
+        "position": { "type": "string" },
+        "testId": { "type": "string" },
+        "testIdPattern": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "pagination": {
+      "type": "object",
+      "properties": {
+        "defaultPageSize": { "type": "number" },
+        "pageSizeOptions": {
+          "type": "array",
+          "items": { "type": "number" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "emptyState": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "ctaText": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "formLayout": {
+      "type": "object",
+      "properties": {
+        "mode": { "type": "string" },
+        "sections": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/formSection" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "formSection": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/formFieldRef" }
+        },
+        "columns": { "type": "number" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "detailHeader": {
+      "type": "object",
+      "properties": {
+        "titleField": { "type": "string" },
+        "subtitleField": { "type": "string" },
+        "badges": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "detailSection": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/detailFieldRef" }
+        },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "formFieldRef": {
+      "type": "string"
+    },
+    "detailFieldRef": {
+      "oneOf": [
+        { "type": "string" },
+        { "$ref": "#/$defs/detailFieldObject" }
+      ]
+    },
+    "detailFieldObject": {
+      "type": "object",
+      "required": ["key"],
+      "properties": {
+        "key": { "type": "string" },
+        "label": { "type": "string" },
+        "render": { "type": "string" },
+        "helpText": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "formField": {
+      "type": "object",
+      "required": ["key", "label", "type"],
+      "properties": {
+        "key": { "type": "string" },
+        "label": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["string", "int", "bool", "date", "array", "object"]
+        },
+        "widget": {
+          "type": "string",
+          "enum": [
+            "text",
+            "textarea",
+            "select",
+            "multiselect",
+            "radio",
+            "checkbox",
+            "date",
+            "number",
+            "switch"
+          ]
+        },
+        "required": { "type": "boolean" },
+        "nullable": { "type": "boolean" },
+        "readonly": { "type": "boolean" },
+        "disabled": { "type": "boolean" },
+        "multiple": { "type": "boolean" },
+        "placeholder": { "type": "string" },
+        "helpText": { "type": "string" },
+        "default": {},
+        "validation": { "$ref": "#/$defs/fieldValidation" },
+        "messages": { "$ref": "#/$defs/fieldMessages" },
+        "source": { "$ref": "#/$defs/fieldSource" },
+        "dependsOn": { "$ref": "#/$defs/fieldDependsOn" }
+      },
+      "additionalProperties": true
+    },
+    "fieldValidation": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "minLength": { "type": "number" },
+        "maxLength": { "type": "number" },
+        "pattern": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "fieldMessages": {
+      "type": "object",
+      "properties": {
+        "required": { "type": "string" },
+        "min": { "type": "string" },
+        "max": { "type": "string" },
+        "minLength": { "type": "string" },
+        "maxLength": { "type": "string" },
+        "pattern": { "type": "string" },
+        "type": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "fieldSource": {
+      "type": "object",
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["enum", "master_list", "relation", "api"]
+        },
+        "ref": { "type": "string" },
+        "valueKey": { "type": "string" },
+        "labelKey": { "type": "string" },
+        "path": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "fieldDependsOn": {
+      "type": "object",
+      "properties": {
+        "field": { "type": "string" },
+        "value": {}
+      },
+      "additionalProperties": true
+    },
+    "formSubmit": {
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "testId": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "validationMessages": {
+      "type": "object",
+      "properties": {
+        "required": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "minLength": { "type": "string" },
+        "maxLength": { "type": "string" },
+        "min": { "type": "string" },
+        "max": { "type": "string" },
+        "pattern": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

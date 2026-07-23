@@ -20,7 +20,7 @@ extractBundle: architecture-core
 
 ## Do not
 
-- Endpoint contracts → `product/components/.../code/API-*` or `shared/api-catalog`
+- Endpoint contracts → `product/surfaces/.../modules/CMP-*/code/API-*` or `shared/api-catalog`
 - UI DSL → `code/W-*`
 - Full backlog of every story — only ~10–20% core/hard/cross-system
 - Confuse with `product/legacy-dynamics/` or `/business-process-trace` (brownfield)

@@ -1,0 +1,69 @@
+# SSOT — portal-feature-bundle/v1. Split: pnpm spec:split -- <path>
+# Authoring: docs/templates/bundle-authoring.md
+
+schema: portal-feature-bundle/v1
+id: role-domain-function
+title: Feature title
+status: draft
+owner: portal-team
+summary: Short business summary for BA, QA, dev, and AI.
+
+specOrigin: requirement # requirement | legacy
+
+grillStatus:
+  bqaFacts: pending
+  bqaOpen: pending
+  dev: pending
+  full: not_required
+
+# Design v1 — NO codegen, tags, ui.filters/columns/composition/testIds
+spec:
+  actors: []
+  entities: []
+  relationships: []
+  requirements: []
+  ui:
+    routes: []
+  api:
+    endpoints: []
+  acceptance: []
+
+# Dev-grill / portal:gen — optional until dev-grill done
+gen:
+  codegen: null
+  tags: []
+  ui:
+    filters: []
+    columns: []
+    composition: null
+    testIds: null
+
+legacy:
+  legacyRef: null
+  behaviors: []
+  fields: []
+  ui: []
+  evidence: []
+  refs: {}
+
+design:
+  inherits: null
+  shell:
+    tag: "#shell: DataListPage"
+  patterns: []
+  zones: []
+  behavior:
+    create: { enabled: true, surface: page }
+    update: { enabled: true, surface: page }
+    delete: { enabled: true, mode: confirm_dialog }
+  actions: []
+
+review:
+  summary: ""
+  layoutNotes: []
+
+openQuestions: []
+
+_meta:
+  generatedBy: null
+  sourceRevision: null

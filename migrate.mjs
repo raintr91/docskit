@@ -55,4 +55,28 @@ if (fs.existsSync(path.join(__dirname, 'draft'))) {
   fs.rmSync(path.join(__dirname, 'draft'), { recursive: true, force: true });
 }
 
+// 7. Delete obsolete skills
+const skillsToDelete = [
+  'component',
+  'containers',
+  'context',
+  'legacy-spec',
+  'update-spec-legacy',
+  'dynamics'
+];
+
+for (const skill of skillsToDelete) {
+  const harnessPath = path.join(__dirname, 'harness', 'cursor', 'skills', skill);
+  const examplesPath = path.join(__dirname, 'examples', 'cursor', 'skills', skill);
+  
+  if (fs.existsSync(harnessPath)) {
+    fs.rmSync(harnessPath, { recursive: true, force: true });
+    console.log(`Deleted harness skill: ${skill}`);
+  }
+  if (fs.existsSync(examplesPath)) {
+    fs.rmSync(examplesPath, { recursive: true, force: true });
+    console.log(`Deleted examples skill: ${skill}`);
+  }
+}
+
 console.log('Migration complete');

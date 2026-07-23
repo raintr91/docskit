@@ -1,18 +1,18 @@
 ---
 name: journey
-description: /journey — product runtime journeys (FLOW-*) under arc42 §06; replaces /dynamics for new work.
+description: /journey — product runtime journeys (FLOW-*).
 disable-model-invocation: true
 extractBundle: architecture-core
 ---
 
 # /journey — Flow (`FLOW-*` / `*_flow`)
 
-**Business layer:** Flow (optional node on the tree)  
-**Standards:** 1–2 lines purpose OK (arc42-lite); body diagram → **C4 `sequenceDiagram`**. Skill name stays **`/journey`** — do not say *dynamics* on new docs trees.
+**Business layer:** Runtime Journeys  
+**Standards:** 1–2 lines purpose OK; body diagram → **C4 `sequenceDiagram`**. Skill name stays **`/journey`** — do not say *dynamics* on new docs trees.
 
 ## Write
 
-- Path: `architecture/06-runtime/journeys/` — files `FLOW-*.md` (catalog: `06-runtime/index.md`)
+- Path: `Architecture/Runtime Journeys/` — files `FLOW-*.md`
 - Format: **MD + Mermaid only** — `sequenceDiagram` preferred
 - May reference Code IDs (`W-*`, `API-*`, `CTR-*`) on steps/diagram only
 - Apply curated criteria (extract `tpl-journey.md` / `architecture-core.md`)
@@ -20,7 +20,7 @@ extractBundle: architecture-core
 
 ## Do not
 
-- Endpoint contracts → `product/components/.../code/API-*` or `shared/api-catalog`
+- Endpoint contracts → `product/surfaces/.../modules/CMP-*/code/API-*` or `shared/api-catalog`
 - UI DSL → `code/W-*`
 - Full backlog of every story — only ~10–20% core/hard/cross-system
 - Confuse with `product/legacy-dynamics/` or `/business-process-trace` (brownfield)
@@ -49,4 +49,4 @@ targeted local reads, then emit one deduplicated `docskit.missing-optional`
 event per run and optional with actual `fileReads` and `contextBytes` only.
 
 
-Pilot: [`FLOW-login`](../../../architecture/06-runtime/journeys/FLOW-login.md) · [Start now](../../../platform/guide/start-now.md)
+Pilot: [`FLOW-login`](../../../Architecture/Runtime Journeys/FLOW-login.md) · [Start now](../../../platform/guide/start-now.md)

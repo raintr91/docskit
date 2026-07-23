@@ -22,9 +22,14 @@ function cliBool(name) {
   return process.argv.includes(`--${name}`)
 }
 
-const yamlRoot = cliFlag('yaml-root') ? path.resolve(cliFlag('yaml-root')) : path.join(featuresDir, 'yaml')
-const mdRoot = cliFlag('md-root') ? path.resolve(cliFlag('md-root')) : path.join(featuresDir, 'md')
-const legacyRoot = cliFlag('legacy-root') ? path.resolve(cliFlag('legacy-root')) : featuresDir
+const hasSurfaces = fs.existsSync(path.resolve('product/surfaces'))
+const defaultYamlRoot = hasSurfaces ? path.resolve('product/surfaces') : path.join(featuresDir, 'yaml')
+const defaultMdRoot = hasSurfaces ? path.resolve('product/surfaces') : path.join(featuresDir, 'md')
+const defaultLegacyRoot = hasSurfaces ? path.resolve('product/surfaces') : featuresDir
+
+const yamlRoot = cliFlag('yaml-root') ? path.resolve(cliFlag('yaml-root')) : defaultYamlRoot
+const mdRoot = cliFlag('md-root') ? path.resolve(cliFlag('md-root')) : defaultMdRoot
+const legacyRoot = cliFlag('legacy-root') ? path.resolve(cliFlag('legacy-root')) : defaultLegacyRoot
 const writeIndex = !cliBool('no-index')
 const devAppBaseUrl = resolveDevAppBaseUrl(projectRoot)
 

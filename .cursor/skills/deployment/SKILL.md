@@ -1,14 +1,14 @@
 ---
 name: deployment
-description: /deployment — arc42 §07 optional DEP-* stub; do not invent prod topology.
+description: /deployment — optional DEP-* stub; do not invent prod topology.
 disable-model-invocation: true
 extractBundle: architecture-core
 ---
 
-# /deployment — Deploy (§07) — stub-first
+# /deployment — Deploy — stub-first
 
 **Business layer:** Deploy (outside module tree; architecture thin surface)  
-**Standards:** short prose OK; diagrams → **C4** `DEP-*` only when placement matters. Team-facing architecture: prefer **§01 + §07** active; other chapters stub.
+**Standards:** short prose OK; diagrams → **C4** `DEP-*` only when placement matters. Team-facing architecture: prefer **System Context + Deployment** active; other chapters stub.
 
 ## Default
 
@@ -16,7 +16,7 @@ If the user did **not** confirm placement matters → write/keep a **short stub*
 
 ## Write (when justified)
 
-- Path: `architecture/07-deployment/`
+- Path: `Architecture/Deployment/`
 - ID: `DEP-*`
 - MD + Mermaid optional; no secrets
 - Do **not** write local IDE/WSL machine tips into the docs hub
@@ -28,7 +28,7 @@ If the user did **not** confirm placement matters → write/keep a **short stub*
 
 ## Pilot
 
-[`architecture/07-deployment/`](../../../architecture/07-deployment/) · `DEP-local` (minimal)
+[`Architecture/Deployment/`](../../../Architecture/Deployment/) · `DEP-local` (minimal)
 
 ## Accelerators (optional)
 

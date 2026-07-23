@@ -63,9 +63,9 @@ Do not merge repositories into one workspace graph. Route by intent:
 
 ## Owned architecture family
 
-Docs `harness install --type=docs` also syncs `/architecture` `/context` `/containers`
-`/component` `/journey` `/deployment` `/decision` `/cross-cutting` and the
-deprecated `/dynamics` redirect, plus the `architecture-core` extract bundle.
+Docs `harness install --type=docs` also syncs `/architecture`, `/system-context`, `/containers`,
+`/overview`, `/surfaces`, `/module`, `/business-process`, `/db-erd`, `/cross-service`, `/architecture-grill`,
+`/deployment`, `/journey`, `/spec` and all `/legacy-*` variants, plus the `architecture-core` extract bundle.
 Consumer mode syncs only `/docskit`, its rule/schema, and targeted phase hook.
 
 ## Accelerators (optional)

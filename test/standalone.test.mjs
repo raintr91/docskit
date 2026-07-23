@@ -538,22 +538,22 @@ test('standalone package behavior', async (t) => {
     assert.notEqual(readFileSync(skill, 'utf8'), '# customized\n')
 
     for (const owned of [
+      'overview',
       'architecture',
-      'context',
-      'containers',
-      'component',
+      'surfaces',
+      'module',
       'journey',
       'deployment',
       'decision',
       'cross-cutting',
-      'dynamics',
+      'business-process',
       'docskit',
     ]) {
       const body = readFileSync(
         path.join(project, '.cursor', 'skills', owned, 'SKILL.md'),
         'utf8',
       )
-      if (owned === 'dynamics') continue
+      if (['overview', 'surfaces', 'module', 'business-process'].includes(owned)) continue
       assert.match(body, /Accelerators \(optional\)|never blocks|never requires ArtifactGraph/i)
     }
     const installedRule = readFileSync(

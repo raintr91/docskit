@@ -445,16 +445,22 @@ export function registerTools(server: McpServer): void {
     {
       ...rootField,
     },
-    async ({ projectRoot }) =>
-      toolEngine('render', [], projectRoot, [
+    async ({ projectRoot }) => {
+      const rootPath = projectRoot || process.cwd()
+      const isLowercase = fs.existsSync(path.join(rootPath, 'product', 'surfaces', 'common'))
+      const yamlRoot = isLowercase ? 'product/surfaces/common/yaml' : 'Surfaces/Common/yaml'
+      const mdRoot = isLowercase ? 'product/surfaces/common/md' : 'Surfaces/Common/md'
+      const legacyRoot = isLowercase ? 'product/surfaces/common' : 'Surfaces/Common'
+      return toolEngine('render', [], projectRoot, [
         '--yaml-root',
-        'Surfaces/Common/yaml',
+        yamlRoot,
         '--md-root',
-        'Surfaces/Common/md',
+        mdRoot,
         '--legacy-root',
-        'Surfaces/Common',
+        legacyRoot,
         '--no-index',
-      ]),
+      ])
+    },
   )
 
   server.tool(

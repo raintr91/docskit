@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 **Extracts:** `extractBundle: spec-requirement` → `.cursor/extracts/extract-registry.json`
 
-Template: `templates/feature.bundle.yaml` · rules: `templates/bundle-authoring.md`  
+Template: `.docskit/templates/feature.bundle.yaml` · rules: `.docskit/templates/bundle-authoring.md`  
 Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-DOC-STRUCTURE.md) · [Start now](../../../platform/guide/start-now.md)
 
 ## Scope

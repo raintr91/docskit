@@ -11,6 +11,8 @@ import {
   statSync,
   unlinkSync,
   writeFileSync,
+  rmSync,
+  copyFileSync,
 } from 'node:fs'
 import path from 'node:path'
 import { packageRoot } from '../config/docs-root.js'
@@ -31,15 +33,15 @@ export type DocskitHarnessType = 'docs' | 'consumer'
 
 export const DOCSKIT_OWNED_SKILLS = [
   'docskit',
+  'overview',
   'architecture',
-  'context',
-  'containers',
-  'component',
+  'surfaces',
+  'module',
   'journey',
   'deployment',
   'decision',
   'cross-cutting',
-  'dynamics',
+  'business-process',
 ] as const
 
 export interface StaleHarnessAsset {
@@ -451,7 +453,33 @@ function mergeExtractRegistry(
 export function scaffoldProductSkeleton(root: string) {
   const sourceRoot = path.join(packageRoot(), 'templates', 'product-skeleton')
   if (!existsSync(sourceRoot)) return
+
+  // Clean up templates/product-skeleton/components if still present on disk
+  const templateComponentsDir = path.join(sourceRoot, 'components')
+  if (existsSync(templateComponentsDir)) {
+    try {
+      rmSync(templateComponentsDir, { recursive: true, force: true })
+    } catch {}
+  }
+
   const destRoot = path.join(root, 'product')
+  if (!existsSync(destRoot)) mkdirSync(destRoot, { recursive: true })
+  
+  copyDir(sourceRoot, destRoot)
+
+  // Also clean up components in the destination
+  const destComponentsDir = path.join(destRoot, 'components')
+  if (existsSync(destComponentsDir)) {
+    try {
+      rmSync(destComponentsDir, { recursive: true, force: true })
+    } catch {}
+  }
+}
+
+export function scaffoldSchemas(root: string) {
+  const sourceRoot = path.join(packageRoot(), 'templates', 'schemas')
+  if (!existsSync(sourceRoot)) return
+  const destRoot = path.join(root, 'schemas')
   if (!existsSync(destRoot)) mkdirSync(destRoot, { recursive: true })
   
   copyDir(sourceRoot, destRoot)
@@ -509,9 +537,25 @@ function syncDocskitTemplates(root: string) {
   const templatesDir = path.join(root, '.docskit', 'templates')
   if (!existsSync(templatesDir)) mkdirSync(templatesDir, { recursive: true })
   
-  const sourceTemplatesDir = path.join(packageRoot(), 'templates', 'shared', 'templates')
-  if (existsSync(sourceTemplatesDir)) {
-    copyDir(sourceTemplatesDir, templatesDir, false)
+  // Copy EJS templates
+  const sourceEjsDir = path.join(packageRoot(), 'templates', 'shared', 'templates')
+  if (existsSync(sourceEjsDir)) {
+    copyDir(sourceEjsDir, templatesDir, false)
+  }
+
+  // Copy YAML templates and documentation
+  const sourceSharedDir = path.join(packageRoot(), 'templates', 'shared')
+  if (existsSync(sourceSharedDir)) {
+    const entries = readdirSync(sourceSharedDir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.isFile()) {
+        const srcFile = path.join(sourceSharedDir, entry.name)
+        const destFile = path.join(templatesDir, entry.name)
+        if (!existsSync(destFile)) {
+          copyFileSync(srcFile, destFile)
+        }
+      }
+    }
   }
 }
 
@@ -598,6 +642,7 @@ export function installHarness(opts: {
   
   if (type === 'docs') {
     scaffoldProductSkeleton(root)
+    scaffoldSchemas(root)
     injectVitepressScripts(root)
     syncDocskitTemplates(root)
   }

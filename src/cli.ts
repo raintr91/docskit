@@ -712,13 +712,18 @@ async function main(): Promise<void> {
     return
   }
   if (cmd === 'render-common') {
+    const isLowercase = existsSync(path.join(process.cwd(), 'product', 'surfaces', 'common'))
+    const yamlRoot = isLowercase ? 'product/surfaces/common/yaml' : 'Surfaces/Common/yaml'
+    const mdRoot = isLowercase ? 'product/surfaces/common/md' : 'Surfaces/Common/md'
+    const legacyRoot = isLowercase ? 'product/surfaces/common' : 'Surfaces/Common'
+    
     await runNamedEngine('render', [
       '--yaml-root',
-      'Surfaces/Common/yaml',
+      yamlRoot,
       '--md-root',
-      'Surfaces/Common/md',
+      mdRoot,
       '--legacy-root',
-      'Surfaces/Common',
+      legacyRoot,
       '--no-index',
     ])
     return

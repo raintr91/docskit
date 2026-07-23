@@ -1,8 +1,0 @@
-# Generated from auth.login.bundle.yaml — pnpm spec:split
-id: ad-auth-login
-legacyRef: null
-behaviors: []
-fields: []
-ui: []
-evidence: []
-refs: {}
