@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import type { InstallLocation } from './agents.js'
+import { AGENT_DIRS, type AgentId, type InstallLocation } from './agents.js'
 
 /**
  * Docskit `.gitignore` contract — same semantics as Platform DNA
@@ -199,31 +199,24 @@ export function generatedTargets(input: GeneratedTargetInput): OwnedGitignoreEnt
   }
 
   if (input.harnessInstalled) {
-    if (!input.targets || input.targets.length === 0 || input.targets.includes('cursor')) {
-      add('.cursor/', true)
-    }
-    if (input.targets?.includes('antigravity')) {
-      add('.agents/', true)
-    }
-    if (input.targets?.includes('kiro')) {
-      add('.kiro/', true)
-    }
-    if (input.targets?.includes('kilo')) {
-      add('.kilocode/', true)
+    const agentDirList =
+      input.targets?.flatMap((target) => AGENT_DIRS[target as AgentId] || []) || []
+    const dirs = agentDirList.length > 0 ? Array.from(new Set(agentDirList)) : ['.cursor']
+    for (const dir of dirs) {
+      add(`${dir}/`, true)
     }
     add('.docskit/', false)
   }
 
   // Global agent wiring lives outside the repo — never claim those paths here.
   if (input.location === 'local') {
+    const allowedDirs = Array.from(new Set(Object.values(AGENT_DIRS).flat()))
     for (const file of input.written) {
       const pattern = ignorePatternForLocalPath(input.projectRoot, file)
       if (!pattern) continue
-      const shared =
-        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.cursor/') ||
-        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.agents/') ||
-        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.kiro/') ||
-        canonicalGitignorePattern(pattern) === canonicalGitignorePattern('.kilocode/')
+      const shared = allowedDirs.some(dir =>
+        canonicalGitignorePattern(pattern) === canonicalGitignorePattern(`${dir}/`)
+      )
       add(pattern, shared)
     }
   }

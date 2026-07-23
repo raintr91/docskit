@@ -21,6 +21,7 @@ import {
   type OwnedGitignoreEntry,
 } from './gitignore.js'
 import { forgetInstall, recordInstall } from './ledger.js'
+import { AGENT_DIRS, type AgentId } from './agents.js'
 
 export type { OwnedGitignoreEntry } from './gitignore.js'
 
@@ -201,13 +202,13 @@ function resolveContainedPath(
   return target
 }
 
-function resolveManagedPath(root: string, realRoot: string, rel: string): string {
-  if (
-    !rel.startsWith('.cursor/') &&
-    !rel.startsWith('.agents/') &&
-    !rel.startsWith('.kiro/') &&
-    !rel.startsWith('.kilocode/')
-  ) {
+export function resolveManagedPath(
+  root: string,
+  realRoot: string,
+  rel: string,
+): string {
+  const allowedDirs = Object.values(AGENT_DIRS).flat()
+  if (!allowedDirs.some(dir => rel.startsWith(`${dir}/`))) {
     throw new Error(`Invalid managed harness path in manifest: ${String(rel)}`)
   }
   return resolveContainedPath(root, realRoot, rel, 'Managed harness')
@@ -356,12 +357,9 @@ const CONSUMER_ASSETS = new Set([
 ])
 
 function harnessDirsForTargets(targets?: string[]): string[] {
-  const dirs = new Set<string>()
-  if (!targets || targets.length === 0 || targets.includes('cursor')) dirs.add('.cursor')
-  if (targets?.includes('antigravity')) dirs.add('.agents')
-  if (targets?.includes('kiro')) dirs.add('.kiro')
-  if (targets?.includes('kilo')) dirs.add('.kilocode')
-  return [...dirs]
+  const agentDirList =
+    targets?.flatMap((target) => AGENT_DIRS[target as AgentId] || []) || []
+  return agentDirList.length > 0 ? Array.from(new Set(agentDirList)) : ['.cursor']
 }
 
 function currentAssetHashes(
@@ -693,7 +691,8 @@ function uninstallExtractRegistry(
   const ownedKeys = Object.keys(owned.bundles ?? {})
 
   const results: string[] = []
-  for (const dir of harnessDirsForTargets(undefined).concat(['.agents', '.kiro', '.kilocode'])) {
+  const allDirs = Array.from(new Set(Object.values(AGENT_DIRS).flat()))
+  for (const dir of allDirs) {
     const target = path.join(projectRoot, dir, 'extracts', 'extract-registry.json')
     if (!existsSync(target)) continue
 

@@ -68,6 +68,18 @@ const AGENT_ALIASES: Record<string, AgentId> = {
 
 const MCP_NAME = 'docskit'
 
+export const AGENT_DIRS: Record<AgentId, string[]> = {
+  claude: ['.claude'],
+  cursor: ['.cursor'],
+  codex: ['.codex'],
+  opencode: ['.opencode'],
+  hermes: ['.hermes'],
+  gemini: ['.gemini'],
+  antigravity: ['.agents', '.gemini'],
+  kiro: ['.kiro'],
+  kilo: ['.kilocode'],
+}
+
 export interface InstallOptions {
   target?: string
   location?: InstallLocation

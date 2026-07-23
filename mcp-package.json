@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "package": "@platform/docskit",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "types": [
     "docs",
     "fe",
