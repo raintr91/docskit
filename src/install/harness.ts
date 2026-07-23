@@ -202,7 +202,12 @@ function resolveContainedPath(
 }
 
 function resolveManagedPath(root: string, realRoot: string, rel: string): string {
-  if (!rel.startsWith('.cursor/')) {
+  if (
+    !rel.startsWith('.cursor/') &&
+    !rel.startsWith('.agents/') &&
+    !rel.startsWith('.kiro/') &&
+    !rel.startsWith('.kilocode/')
+  ) {
     throw new Error(`Invalid managed harness path in manifest: ${String(rel)}`)
   }
   return resolveContainedPath(root, realRoot, rel, 'Managed harness')
