@@ -7,99 +7,76 @@ const projectRoot = process.cwd()
 const hasProductArchitecture = fs.existsSync(path.join(projectRoot, 'product', 'architecture'))
 const archPrefix = hasProductArchitecture ? '/product/architecture' : '/architecture'
 
-function getSurfacesSidebar(root: string) {
-  const surfacesDir = path.join(root, 'product', 'surfaces')
-  if (!fs.existsSync(surfacesDir)) return []
+function buildRecursiveSidebar(dirPath: string, urlPrefix: string): any[] {
+  if (!fs.existsSync(dirPath)) return []
   try {
-    const entries = fs.readdirSync(surfacesDir, { withFileTypes: true })
-    const items = []
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+    const items: any[] = []
 
-    // 1. Check for global Common surface
-    const hasCommon = entries.some(e => e.isDirectory() && e.name === 'common')
-    if (hasCommon) {
-      items.push({
-        text: 'Common',
-        link: '/product/surfaces/common/'
-      })
-    }
-
-    // 2. Scan other surfaces
+    // Read files first (excluding index.md)
     for (const entry of entries) {
-      if (entry.isDirectory() && entry.name !== 'common') {
-        const surfaceDir = path.join(surfacesDir, entry.name)
-        let surfaceTitle = entry.name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-        const indexPath = path.join(surfaceDir, 'index.md')
-        if (fs.existsSync(indexPath)) {
-          const content = fs.readFileSync(indexPath, 'utf8')
+      if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'index.md') {
+        const filePath = path.join(dirPath, entry.name)
+        const nameWithoutExt = entry.name.replace(/\.md$/, '')
+        let title = nameWithoutExt.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+        try {
+          const content = fs.readFileSync(filePath, 'utf8')
           const titleMatch = content.match(/^#\s+(.+)$/m)
-          if (titleMatch) surfaceTitle = titleMatch[1].trim()
-        }
-
-        // Scan for modules (CMP-*) directly under surface or under surface/modules/
-        const modules = []
-        const scanDirForModules = (dirPath: string, linkPrefix: string) => {
-          if (!fs.existsSync(dirPath)) return
-          const dirEntries = fs.readdirSync(dirPath, { withFileTypes: true })
-          for (const de of dirEntries) {
-            if (de.isDirectory() && de.name.startsWith('CMP-')) {
-              const cmpDir = path.join(dirPath, de.name)
-              let cmpTitle = de.name
-              const cmpIndexPath = path.join(cmpDir, 'index.md')
-              if (fs.existsSync(cmpIndexPath)) {
-                const cmpContent = fs.readFileSync(cmpIndexPath, 'utf8')
-                const cmpTitleMatch = cmpContent.match(/^#\s+(.+)$/m)
-                if (cmpTitleMatch) cmpTitle = cmpTitleMatch[1].trim()
-              }
-
-              // Scan for functions under functions/ or code/ or directly in module
-              const funcItems = []
-              const scanDirForFuncs = (funcDirPath: string, funcLinkPrefix: string) => {
-                if (!fs.existsSync(funcDirPath)) return
-                const funcEntries = fs.readdirSync(funcDirPath, { withFileTypes: true })
-                for (const fe of funcEntries) {
-                  if (fe.isDirectory() && (fe.name.startsWith('W-') || fe.name.startsWith('API-'))) {
-                    const funcIndexPath = path.join(funcDirPath, fe.name, 'index.md')
-                    if (fs.existsSync(funcIndexPath)) {
-                      let funcTitle = fe.name
-                      const funcContent = fs.readFileSync(funcIndexPath, 'utf8')
-                      const funcTitleMatch = funcContent.match(/^#\s+(.+)$/m)
-                      if (funcTitleMatch) funcTitle = funcTitleMatch[1].trim()
-                      funcItems.push({
-                        text: funcTitle,
-                        link: `${funcLinkPrefix}${fe.name}/`
-                      })
-                    }
-                  }
-                }
-              }
-
-              scanDirForFuncs(path.join(cmpDir, 'functions'), `${linkPrefix}${de.name}/functions/`)
-              scanDirForFuncs(path.join(cmpDir, 'code'), `${linkPrefix}${de.name}/code/`)
-              scanDirForFuncs(cmpDir, `${linkPrefix}${de.name}/`)
-
-              modules.push({
-                text: cmpTitle,
-                link: `${linkPrefix}${de.name}/`,
-                ...(funcItems.length > 0 ? { collapsed: true, items: funcItems } : {})
-              })
-            }
-          }
-        }
-
-        scanDirForModules(path.join(surfaceDir, 'modules'), `/product/surfaces/${entry.name}/modules/`)
-        scanDirForModules(surfaceDir, `/product/surfaces/${entry.name}/`)
-
+          if (titleMatch) title = titleMatch[1].trim()
+        } catch {}
         items.push({
-          text: surfaceTitle,
-          link: `/product/surfaces/${entry.name}/`,
-          ...(modules.length > 0 ? { collapsed: true, items: modules } : {})
+          text: title,
+          link: `${urlPrefix}${nameWithoutExt}`
         })
       }
     }
+
+    // Read directories
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (['code', 'ir', 'yaml', 'node_modules', '.git'].includes(entry.name)) continue
+        const subDirPath = path.join(dirPath, entry.name)
+        const indexPath = path.join(subDirPath, 'index.md')
+        let title = entry.name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+        let link = undefined
+
+        if (fs.existsSync(indexPath)) {
+          try {
+            const content = fs.readFileSync(indexPath, 'utf8')
+            const titleMatch = content.match(/^#\s+(.+)$/m)
+            if (titleMatch) title = titleMatch[1].trim()
+          } catch {}
+          link = `${urlPrefix}${entry.name}/`
+        }
+
+        const subItems = buildRecursiveSidebar(subDirPath, `${urlPrefix}${entry.name}/`)
+        const item: any = { text: title }
+        if (link) item.link = link
+        if (subItems.length > 0) {
+          item.items = subItems
+          item.collapsed = true
+        }
+        
+        if (link || subItems.length > 0) {
+          items.push(item)
+        }
+      }
+    }
+
     return items
   } catch (e) {
     return []
   }
+}
+
+function getSurfacesSidebar(root: string) {
+  const surfacesDir = path.join(root, 'product', 'surfaces')
+  return buildRecursiveSidebar(surfacesDir, '/product/surfaces/')
+}
+
+function getOverviewSidebar(root: string) {
+  const overviewDir = path.join(root, 'product', 'overview')
+  return buildRecursiveSidebar(overviewDir, '/product/overview/')
 }
 
 function getJourneysSidebarItems(root: string, prefix: string) {
@@ -234,6 +211,7 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: 'Overview', link: '/product/overview/' },
+            ...getOverviewSidebar(projectRoot)
           ]
         },
         {
@@ -256,6 +234,7 @@ export default withMermaid(
               ],
             },
             { text: 'Deployment', link: `${archPrefix}/07-deployment/` },
+            { text: 'Architecture Trace', link: '/ARCHITECTURE-TRACE' },
           ],
         },
         {
