@@ -7,7 +7,7 @@ extractBundle: architecture-core
 
 # /deployment — Deploy — stub-first
 
-**Business layer:** Deploy (outside module tree; architecture thin surface)  
+**Business layer:** Deploy (outside module tree; architecture thin layer)  
 **Standards:** short prose OK; diagrams → **C4** `DEP-*` only when placement matters. Team-facing architecture: prefer **System Context + Deployment** active; other chapters stub.
 
 ## Default

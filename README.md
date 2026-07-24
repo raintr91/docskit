@@ -47,18 +47,31 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 | `/architecture` | Router chính để điều hướng agent tới các skill chuyên biệt phía dưới. |
 | `/overview` | Xử lý tài liệu tổng quan (Personas, Operational areas). |
 | `/system-context` | Phân tích tài liệu ngữ cảnh hệ thống (System Context, Landscape). |
-| `/surfaces` | Quản lý tài liệu tầng Surfaces (Admin Web, Line Client, Gateway...). |
+| `/surfaces` | Quản lý business surfaces (ai làm gì trên kênh nào: Admin Web, Line/HMI, Integration Gateway, Common). |
 | `/module` | Xử lý tài liệu mức Module (nghiệp vụ, data model chung của một nhóm chức năng). |
 | `/containers` | Viết sơ đồ cấu trúc Runtime Containers. |
 | `/journey` | Viết sơ đồ Runtime Journeys tổng thể. |
 | `/deployment` | Viết tài liệu Deployment View. |
 
+**Layer nghĩa là gì?**
+- `overview`: persona, business purpose, operational area.
+- `surface`: ai làm gì trên kênh nào; ví dụ Admin Web, Line/HMI, Integration Gateway, Common.
+- `module`: năng lực nghiệp vụ gói gọn trong một surface.
+- `function`: chi tiết màn hình hoặc API contract.
+- `journey`: luồng runtime đi qua nhiều hệ thống.
+- `Common`: scope dùng chung giữa nhiều surface hoặc module.
+- `API`: lớp container hoặc contract, không phải surface.
+
 ### 2. Common Layers & Diagrams
 | Skill | Chức năng chính |
 |-------|-----------------|
-| `/business-process` | Vẽ sơ đồ luồng nghiệp vụ (Flowchart, Sequence) cho các `FLOW-*`. |
-| `/db-erd` | Viết và định nghĩa Schema Database, ERD (Data model). |
-| `/cross-service` | Mô tả luồng tích hợp, giao tiếp giữa các service (Sequence diagrams). |
+| `/business-process` | Vẽ luồng nghiệp vụ theo actor + surface + action + outcome cho các `FLOW-*`. |
+| `/db-erd` | Viết business data model / ERD: entity, ownership, relationship, storage boundary. |
+| `/cross-service` | Mô tả luồng tích hợp giữa service / system / boundary: RPC, event, message, contract. |
+
+`/business-process` = action flow trên surface. `/db-erd` = data ownership/model. `/cross-service` = integration boundary flow.
+
+`/business-process` bám vào hành động nghiệp vụ trên surface/channels. `/journey` bám vào runtime flow đi qua nhiều hệ thống.
 
 ### 3. Function Specs & Grill (Product)
 | Skill | Chức năng chính |

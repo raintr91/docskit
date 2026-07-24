@@ -29,7 +29,7 @@ Architecture folder: prefer **System Context** + **Deployment** for team; other 
 |-------------|----------------|------------|
 | Operational area / persona / business purpose | Overview | **`/overview`** |
 | Common scope / Cross-service / Database / Business processes | Surfaces / Modules | **`/business-process`**, **`/db-erd`**, **`/cross-service`** |
-| Admin Web · Client · Gateway / App level | Surfaces | **`/surfaces`** |
+| Business surfaces (who does what on which channel) | Surfaces | **`/surfaces`** |
 | System Context / Landscape / CTX | Architecture Context | **`/system-context`** |
 | Portal · Client · API service · Gateway / CTR | Architecture Containers | **`/containers`** |
 | Module / CMP box | Module | **`/module`** |
@@ -42,6 +42,7 @@ Architecture folder: prefer **System Context** + **Deployment** for team; other 
 
 - Format: MD + Mermaid (`flowchart` / `sequenceDiagram`; avoid Mermaid `C4Context`)
 - Product Code (`W-*`/`API-*`) stays in `product/surfaces/…/modules/CMP-*/code/`
+- Treat `Surfaces` as business surfaces, not projects or repos.
 - API service belongs to C4 Containers; API endpoint/contract belongs to Function detail
 - Prefer `/journey` over `/dynamics`
 - One concern per edit

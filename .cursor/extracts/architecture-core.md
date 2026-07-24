@@ -5,15 +5,25 @@ People / tree: [`platform/guide/start-now.md`](../../platform/guide/start-now.md
 
 ## Operating model (business view)
 
-`overview` → `operational areas` (Admin/Workforce/Shop-floor/Plant) → `module` → `function` · optional `FLOW-*`.
+`overview` → `operational areas` (Admin/Workforce/Shop-floor/Plant) → `business surfaces` → `module` → `function` · optional `FLOW-*`.
 
 Personas/actors and interaction channels are mapped to operational areas. Runtime Portal/Client/API/Gateway remain C4 Containers.
+
+## Layer meaning
+
+- `overview`: personas, business purpose, and operational areas.
+- `surface`: who does what on which channel; for example Admin Web, Line/HMI, Integration Gateway, or Common.
+- `module`: a cohesive business capability inside a surface.
+- `function`: screen or API detail and contract.
+- `journey`: runtime flow across systems.
+- `Common`: shared scope reused by multiple surfaces or modules.
+- `API`: container or contract detail, not a surface.
 
 ## Content standards
 
 | Layer | Prose | Diagrams / DB / sequence |
 |-------|-------|---------------------------|
-| Overview · Operational area · Common · Module+ | **arc42** spirit | **C4** |
+| Overview · Operational area · Surface · Common · Module+ | **arc42** spirit | **C4** |
 | Function | **C4** | **C4** |
 
 No **dynamics** wording on new trees — use **flow** / `FLOW-*` / `/journey`.
