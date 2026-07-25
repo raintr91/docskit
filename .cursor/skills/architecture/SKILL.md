@@ -36,7 +36,7 @@ Architecture folder: prefer **System Context** + **Deployment** for team; other 
 | Screen / API detail / CRUD | Function | **`/spec`** (grill with **`/spec-grill`** as needed) |
 | `*_flow` / sequence / runtime journey | Flow / Journey | **`/journey`** |
 | Where it runs | Deploy | **`/deployment`** |
-| Architecture discussion / grilling | High-level Design | **`/architecture-grill`** |
+| Architecture discussion / grilling | High-level Design | **`/grill`**, **`/architecture-grill`** |
 
 ## Rules
 

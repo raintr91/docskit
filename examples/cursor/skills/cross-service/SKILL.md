@@ -8,6 +8,13 @@ extractBundle: architecture-core
 **Target Paths:** `[Target Path]/Common/Cross-service flows`
 **Guidelines:** Use Mermaid `sequenceDiagram` for sync/async RPC, events, and messages. Focus on contract, direction, ownership, and handoff between services/systems.
 
+## When to use
+- Use when a flow crosses a service, system, or boundary.
+- Use for sync RPC, async messaging, event-driven handoffs, retries, idempotency, and integration contracts.
+- Do **not** use for internal code paths inside a single service.
+- Do **not** use for business action flows on a surface; that is `/business-process`.
+- Do **not** use for runtime journey narratives that focus on user/system step order across the whole product; that is `/journey`.
+
 ## Flow meaning
 - Model the interaction between services, systems, or boundaries.
 - Include sync RPC, async messaging, and event-driven handoffs when relevant.

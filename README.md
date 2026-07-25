@@ -45,6 +45,7 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 | Skill | Chức năng chính |
 |-------|-----------------|
 | `/architecture` | Router chính để điều hướng agent tới các skill chuyên biệt phía dưới. |
+| `/grill` | Khảo sát / thẩm định đầu vào theo layer đích trước khi viết tài liệu. |
 | `/overview` | Xử lý tài liệu tổng quan (Personas, Operational areas). |
 | `/system-context` | Phân tích tài liệu ngữ cảnh hệ thống (System Context, Landscape). |
 | `/surfaces` | Quản lý business surfaces (ai làm gì trên kênh nào: Admin Web, Line/HMI, Integration Gateway, Common). |
@@ -72,6 +73,7 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 `/business-process` = action flow trên surface. `/db-erd` = data ownership/model. `/cross-service` = integration boundary flow.
 
 `/business-process` bám vào hành động nghiệp vụ trên surface/channels. `/journey` bám vào runtime flow đi qua nhiều hệ thống.
+`/cross-service` dùng khi luồng đi qua service/system boundary; không dùng cho hành động nội bộ của 1 surface hay 1 service đơn lẻ.
 
 ### 3. Function Specs & Grill (Product)
 | Skill | Chức năng chính |
