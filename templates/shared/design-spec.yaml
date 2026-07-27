@@ -1,4 +1,4 @@
-# Design spec v1 — /legacy-spec and /spec (round 1)
+# Design spec v1 — /spec (round 1)
 # Do NOT add codegen, ui.filters, ui.columns, or portal-gen tags here.
 # After /grill-with-docs → see docs/templates/spec.yaml (portal-gen-ready).
 

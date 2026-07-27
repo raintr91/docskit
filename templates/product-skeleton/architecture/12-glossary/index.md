@@ -7,7 +7,7 @@ status: active
 | Prefix | Meaning |
 |--------|---------|
 | `LND-*` | Landscape |
-| `CTX-*` | System context |
+| `DEP-*` | Deployment node |
 | `CTR-*` | Container |
 | `CMP-*` | Component (product) |
 | `W-*` / `API-*` | Screen / API Code |

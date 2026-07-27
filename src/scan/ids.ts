@@ -2,9 +2,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 export type IdKind =
-  | 'LND'
-  | 'CTX'
-  | 'CTR'
   | 'CMP'
   | 'FLOW'
   | 'DEP'
@@ -27,27 +24,19 @@ const REDIRECT_STUB_RE =
   /(?:^|\/)architecture\/(?:landscape|context|containers|dynamics|deployments)(?:\/|$)|(?:^|\/)product\/shared\/adr(?:\/|$)/
 
 const ID_RE =
-  /\b((?:LND|CTX|CTR|CMP|FLOW|DEP|ADR|SC|TC)-[A-Za-z0-9][A-Za-z0-9_-]*|(?:W|API|UI)-[A-Z]{2}-[A-Z0-9]+-\d{3})\b/g
+  /\b((?:CMP|FLOW|DEP|ADR|SC|TC)-[A-Za-z0-9][A-Za-z0-9_-]*|(?:W|API|UI)-[A-Z]{2}-[A-Z0-9]+-\d{3})\b/g
 
 /** Scan roots for MD (arc42 × product). */
 export const SCAN_MD_DIRS = [
   'architecture',
   'product/overview',
   'product/surfaces',
-  'product/architecture',
-  'product/components',
-  'product/shared',
-  'product/surfaces/common',
-  'product/legacy-dynamics',
 ] as const
 
 /** Canonical home for each ID kind (architecture-core). */
 export const CANONICAL_DIR: Partial<Record<IdKind, string>> = {
-  LND: 'product/architecture/system-context',
-  CTX: 'product/architecture/system-context',
-  CTR: 'product/architecture/runtime-containers',
-  FLOW: 'product/architecture/runtime-journeys',
-  DEP: 'product/architecture/deployment',
+  FLOW: 'architecture/03-business-process',
+  DEP: 'architecture/07-deployment',
   ADR: 'architecture/09-decisions',
   CMP: 'product/surfaces',
   W: 'product/surfaces',
@@ -57,7 +46,7 @@ export const CANONICAL_DIR: Partial<Record<IdKind, string>> = {
 
 export function kindOf(id: string): IdKind {
   const p = id.split('-')[0]
-  if (['LND', 'CTX', 'CTR', 'CMP', 'FLOW', 'DEP', 'ADR', 'W', 'API', 'UI'].includes(p)) {
+  if (['CMP', 'FLOW', 'DEP', 'ADR', 'W', 'API', 'UI'].includes(p)) {
     return p as IdKind
   }
   return 'OTHER'
@@ -137,15 +126,15 @@ export function indexIds(docsRoot: string): Map<string, HubId> {
       add(map, base, f) // ADR-001-arc42-toc slug form
     }
 
-    const cmpFolder = f.match(/[\\/](?:product[\\/]components|product[\\/]surfaces[\\/][^\\/]+[\\/]modules)[\\/](CMP-\d+[-\w]*)[\\/]/i)
+    const cmpFolder = f.match(/[\\/]product[\\/]surfaces[\\/][^\\/]+[\\/]modules[\\/](CMP-\d+[-\w]*)[\\/]/i)
     if (cmpFolder) {
       add(map, cmpFolder[1], f)
       const short = cmpFolder[1].match(/^(CMP-\d+)/)
       if (short) add(map, short[1], f)
     }
 
-    // Code folders: product/**/code/{W|API|UI}-* or Surfaces/.../Functions/*/{W|API|UI}-*
-    const codeFolder = f.match(/[\\/](?:code|Functions[\\/](?:Screen|API contract))[\\/]((?:W|API|UI)-[A-Z]{2}-[A-Z0-9]+-\d{3})[\\/]/i)
+    // Code folders: product/surfaces/.../modules/CMP-*/<slug>/code/{W|API|UI}-*
+    const codeFolder = f.match(/[\\/]code[\\/]((?:W|API|UI)-[A-Z]{2}-[A-Z0-9]+-\d{3})[\\/]/i)
     if (codeFolder) add(map, codeFolder[1], f)
   }
 
@@ -179,7 +168,7 @@ export function relToRoot(docsRoot: string, abs: string): string {
 export function expectedCanonicalPath(docsRoot: string, id: string): string | null {
   const kind = kindOf(id)
   if (kind === 'FLOW') {
-    return path.join(docsRoot, 'product/architecture/runtime-journeys', `${id}.md`)
+    return path.join(docsRoot, 'architecture/03-business-process', `${id}.md`)
   }
   if (kind === 'ADR') {
     const dir = path.join(docsRoot, 'architecture/09-decisions')
@@ -189,15 +178,10 @@ export function expectedCanonicalPath(docsRoot: string, id: string): string | nu
     return hit ? path.join(dir, hit) : path.join(dir, `${id}.md`)
   }
   if (kind === 'CMP') {
-    const base = path.join(docsRoot, 'product/components')
-    if (fs.existsSync(base)) {
-      const folder = fs.readdirSync(base).find((n) => n === id || n.startsWith(id + '-'))
-      if (folder) return path.join(base, folder, 'index.md')
-    }
-    return null
+    return null // Too expensive to find canonical CMP here since it's nested deep in surfaces
   }
   if (kind === 'W' || kind === 'API' || kind === 'UI') {
-    // Prefer folder under product/**/code/<id>/ or Surfaces/**/Functions/*/<id>/
+    // Prefer folder under product/surfaces/**/code/<id>/
     const hits: string[] = []
     const walkCode = (dir: string) => {
       if (!fs.existsSync(dir)) return
@@ -214,7 +198,7 @@ export function expectedCanonicalPath(docsRoot: string, id: string): string | nu
     walkCode(path.join(docsRoot, 'product/surfaces'))
     return hits[0] ?? null
   }
-  // LND/CTX/CTR/DEP live as headings inside chapter index — return chapter file
+  // DEP lives as a heading inside chapter index — return chapter file
   const chapter = CANONICAL_DIR[kind]
   if (chapter) return path.join(docsRoot, chapter, 'index.md')
   return null

@@ -16,7 +16,7 @@ grillStatus:
   full: not_required
 
 contractRef:
-  portalIrSpec: product/components/…/code/W-*/ir/spec.yaml (or --id)
+  portalIrSpec: product/surfaces/.../modules/CMP-*/<slug>/code/W-*/ir/spec.yaml (or --id)
 
 spec:
   clients:

@@ -75,14 +75,14 @@ function chapterHasId(docsRoot: string, id: string): boolean {
 export function registerTools(server: McpServer): void {
   server.tool(
     'docskit_list_ids',
-    'List architecture/product IDs (LND/CTX/CTR/CMP/FLOW/DEP/ADR/W/API/UI) from docs hub MD (skips redirect stubs)',
+    'List architecture/product IDs (CMP/FLOW/DEP/ADR/W/API/UI) from docs hub MD (skips redirect stubs)',
     {
       docsRoot: z
         .string()
         .optional()
         .describe('Hub root; defaults to project MCP DOCSKIT_ROOT or a valid cwd'),
       kind: z
-        .enum(['LND', 'CTX', 'CTR', 'CMP', 'FLOW', 'DEP', 'ADR', 'W', 'API', 'UI', 'OTHER', 'ALL'])
+        .enum(['CMP', 'FLOW', 'DEP', 'ADR', 'W', 'API', 'UI', 'OTHER', 'ALL'])
         .optional(),
       prefix: z.string().optional(),
     },
@@ -217,7 +217,7 @@ export function registerTools(server: McpServer): void {
             continue
           }
 
-          if (kind === 'LND' || kind === 'CTX' || kind === 'CTR' || kind === 'DEP') {
+          if (kind === 'DEP') {
             if (!chapterHasId(root, id)) {
               const home = CANONICAL_DIR[kind] ?? '?'
               missingInChapter.push({ id, kind, chapter: `${home}/index.md` })
@@ -282,7 +282,7 @@ export function registerTools(server: McpServer): void {
     'docskit_route',
     'Map a natural-language topic to arc42 chapter path + skill (/architecture router helper)',
     {
-      topic: z.string().describe('e.g. "login sequence", "containers", "ADR auth"'),
+      topic: z.string().describe('e.g. "login sequence", "ADR auth"'),
     },
     async ({ topic }) => {
       return text({ ok: true, topic, routes: routeTopic(topic) })
@@ -290,37 +290,37 @@ export function registerTools(server: McpServer): void {
   )
 
   server.tool(
-    'docskit_journeys',
-    'List FLOW-* journeys under architecture/06-runtime/journeys (catalog §06)',
+    'docskit_business_processes',
+    'List FLOW-* business processes under architecture/03-business-process',
     {
       docsRoot: z.string().optional(),
     },
     async ({ docsRoot }) => {
       try {
         const root = resolveDocsRoot(docsRoot)
-        const dir = path.join(root, 'architecture/06-runtime/journeys')
-        if (!fs.existsSync(dir)) return text({ ok: false, error: 'no_journeys_dir' })
+        const dir = path.join(root, 'architecture/03-business-process')
+        if (!fs.existsSync(dir)) return text({ ok: false, error: 'no_business_processes_dir' })
         const files = fs
           .readdirSync(dir)
           .filter((n) => n.startsWith('FLOW-') && n.endsWith('.md'))
           .sort()
-        const journeys = files.map((n) => {
+        const processes = files.map((n) => {
           const abs = path.join(dir, n)
           const head = fs.readFileSync(abs, 'utf8').split('\n').slice(0, 12).join('\n')
           const domain = head.match(/^domain:\s*(.+)$/m)?.[1]?.trim()
           const status = head.match(/^status:\s*(.+)$/m)?.[1]?.trim()
           return {
             id: n.replace(/\.md$/, ''),
-            file: `architecture/06-runtime/journeys/${n}`,
+            file: `architecture/03-business-process/${n}`,
             domain,
             status,
           }
         })
         return text({
           ok: true,
-          count: journeys.length,
-          catalog: 'architecture/06-runtime/index.md',
-          journeys,
+          count: processes.length,
+          catalog: 'architecture/03-business-process/index.md',
+          processes,
         })
       } catch (err) {
         return text({ ok: false, error: err instanceof Error ? err.message : String(err) })
@@ -347,11 +347,11 @@ export function registerTools(server: McpServer): void {
         idHomes: CANONICAL_DIR,
         scanDirs: SCAN_MD_DIRS,
         notes: [
-          'LND/CTX/CTR/DEP are headings inside chapter index.md — not separate files',
-          'FLOW-* files under architecture/06-runtime/journeys/',
+          'DEP is a heading inside chapter index.md — not separate files',
+          'FLOW-* files under architecture/03-business-process/',
           'ADR-* under architecture/09-decisions/',
           'CMP/W/API/UI under Surfaces/ — never under architecture/05 code/',
-          'DYN-* deprecated — use FLOW-* + /journey',
+          'DYN-* deprecated — use FLOW-* + /business-process',
         ],
       })
     },

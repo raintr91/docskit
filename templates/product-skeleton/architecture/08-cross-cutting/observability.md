@@ -7,7 +7,7 @@
 
 ## Intent
 
-Logging, metrics, and tracing across `CTR-admin-web` / `CTR-admin-api` (and future containers).
+Logging, metrics, and tracing across Admin Web / Admin API (and future layers).
 
 ## Approach
 

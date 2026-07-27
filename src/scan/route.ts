@@ -12,9 +12,9 @@ const ROUTES: { keys: string[]; hit: RouteHit }[] = [
     keys: ['intro', 'introduction', '01', 'scope', 'overview'],
     hit: {
       chapter: '01',
-      path: 'architecture/01-introduction/',
-      skill: '/architecture',
-      note: 'stub prose OK',
+      path: 'product/overview/',
+      skill: '/overview',
+      note: 'product overview',
     },
   },
   {
@@ -22,8 +22,12 @@ const ROUTES: { keys: string[]; hit: RouteHit }[] = [
     hit: { chapter: '02', path: 'architecture/02-constraints/', skill: '/architecture' },
   },
   {
-    keys: ['context', 'landscape', 'lnd', 'ctx', '03', 'boundary'],
-    hit: { chapter: '03', path: 'architecture/03-context/', skill: '/context' },
+    keys: ['process', 'flow', 'journey', 'sequence', '03'],
+    hit: {
+      chapter: '03',
+      path: 'architecture/03-business-process/',
+      skill: '/business-process',
+    },
   },
   {
     keys: ['strategy', 'solution', '04'],
@@ -35,42 +39,12 @@ const ROUTES: { keys: string[]; hit: RouteHit }[] = [
     },
   },
   {
-    keys: ['container', 'building', 'ctr', '05', 'surface'],
-    hit: {
-      chapter: '05',
-      path: 'architecture/05-building-blocks/',
-      skill: '/containers',
-    },
-  },
-  {
     keys: ['component', 'cmp', 'module'],
-    hit: { chapter: '05', path: 'Surfaces/', skill: '/module' },
+    hit: { chapter: 'module', path: 'product/surfaces/', skill: '/module' },
   },
   {
-    keys: ['journey', 'flow', 'runtime', 'sequence', '06'],
-    hit: {
-      chapter: '06',
-      path: 'architecture/06-runtime/journeys/',
-      skill: '/journey',
-    },
-  },
-  {
-    keys: ['dynamics', 'dyn'],
-    hit: {
-      chapter: '06',
-      path: 'architecture/06-runtime/journeys/',
-      skill: '/journey',
-      note: '/dynamics deprecated — use /journey + FLOW-*',
-    },
-  },
-  {
-    keys: ['mechanism'],
-    hit: {
-      chapter: '06',
-      path: 'architecture/06-runtime/mechanisms/',
-      skill: '/journey',
-      note: 'optional mechanisms under §06',
-    },
+    keys: ['surface', 'channel'],
+    hit: { chapter: 'surface', path: 'product/surfaces/', skill: '/surfaces' },
   },
   {
     keys: ['deploy', 'dep', '07'],
@@ -120,7 +94,6 @@ const ROUTES: { keys: string[]; hit: RouteHit }[] = [
       note: 'stub',
     },
   },
-
 ]
 
 export function routeTopic(topic: string): RouteHit[] {
@@ -134,7 +107,7 @@ export function routeTopic(topic: string): RouteHit[] {
       chapter: '?',
       path: 'architecture/',
       skill: '/architecture',
-      note: 'No keyword match — ask which chapter (01–12)',
+      note: 'No keyword match — ask which layer',
     })
   }
   const seen = new Set<string>()

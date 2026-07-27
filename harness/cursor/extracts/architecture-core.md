@@ -39,7 +39,7 @@ No **dynamics** wording on new trees — use **flow** / `FLOW-*` / `/journey`.
 | Prefix | Path | Notes |
 |--------|------|-------|
 | `LND-*` `CTX-*` | `architecture/03-context/` | Overview / landscape + context |
-| `CTR-*` | `architecture/05-building-blocks/` | Runtime containers; index CMP → `product/components/` |
+| `CTR-*` | `architecture/07-deployment/` | (Deprecated in public contract except for deployment) |
 | `FLOW-*` | `architecture/06-runtime/journeys/` | Curated flows (~10–20%) |
 | `DEP-*` | `architecture/07-deployment/` | Optional stub |
 | `ADR-*` | `architecture/09-decisions/` | Not `product/shared/adr` (redirect) |

@@ -412,7 +412,7 @@ test('standalone package behavior', async (t) => {
     assert.deepEqual(depsFromFiles(ids.get('FLOW-login').files, 'FLOW-login'), ['ADR-001'])
     const files = walkMdFiles(hub, [...SCAN_MD_DIRS])
     assert.deepEqual(validateMdLinks(hub, files), [])
-    assert.equal(routeTopic('login sequence')[0].path, 'architecture/06-runtime/journeys/')
+    assert.equal(routeTopic('login sequence')[0].path, 'architecture/03-business-process/')
   })
 
   await t.test('external hub passes the MCP tool smoke matrix', async () => {
@@ -434,7 +434,7 @@ test('standalone package behavior', async (t) => {
         ['docskit_orphans', {}],
         ['docskit_validate_links', {}],
         ['docskit_route', { topic: 'login sequence' }],
-        ['docskit_journeys', {}],
+        ['docskit_business_processes', {}],
         ['docskit_layout', {}],
       ]
       for (const [name, args] of calls) {
@@ -470,7 +470,7 @@ test('standalone package behavior', async (t) => {
     assert.ok(
       first.written.some((file) => file.endsWith(`${path.sep}architecture${path.sep}SKILL.md`)),
     )
-    assert.ok(first.written.some((file) => file.endsWith(`${path.sep}tpl-journey.md`)))
+    assert.ok(first.written.some((file) => file.endsWith(`${path.sep}tpl-module.md`)))
     assert.ok(first.registry)
     assert.equal(first.manifest, manifestFile)
     const firstManifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
@@ -542,7 +542,6 @@ test('standalone package behavior', async (t) => {
       'architecture',
       'surfaces',
       'module',
-      'journey',
       'deployment',
       'decision',
       'cross-cutting',
@@ -706,7 +705,7 @@ test('standalone package behavior', async (t) => {
       ),
     )
     assert.ok(indexIds(hub).has('FLOW-login'))
-    assert.equal(routeTopic('login sequence')[0].path, 'architecture/06-runtime/journeys/')
+    assert.equal(routeTopic('login sequence')[0].path, 'architecture/03-business-process/')
   })
 
   await t.test('package tarball excludes platform topology and includes harness', () => {

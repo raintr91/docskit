@@ -1,4 +1,4 @@
-# Portal-gen-ready spec — output of /grill-with-docs (not round-1 /legacy-spec or /spec).
+# Portal-gen-ready spec — output of /grill-with-docs (not round-1 /spec).
 # Design v1 template: docs/templates/design-spec.yaml
 # Enrichment rules: .cursor/extracts/codegen/readiness.md
 

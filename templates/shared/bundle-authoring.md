@@ -45,7 +45,7 @@ behavior:
   delete: { enabled: true, mode: confirm_dialog }
 ```
 
-## Agent output (/spec, legacy-spec)
+## Agent output (/spec)
 
 YAML only per schema. No explanation. No markdown.
 

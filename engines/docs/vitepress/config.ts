@@ -79,29 +79,29 @@ function getOverviewSidebar(root: string) {
   return buildRecursiveSidebar(overviewDir, '/product/overview/')
 }
 
-function getJourneysSidebarItems(root: string, prefix: string) {
-  const journeysDir = path.join(root, prefix.replace(/^\//, ''), '06-runtime', 'journeys')
-  if (!fs.existsSync(journeysDir)) return []
+function getBusinessProcessSidebarItems(root: string, prefix: string) {
+  const processDir = path.join(root, prefix.replace(/^\//, ''), '03-business-process')
+  if (!fs.existsSync(processDir)) return []
   try {
-    const entries = fs.readdirSync(journeysDir, { withFileTypes: true })
+    const entries = fs.readdirSync(processDir, { withFileTypes: true })
     const items = []
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith('.md')) {
         const nameWithoutExt = entry.name.replace(/\.md$/, '')
         if (nameWithoutExt === 'index') continue
         let title = nameWithoutExt
-        const content = fs.readFileSync(path.join(journeysDir, entry.name), 'utf8')
+        const content = fs.readFileSync(path.join(processDir, entry.name), 'utf8')
         const titleMatch = content.match(/^#\s+(.+)$/m)
         if (titleMatch) {
           title = titleMatch[1].trim()
         }
         items.push({
           text: title,
-          link: `${prefix}/06-runtime/journeys/${nameWithoutExt}`
+          link: `${prefix}/03-business-process/${nameWithoutExt}`
         })
       }
     }
-    return items.sort((a, b) => a.text.localeCompare(b.text))
+    return items
   } catch (e) {
     return []
   }
@@ -138,7 +138,7 @@ function getCrossCuttingSidebarItems(root: string, prefix: string) {
 export default withMermaid(
   defineConfig({
     title: 'Base Docs',
-    description: 'Platform docs hub — arc42 + C4 views + product Code/common (R2)',
+    description: 'Platform docs hub — arc42 + product Code/common (R2)',
     cleanUrls: true,
     ignoreDeadLinks: true,
     srcExclude: [
@@ -223,27 +223,18 @@ export default withMermaid(
           text: 'Architecture',
           collapsed: false,
           items: [
-            { text: 'System Context', link: `${archPrefix}/03-context/` },
-            { text: 'Runtime Containers', link: `${archPrefix}/05-building-blocks/` },
-            {
-              text: 'Runtime Journeys',
-              collapsed: true,
-              items: [
-                { text: 'Catalog', link: `${archPrefix}/06-runtime/` },
-                ...getJourneysSidebarItems(projectRoot, archPrefix),
-              ],
-            },
-            { text: 'Deployment', link: `${archPrefix}/07-deployment/` },
-            { text: 'Architecture Trace', link: '/ARCHITECTURE-TRACE' },
-          ],
-        },
-        {
-          text: 'Architecture (lead)',
-          collapsed: true,
-          items: [
             { text: '01 Introduction', link: `${archPrefix}/01-introduction/` },
             { text: '02 Constraints', link: `${archPrefix}/02-constraints/` },
+            {
+              text: '03 Business Processes',
+              collapsed: true,
+              items: [
+                { text: 'Catalog', link: `${archPrefix}/03-business-process/` },
+                ...getBusinessProcessSidebarItems(projectRoot, archPrefix),
+              ],
+            },
             { text: '04 Solution Strategy', link: `${archPrefix}/04-solution-strategy/` },
+            { text: '07 Deployment', link: `${archPrefix}/07-deployment/` },
             {
               text: '08 Cross-cutting',
               collapsed: true,
@@ -254,7 +245,7 @@ export default withMermaid(
             },
             { text: '09 Decisions', link: `${archPrefix}/09-decisions/` },
             {
-              text: '10–12',
+              text: '10–12 Quality & Risks',
               collapsed: true,
               items: [
                 { text: '10 Quality', link: `${archPrefix}/10-quality/` },
@@ -262,6 +253,7 @@ export default withMermaid(
                 { text: '12 Glossary', link: `${archPrefix}/12-glossary/` },
               ],
             },
+            { text: 'Architecture Trace', link: '/ARCHITECTURE-TRACE' },
             { text: 'Legacy dynamics', link: '/product/legacy-dynamics/' },
           ],
         },

@@ -17,7 +17,7 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ## Scope
 
-**In:** Code bundle / `--id` under `product/surfaces/.../modules/CMP-*/functions/[Screen | API]`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
+**In:** Code bundle / `--id` under `product/surfaces/.../modules/CMP-*/<slug>`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
 
 **Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. product/overview / CTR → `product/architecture` children.
 
@@ -25,7 +25,7 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 1. Confirm **module (`CMP-*`) exists**, its operational-area mapping is known, and the implementing `CTR-*` is identified — otherwise stop for lead/owner.
 2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance.
-3. If new, draft from user bullets — `*.bundle.yaml` with `specOrigin: requirement` under `Functions/...`.
+3. If new, draft from user bullets — `*.bundle.yaml` with `specOrigin: requirement` under `<slug>/`.
 4. Incremental blocks per extracts when needed.
 5. Apply common UI / spec-split extracts.
 6. `pnpm spec:split -- <bundle>` then `pnpm docs:render` (**no** testcase MD emit).
@@ -50,7 +50,7 @@ Khi người dùng gọi `... /legacy /spec`, Agent PHẢI:
 - Đọc source từ `legacy-repos.local.json` thay vì source hiện tại.
 - Trích xuất function logic từ source code cũ.
 - Viết/cập nhật `product/legacy-dynamics/{module}/_legacy.dynamics.yaml` (`portal-legacy-dynamics/v1`).
-- Viết `*.bundle.yaml` cho function đó vào `product/surfaces/.../functions/` với `specOrigin: legacy`.
+- Viết `*.bundle.yaml` cho function đó vào `product/surfaces/.../modules/CMP-*/<slug>/` với `specOrigin: legacy`.
 - **Không** tạo codegen tags. Hỗ trợ chạy validate: `legacy_dynamics_validate` / `pnpm legacy-dynamics:validate`.
 
 ## Tools (required after docskit init)

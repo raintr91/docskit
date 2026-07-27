@@ -9,7 +9,7 @@ type: api-contract
 feature: function-name
 
 contractRef:
-  portalIrSpec: product/components/…/code/W-*/ir/spec.yaml (or --id)
+  portalIrSpec: product/surfaces/.../modules/CMP-*/<slug>/code/W-*/ir/spec.yaml (or --id)
 
 backendSpec: backend/01-backend-spec.yaml
 

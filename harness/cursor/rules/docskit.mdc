@@ -19,7 +19,7 @@ only.
 2. Use `docskit_get_element` for one ID.
 3. Use `docskit_deps_of` and `docskit_dependents_of` for reference impact.
 4. Run `docskit_orphans` and `docskit_validate_links` before claiming completeness.
-5. Use `docskit_journeys` before reading all journey files.
+5. Use `docskit_business_processes` before reading all journey files.
 
 Do not require Docskit for architecture work: if the MCP is unavailable, inspect
 the repository Markdown directly or explain how to run project-local setup.

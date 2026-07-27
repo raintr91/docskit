@@ -5,8 +5,7 @@
     "architecture-core": [
       ".cursor/extracts/architecture-core.md",
       ".cursor/extracts/tpl-arc42-chapter.md",
-      ".cursor/extracts/tpl-component.md",
-      ".cursor/extracts/tpl-journey.md",
+      ".cursor/extracts/tpl-module.md",
       ".cursor/extracts/tpl-deployment.md",
       ".cursor/extracts/tpl-adr.md",
       ".cursor/extracts/tpl-cross-cutting.md"

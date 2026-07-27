@@ -33,7 +33,7 @@ accelerator for registries/tags/parity only.
 | **Deps / dependents** | Ai tham chiếu ID này / ID này tham chiếu ai |
 | **Catalog health** | Orphans (thiếu FLOW/ADR/CMP), broken MD links |
 | **Routing** | Topic → chương arc42 + skill gợi ý |
-| **Journeys** | Liệt kê `FLOW-*` dưới `06-runtime/journeys/` |
+| **Business Processes** | Liệt kê `FLOW-*` dưới `architecture/03-business-process/` |
 
 ---
 
@@ -47,11 +47,8 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 | `/architecture` | Router chính để điều hướng agent tới các skill chuyên biệt phía dưới. |
 | `/grill` | Khảo sát / thẩm định đầu vào theo layer đích trước khi viết tài liệu. |
 | `/overview` | Xử lý tài liệu tổng quan (Personas, Operational areas). |
-| `/system-context` | Phân tích tài liệu ngữ cảnh hệ thống (System Context, Landscape). |
-| `/surfaces` | Quản lý business surfaces (ai làm gì trên kênh nào: Admin Web, Line/HMI, Integration Gateway, Common). |
+| `/business-process` | Vẽ sơ đồ luồng quy trình nghiệp vụ (Architecture). |
 | `/module` | Xử lý tài liệu mức Module (nghiệp vụ, data model chung của một nhóm chức năng). |
-| `/containers` | Viết sơ đồ cấu trúc Runtime Containers. |
-| `/journey` | Viết sơ đồ Runtime Journeys tổng thể. |
 | `/deployment` | Viết tài liệu Deployment View. |
 
 **Layer nghĩa là gì?**
@@ -59,7 +56,7 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 - `surface`: ai làm gì trên kênh nào; ví dụ Admin Web, Line/HMI, Integration Gateway, Common.
 - `module`: năng lực nghiệp vụ gói gọn trong một surface.
 - `function`: chi tiết màn hình hoặc API contract.
-- `journey`: luồng runtime đi qua nhiều hệ thống.
+- `business-process`: luồng runtime đi qua nhiều hệ thống.
 - `Common`: scope dùng chung giữa nhiều surface hoặc module.
 - `API`: lớp container hoặc contract, không phải surface.
 
@@ -92,7 +89,7 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 | `/legacy-surfaces` | Truy vết và ánh xạ các web app / frontend client cũ vào lớp Surfaces mới. |
 | `/legacy-module` | Phân tích subsystem/component cũ để map thành cấu trúc Modules (`CMP-*`). |
 | `/legacy-business-process` | Truy vết flow nghiệp vụ cũ để chuyển đổi thành business processes (`FLOW-*`). |
-| `/legacy-system-context` | Phân tích sơ đồ ngữ cảnh (System Context), external dependencies cũ. |
+| `/legacy-module` | Phân tích tài liệu thiết kế nghiệp vụ hiện tại từ source cũ. |
 | `/legacy-db-erd` | Ánh xạ cấu trúc bảng/cột từ schema database cũ sang Data model mới. |
 | `/legacy-cross-service` | Phân tích luồng tích hợp, giao tiếp giữa các service (RPC/Message) cũ. |
 | `/update-spec-legacy` | Cập nhật delta spec dựa trên các bằng chứng (evidence) mới tìm thấy từ mã nguồn cũ. |

@@ -1,7 +1,7 @@
 /*
  * Structurizr DSL — pilot skeleton (Phase B).
  * SSOT for prose/IDs remains MD under architecture/ + product/ (see MODEL.md).
- * IDs mirror docs hub: CTX-admin, CTR-admin-*, CMP-01.
+ * IDs mirror docs hub: admin, web, CMP-01.
  */
 workspace "base-docs platform" "arc42 × C4 pilot model" {
 
@@ -10,22 +10,14 @@ workspace "base-docs platform" "arc42 × C4 pilot model" {
     model {
         op = person "Admin operator" "Uses Admin web to manage platform/tenant data"
 
-        admin = softwareSystem "CTX-admin" "Admin product boundary" {
-            tags "CTX"
-
-            web = container "CTR-admin-web" "Admin SPA / FE" "Nuxt/Next" {
-                tags "CTR"
-                authUi = component "CMP-01 Auth UI" "Login screen W-AD-AUTH-001" "Vue/React" {
-                    tags "CMP"
-                }
+        admin = softwareSystem "Admin Product" "Admin product boundary" {
+            web = container "Admin Web" "Admin SPA / FE" "Nuxt/Next" {
+                auth = component "CMP-01 Auth" "Authentication module" "Vue/React"
             }
-
-            api = container "CTR-admin-api" "Admin HTTP API" "Nest/FastAPI" {
-                tags "CTR"
-                authApi = component "CMP-01 Auth API" "Login API-AD-AUTH-001" "HTTP" {
-                    tags "CMP"
-                }
+            api = container "Admin API" "Admin HTTP API" "Nest/FastAPI" {
+                authApi = component "CMP-01 Auth API" "Auth endpoints" "Node"
             }
+            db = container "Admin DB" "Storage" "PostgreSQL" "Database"
         }
 
         idp = softwareSystem "IdP / session" "External identity / session issuer" {
@@ -44,12 +36,12 @@ workspace "base-docs platform" "arc42 × C4 pilot model" {
             autoLayout lr
         }
 
-        systemContext admin "CTX-admin" {
+        systemContext admin "Landscape" {
             include *
             autoLayout lr
         }
 
-        container admin "CTR-admin" {
+        container admin "Containers" {
             include *
             autoLayout tb
         }

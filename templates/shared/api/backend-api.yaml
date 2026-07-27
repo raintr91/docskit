@@ -4,12 +4,12 @@ feature:
   status: draft
   version: 0.1.0
   source:
-    portalSpec: product/components/CMP-*/code/W-*/ir/spec.yaml
+    portalSpec: product/surfaces/.../modules/CMP-*/<slug>/code/W-*/ir/spec.yaml
     portalTestcases: https://github.com/raintr91/base_test/tree/main/cases
     updatedAt: YYYY-MM-DD
     portalRefs: []
     # - id: feature-list
-    #   path: product/components/CMP-*/code/W-*/ir/spec.yaml
+    #   path: product/surfaces/.../modules/CMP-*/<slug>/code/W-*/ir/spec.yaml
     #   syncedAt: YYYY-MM-DD
     #   status: synced   # synced | stale | pending
     portalTestcaseRefs: []

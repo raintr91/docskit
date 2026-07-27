@@ -29,20 +29,46 @@ export type { OwnedGitignoreEntry } from './gitignore.js'
 
 export const INSTALL_MANIFEST_PATH = '.docskit/install-manifest.json'
 export const INSTALL_MANIFEST_SCHEMA = 1
-export type DocskitHarnessType = 'docs' | 'consumer'
+export type DocskitHarnessType = 'docs' | 'consumer' | 'be'
 
-export const DOCSKIT_OWNED_SKILLS = [
+/** Skills installed on docs hubs (docs type). */
+export const DOCSKIT_OWNED_SKILLS_DOCS = [
   'docskit',
   'overview',
   'architecture',
   'surfaces',
   'module',
-  'journey',
   'deployment',
   'decision',
   'cross-cutting',
   'business-process',
+  'spec',
+  'update-spec',
+  'grill',
+  'grill-with-docs',
+  'bqa-grill-docs',
+  'dev-grill-docs',
+  'db-erd',
+  'cross-service',
+  'architecture-grill',
+  'build-templates',
 ] as const
+
+/** Skills installed on BE repos (be type). */
+export const DOCSKIT_OWNED_SKILLS_BE = [
+  'api',
+  'api-spec',
+  'api-update-spec',
+  'api-integration-spec',
+  'grill-api',
+  'grill-api-spec',
+  'grill-integration-spec',
+  'call-external',
+  'cross-entity-service',
+] as const
+
+/** @deprecated Use DOCSKIT_OWNED_SKILLS_DOCS or DOCSKIT_OWNED_SKILLS_BE */
+export const DOCSKIT_OWNED_SKILLS = DOCSKIT_OWNED_SKILLS_DOCS
 
 export interface StaleHarnessAsset {
   hash: string
@@ -371,6 +397,19 @@ const CONSUMER_ASSETS = new Set([
   path.join('extracts', 'docskit-phase-hooks.md'),
 ])
 
+/** Skills allowed for the 'be' harness type (prefix: skills/<name>/) */
+const BE_SKILL_PREFIXES = new Set(
+  (DOCSKIT_OWNED_SKILLS_BE as readonly string[]).map((s) => path.join('skills', s) + path.sep)
+)
+
+function isBeAsset(sourceRel: string): boolean {
+  // Always include non-skill assets (rules, schemas, extracts)
+  if (!sourceRel.startsWith('skills' + path.sep)) return true
+  return BE_SKILL_PREFIXES.has(
+    sourceRel.slice(0, sourceRel.indexOf(path.sep, 'skills/'.length) + 1)
+  )
+}
+
 function harnessDirsForTargets(targets?: string[]): string[] {
   const agentDirList =
     targets?.flatMap((target) => AGENT_DIRS[target as AgentId] || []) || []
@@ -389,6 +428,7 @@ function currentAssetHashes(
     const sourceRel = path.relative(sourceRoot, source)
     if (sourceRel === path.join('extracts', 'extract-registry.docskit.json')) continue
     if (type === 'consumer' && !CONSUMER_ASSETS.has(sourceRel)) continue
+    if (type === 'be' && !isBeAsset(sourceRel)) continue
     
     for (const dir of dirs) {
       const rel = [dir, ...sourceRel.split(path.sep)].join('/')
@@ -485,6 +525,49 @@ export function scaffoldSchemas(root: string) {
   copyDir(sourceRoot, destRoot)
 }
 
+/**
+ * Inject backend API scripts and devDependencies into the consuming repo's package.json.
+ * Called when installHarness is run with type === 'be'.
+ */
+export function injectBackendScripts(root: string) {
+  const pkgPath = path.join(root, 'package.json')
+  if (!existsSync(pkgPath)) return
+  try {
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, any>
+    let changed = false
+    if (!pkg.scripts) pkg.scripts = {}
+    if (!pkg.devDependencies) pkg.devDependencies = {}
+
+    const pkgName = '@platform/docskit'
+    const scriptsToInject: Record<string, string> = {
+      'docs:render':    `node node_modules/${pkgName}/scripts/backend-api/render-backend-spec.mjs`,
+      'openapi:render': `node node_modules/${pkgName}/scripts/backend-api/render-openapi.mjs`,
+      'openapi:lint':   'pnpm openapi:render',
+      'openapi:bundle': 'pnpm openapi:render && redocly bundle docs/openapi/api.yaml -o docs/public/openapi/openapi.yaml',
+      'swagger:build':  `node node_modules/${pkgName}/scripts/backend-api/build-swagger-ui.mjs`,
+      'swagger:dev':    'pnpm openapi:bundle && pnpm swagger:build && pnpm docs:dev',
+    }
+    for (const [name, cmd] of Object.entries(scriptsToInject)) {
+      if (!pkg.scripts[name]) { pkg.scripts[name] = cmd; changed = true }
+    }
+
+    const depsToInject: Record<string, string> = {
+      '@redocly/cli':   '^2.34.0',
+      'swagger-ui-dist': '^5.32.6',
+      'yaml':           '^2.9.0',
+    }
+    for (const [dep, version] of Object.entries(depsToInject)) {
+      if (!pkg.devDependencies[dep]) { pkg.devDependencies[dep] = version; changed = true }
+    }
+
+    if (changed) {
+      writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+    }
+  } catch {
+    // Ignore invalid package.json
+  }
+}
+
 function injectVitepressScripts(root: string) {
   const pkgPath = path.join(root, 'package.json')
   if (!existsSync(pkgPath)) return
@@ -494,6 +577,8 @@ function injectVitepressScripts(root: string) {
     if (pkg.scripts['docs:build'] !== 'vitepress build') { pkg.scripts['docs:build'] = 'vitepress build'; changed = true }
     if (pkg.scripts['docs:dev'] !== 'vitepress dev') { pkg.scripts['docs:dev'] = 'vitepress dev'; changed = true }
     if (pkg.scripts['docs:preview'] !== 'vitepress preview') { pkg.scripts['docs:preview'] = 'vitepress preview'; changed = true }
+    if (pkg.scripts['docs:render'] !== 'docskit render') { pkg.scripts['docs:render'] = 'docskit render'; changed = true }
+    if (pkg.scripts['docs:render-common'] !== 'docskit render-common') { pkg.scripts['docs:render-common'] = 'docskit render-common'; changed = true }
     
     if (!pkg.devDependencies) pkg.devDependencies = {}
     
@@ -645,6 +730,10 @@ export function installHarness(opts: {
     scaffoldSchemas(root)
     injectVitepressScripts(root)
     syncDocskitTemplates(root)
+  }
+
+  if (type === 'be') {
+    injectBackendScripts(root)
   }
 
   recordInstall(root)
