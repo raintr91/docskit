@@ -28,7 +28,7 @@ accelerator for registries/tags/parity only.
 
 | Công dụng | Chi tiết |
 |-----------|----------|
-| **ID index** | Liệt kê LND / CTX / CTR / CMP / FLOW / DEP / ADR / W / API / UI từ MD |
+| **ID index** | Liệt kê CMP / FLOW / DEP / ADR / W / API / UI từ MD |
 | **Slice theo ID** | Mở file + excerpt cho một phần tử — không load cả cây docs |
 | **Deps / dependents** | Ai tham chiếu ID này / ID này tham chiếu ai |
 | **Catalog health** | Orphans (thiếu FLOW/ADR/CMP), broken MD links |
@@ -42,14 +42,15 @@ accelerator for registries/tags/parity only.
 Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình phân tích và viết tài liệu kiến trúc, specs, legacy traces. Các skill này được tự động cài đặt qua `docskit init`.
 
 ### 1. Kiến trúc (Architecture Hierarchy)
-| Skill | Chức năng chính |
-|-------|-----------------|
-| `/architecture` | Router chính để điều hướng agent tới các skill chuyên biệt phía dưới. |
-| `/grill` | Khảo sát / thẩm định đầu vào theo layer đích trước khi viết tài liệu. |
-| `/overview` | Xử lý tài liệu tổng quan (Personas, Operational areas). |
-| `/business-process` | Vẽ sơ đồ luồng quy trình nghiệp vụ (Architecture). |
-| `/module` | Xử lý tài liệu mức Module (nghiệp vụ, data model chung của một nhóm chức năng). |
-| `/deployment` | Viết tài liệu Deployment View. |
+| Skill | Chức năng chính | Output Folder / File |
+|-------|-----------------|----------------------|
+| `/architecture` | Router chính để điều hướng agent tới các skill chuyên biệt phía dưới. | (Không sinh file trực tiếp) |
+| `/grill` | Khảo sát / thẩm định đầu vào theo layer đích trước khi viết tài liệu. | (Không sinh file trực tiếp) |
+| `/overview` | Xử lý tài liệu tổng quan (Personas, Operational areas). | `product/overview/` |
+| `/surfaces` | Định nghĩa các bề mặt tương tác (Web, Gateway, HMI). | `product/surfaces/` |
+| `/module` | Xử lý tài liệu mức Module (nghiệp vụ, data model chung của một nhóm chức năng). | `product/surfaces/<surface>/modules/CMP-*/` |
+| `/business-process` | Vẽ sơ đồ luồng quy trình nghiệp vụ (Architecture). | `architecture/03-business-process/FLOW-*.md` |
+| `/deployment` | Viết tài liệu Deployment View. | `architecture/07-deployment/` |
 
 **Layer nghĩa là gì?**
 - `overview`: persona, business purpose, operational area.
@@ -61,11 +62,11 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 - `API`: lớp container hoặc contract, không phải surface.
 
 ### 2. Common Layers & Diagrams
-| Skill | Chức năng chính |
-|-------|-----------------|
-| `/business-process` | Vẽ luồng nghiệp vụ theo actor + surface + action + outcome cho các `FLOW-*`. |
-| `/db-erd` | Viết business data model / ERD: entity, ownership, relationship, storage boundary. |
-| `/cross-service` | Mô tả luồng tích hợp giữa service / system / boundary: RPC, event, message, contract. |
+| Skill | Chức năng chính | Output Folder / File |
+|-------|-----------------|----------------------|
+| `/business-process` | Vẽ luồng nghiệp vụ theo actor + surface + action + outcome cho các `FLOW-*`. | `.../common/FLOW-*.md` |
+| `/db-erd` | Viết business data model / ERD: entity, ownership, relationship, storage boundary. | `.../common/db-erd.md` |
+| `/cross-service` | Mô tả luồng tích hợp giữa service / system / boundary: RPC, event, message, contract. | `.../common/cross-service.md` |
 
 `/business-process` = action flow trên surface. `/db-erd` = data ownership/model. `/cross-service` = integration boundary flow.
 
@@ -73,14 +74,14 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 `/cross-service` dùng khi luồng đi qua service/system boundary; không dùng cho hành động nội bộ của 1 surface hay 1 service đơn lẻ.
 
 ### 3. Function Specs & Grill (Product)
-| Skill | Chức năng chính |
-|-------|-----------------|
-| `/spec` | Khởi tạo tài liệu Function Detail / Design bundle (`W-*`, `API-*`). |
-| `/bqa-grill-docs` | BA/UI Grill: Đặt câu hỏi thẩm định giao diện, validate hành vi, acceptance. |
-| `/dev-grill-docs` | Dev Grill: Chuẩn bị thông số codegen, test schemas, metadata trước khi gen code. |
-| `/grill-with-docs` | Reconcile: Giải quyết mâu thuẫn giữa BQA và Dev. |
-| `/architecture-grill` | Phỏng vấn (grill) để chốt thiết kế kiến trúc/logic hệ thống ở các tầng cao (Modules, Surfaces). |
-| `/update-spec` | Update delta một phần (patch) cho spec khi có thay đổi nhỏ, tránh viết lại toàn bộ. |
+| Skill | Chức năng chính | Output Folder / File |
+|-------|-----------------|----------------------|
+| `/spec` | Khởi tạo tài liệu Function Detail / Design bundle (`W-*`, `API-*`). | `.../CMP-*/<slug>/*.bundle.yaml` |
+| `/bqa-grill-docs` | BA/UI Grill: Đặt câu hỏi thẩm định giao diện, validate hành vi, acceptance. | (Thảo luận) |
+| `/dev-grill-docs` | Dev Grill: Chuẩn bị thông số codegen, test schemas, metadata trước khi gen code. | (Thảo luận) |
+| `/grill-with-docs` | Reconcile: Giải quyết mâu thuẫn giữa BQA và Dev. | (Thảo luận) |
+| `/architecture-grill` | Phỏng vấn (grill) để chốt thiết kế kiến trúc/logic hệ thống ở các tầng cao (Modules, Surfaces). | (Thảo luận) |
+| `/update-spec` | Update delta một phần (patch) cho spec khi có thay đổi nhỏ, tránh viết lại toàn bộ. | `.../CMP-*/<slug>/*.bundle.yaml` |
 
 ### 4. Legacy Trace (Archaeology)
 | Skill | Chức năng chính |
@@ -218,15 +219,28 @@ Agents hỗ trợ: Claude · Cursor · Codex · opencode · Hermes · Gemini · 
 
 | Tool | Purpose |
 |------|---------|
-| `docskit_list_ids` | List LND/CTX/CTR/CMP/FLOW/DEP/ADR/W/API |
+| `docskit_list_ids` | List CMP/FLOW/DEP/ADR/W/API |
 | `docskit_get_element` | Files + excerpt for one ID |
 | `docskit_deps_of` | IDs referenced from that element’s files |
 | `docskit_dependents_of` | IDs that mention this ID |
 | `docskit_orphans` | Missing canonical FLOW/ADR/CMP paths; catalog draft/TBD |
 | `docskit_validate_links` | Broken MD links under architecture (+ product) |
 | `docskit_route` | Topic → arc42 chapter + skill |
-| `docskit_journeys` | List `FLOW-*` under `06-runtime/journeys/` |
+| `docskit_business_processes` | List `FLOW-*` under `03-business-process/` |
 | `docskit_layout` | Canonical paths per ID kind + ignored redirect stubs |
+
+---
+
+## Render Scripts
+
+Quá trình gen docs diễn ra qua các lệnh NPM/PNPM script (thường được gọi sau khi Agent sinh file YAML).
+
+| Script | Ý nghĩa & Đầu vào (Input) | Đầu ra (Output) |
+|--------|---------------------------|-----------------|
+| `pnpm docs:render` | Dịch file spec YAML sang Markdown.<br> **Input**: `.../CMP-*/<slug>/*.bundle.yaml` | Sinh ra `.../<slug>/*.md` nằm cạnh file YAML, để VitePress hiển thị lên Sidebar. |
+| `pnpm spec:split` | Chia nhỏ bundle thiết kế tổng thành các khối code/IR chi tiết. <br> **Input**: `<bundle>.yaml` | Sinh ra các file schema trong thư mục `ir/*.yaml` dưới `code/W-*/`. |
+| `pnpm docs:dev` | Khởi chạy VitePress dev server ở cổng `:5173`. <br> **Input**: Toàn bộ thư mục `product/` và `architecture/` (ngoại trừ các thư mục `code/`, `ir/`, `yaml/`). | Preview tài liệu kiến trúc trực quan trên browser. |
+| `pnpm docs:build` | Build tài liệu ra dạng static HTML. | Chứa tĩnh (static site) trong `.vitepress/dist/`. |
 
 Manual Cursor snippet: [`mcp.cursor.example.json`](./mcp.cursor.example.json). **Ưu tiên `docskit init`** sau `install.sh`.
 
