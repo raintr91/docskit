@@ -34,7 +34,7 @@ function buildRecursiveSidebar(dirPath: string, urlPrefix: string): any[] {
     // Read directories
     for (const entry of entries) {
       if (entry.isDirectory()) {
-        if (['code', 'ir', 'yaml', 'node_modules', '.git'].includes(entry.name)) continue
+        if (['code', 'ir', 'node_modules', '.git'].includes(entry.name)) continue
         const subDirPath = path.join(dirPath, entry.name)
         const indexPath = path.join(subDirPath, 'index.md')
         let title = entry.name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
@@ -50,6 +50,16 @@ function buildRecursiveSidebar(dirPath: string, urlPrefix: string): any[] {
         }
 
         const subItems = buildRecursiveSidebar(subDirPath, `${urlPrefix}${entry.name}/`)
+        
+        // Scan for generated backend API spec if present
+        const generatedApiSpec = path.join(subDirPath, 'generated', 'backend-spec.md')
+        if (fs.existsSync(generatedApiSpec)) {
+          subItems.push({
+            text: '⚡ Backend API Spec',
+            link: `${urlPrefix}${entry.name}/generated/backend-spec`
+          })
+        }
+
         const item: any = { text: title }
         if (link) item.link = link
         if (subItems.length > 0) {

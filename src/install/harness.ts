@@ -575,7 +575,7 @@ function injectVitepressScripts(root: string) {
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, any>
     let changed = false
     if (!pkg.scripts) pkg.scripts = {}
-    if (pkg.scripts['docs:build'] !== 'vitepress build') { pkg.scripts['docs:build'] = 'vitepress build'; changed = true }
+    if (pkg.scripts['docs:build'] !== 'pnpm docs:render && vitepress build') { pkg.scripts['docs:build'] = 'pnpm docs:render && vitepress build'; changed = true }
     if (pkg.scripts['docs:dev'] !== 'vitepress dev') { pkg.scripts['docs:dev'] = 'vitepress dev'; changed = true }
     if (pkg.scripts['docs:preview'] !== 'vitepress preview') { pkg.scripts['docs:preview'] = 'vitepress preview'; changed = true }
     if (pkg.scripts['docs:render'] !== 'docskit render') { pkg.scripts['docs:render'] = 'docskit render'; changed = true }
@@ -734,6 +734,7 @@ export function installHarness(opts: {
     scaffoldProductSkeleton(root)
     scaffoldSchemas(root)
     injectVitepressScripts(root)
+    injectBackendScripts(root)
     syncDocskitTemplates(root)
   }
 

@@ -1,18 +1,23 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { parse, stringify } from 'yaml'
 import { spawnSync } from 'node:child_process'
 
 const projectRoot = process.cwd()
 const docsDir = path.join(projectRoot, 'docs')
+const surfacesDir = path.join(projectRoot, 'product', 'surfaces')
 const featuresDir = path.join(docsDir, 'features')
 const baseFile = path.join(docsDir, 'openapi', 'base.yaml')
 const outputFile = path.join(docsDir, 'openapi', 'api.yaml')
 
 async function main() {
   const started = Date.now()
-  const base = await readYaml(baseFile)
-  const featureFiles = await listFeatureOpenApiFiles(featuresDir)
+  const base = fsExists(baseFile) ? await readYaml(baseFile) : { openapi: '3.0.3', info: { title: 'Backend API Specifications', version: '1.0.0' } }
+  const featureFiles = await listFeatureOpenApiFiles(surfacesDir)
+  if (!featureFiles.length) {
+    featureFiles.push(...(await listFeatureOpenApiFiles(featuresDir)))
+  }
 
   const merged = structuredClone(base)
   merged.paths ??= {}
@@ -101,6 +106,14 @@ function lintFile(file) {
     cwd: projectRoot,
     encoding: 'utf8'
   })
+}
+
+function fsExists(file) {
+  try {
+    return fs.existsSync(file)
+  } catch {
+    return false
+  }
 }
 
 async function readYaml(file) {

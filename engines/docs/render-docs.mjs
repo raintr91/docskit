@@ -33,6 +33,8 @@ const legacyRoot = cliFlag('legacy-root') ? path.resolve(cliFlag('legacy-root'))
 const writeIndex = !cliBool('no-index')
 const devAppBaseUrl = resolveDevAppBaseUrl(projectRoot)
 
+import { renderFeatureBackendSpec, listBackendSpecFiles } from '../scripts/backend-api/render-backend-spec.mjs'
+
 async function main() {
   const started = Date.now()
   const specs = await listSpecFiles(legacyRoot)
@@ -63,6 +65,16 @@ async function main() {
     }
   }
 
+  // Also render Backend API specs if present
+  try {
+    const backendSpecFiles = await listBackendSpecFiles(path.resolve('product/surfaces'))
+    for (const beSpecFile of backendSpecFiles) {
+      await renderFeatureBackendSpec(beSpecFile)
+    }
+  } catch (e) {
+    /* ignore if backend specs not present */
+  }
+
   if (failed > 0) {
     console.error(`docs:render: aborted index — ${failed} file(s) failed`)
     process.exit(1)
@@ -72,7 +84,7 @@ async function main() {
 
   const elapsed = ((Date.now() - started) / 1000).toFixed(1)
   console.log(
-    `docs:render: ${specs.length} legacy spec(s), ${bundles.length} bundle(s) [${elapsed}s] (testcase MD → tests hub cases:render)`
+    `docs:render: ${specs.length} legacy spec(s), ${bundles.length} bundle(s) [${elapsed}s] (includes UI + Backend API specs)`
   )
 }
 

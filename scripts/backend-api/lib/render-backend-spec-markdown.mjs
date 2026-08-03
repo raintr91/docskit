@@ -15,6 +15,7 @@ export function renderBackendSpecMarkdown(spec, context) {
     `- **Version:** \`${feature.version ?? '—'}\``,
     `- **Status:** \`${feature.status ?? '—'}\``,
     `- **Source YAML:** \`${context.specFile}\``,
+    `- **Business Spec:** [📖 View Screen / Function Spec](../)`,
     renderApprovalLine(spec.approval),
     '',
     feature.source?.updatedAt ? `*Portal sync: ${feature.source.updatedAt}*` : '',
