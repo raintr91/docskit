@@ -5,6 +5,10 @@ description: /docskit — MCP index for a conforming arc42 × C4 documentation h
 disable-model-invocation: true
 ---
 
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - You MUST read and strictly comply with ALL workflow steps, rules, and index routing policies below.
+> - Do NOT perform a shallow check. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+
 # /docskit
 
 Package: [raintr91/docskit](https://github.com/raintr91/docskit)
@@ -88,3 +92,9 @@ its exact raw byte length. After the fallback completes, emit exactly one
 `.cursor/schemas/docskit/missing-optional-event.schema.json`. Deduplicate
 retries. Report only actual `fileReads` and `contextBytes`; never estimate
 tokens or token savings.
+
+## Verification Checklist
+- [ ] Strict adherence to index routing rules and load policy.
+- [ ] Verified root and setup path configurations.
+- [ ] Checked for all required extracts and accelerator fallback events if applicable.
+

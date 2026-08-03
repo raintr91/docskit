@@ -5,6 +5,10 @@ description: /spec — author design bundle only (no testcase plans). Plans → 
 disable-model-invocation: true
 ---
 
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Do NOT perform a shallow check. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+
 # /spec — Function detail (design)
 
 **Business layer:** Function (screen `W-*` / API `API-*` inside a module)  
@@ -80,3 +84,10 @@ Deduplicate retries and report only actual `fileReads` / `contextBytes`.
 ## Done
 
 - Design bundle coherent · split + docs:render pass · plans handoff → `/testcase` on tests hub.
+
+## Verification Checklist
+- [ ] Strict adherence to scope boundaries and module CMP mapping.
+- [ ] Output MUST be a `.bundle.yaml` file (Do NOT write `.md` directly).
+- [ ] Executed `docskit split` / `pnpm spec:split` followed by `docs:render`.
+- [ ] Handed off testcase plans to `base-tests` `/testcase`.
+

@@ -5,6 +5,10 @@ description: /bqa-grill-docs — BA grill design+legacy in bundle.
 disable-model-invocation: true
 ---
 
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Do NOT perform a shallow check. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+
 # /bqa-grill-docs — Spec Validation (BQA / UI)
 
 **Mindset:** Spec Validation + Decision Resolution — **not** domain archaeology.
@@ -66,3 +70,10 @@ retries and report only actual `fileReads` / `contextBytes`.
 ## Handoff
 
 → `/dev-grill-docs`
+
+## Verification Checklist
+- [ ] Strict compliance with Load Policy (did not load out-of-scope files like codegen or legacy source code).
+- [ ] Step A completed with `grillStatus.bqaFacts: done` before Step B open questions.
+- [ ] `grillStatus.bqaOpen: done` updated after open questions resolved.
+- [ ] Executed bundle split and rendered docs.
+

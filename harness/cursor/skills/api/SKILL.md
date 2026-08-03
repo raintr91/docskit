@@ -6,6 +6,10 @@ description: >-
 disable-model-invocation: true
 ---
 
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Do NOT perform a shallow check. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+
 # /api — Backend Router
 
 | Step | Command | Skill |
@@ -33,3 +37,9 @@ Do not skip `/grill-api-spec` for new features, cross-portal, or legacy-derived 
 PHPUnit coverage: **không** qua router `/api` — dùng `/unit-be` riêng.
 
 Doc: `docs/operational/TEAM-AI-BACKEND-WORKFLOW.md`
+
+## Verification Checklist
+- [ ] Strict compliance with router conditions before delegating to target skill.
+- [ ] Checked for presence of `01-backend-spec.yaml`, `approval.status`, and `source.kind`.
+- [ ] Correctly routed to contract/spec vs code skill.
+

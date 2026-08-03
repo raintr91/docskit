@@ -5,6 +5,10 @@ description: /dev-grill-docs — Docs-side dev grill for codegen tags + bundle.g
 disable-model-invocation: true
 ---
 
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Do NOT perform a shallow check. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+
 # /dev-grill-docs — Dev / codegen grill
 
 Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
@@ -68,3 +72,10 @@ UX prose, acceptance rewrite, implement UI, full E2E.
 - BQA↔Dev conflict → `/grill-with-docs`
 - Legacy fact gap → `/update-spec-legacy`
 - Member chose promote common → `/platform-mark` same session or before `/prototype`
+
+## Verification Checklist
+- [ ] Verified `grillStatus.bqaOpen: done` before starting dev grill.
+- [ ] Derived `bundle.gen` correctly with codegen tags.
+- [ ] Set `grillStatus.dev: done` upon completion.
+- [ ] Checked recommendation gate for ArtifactGraph if available.
+

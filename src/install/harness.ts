@@ -574,11 +574,16 @@ function injectVitepressScripts(root: string) {
   try {
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, any>
     let changed = false
+    if (!pkg.scripts) pkg.scripts = {}
     if (pkg.scripts['docs:build'] !== 'vitepress build') { pkg.scripts['docs:build'] = 'vitepress build'; changed = true }
     if (pkg.scripts['docs:dev'] !== 'vitepress dev') { pkg.scripts['docs:dev'] = 'vitepress dev'; changed = true }
     if (pkg.scripts['docs:preview'] !== 'vitepress preview') { pkg.scripts['docs:preview'] = 'vitepress preview'; changed = true }
     if (pkg.scripts['docs:render'] !== 'docskit render') { pkg.scripts['docs:render'] = 'docskit render'; changed = true }
     if (pkg.scripts['docs:render-common'] !== 'docskit render-common') { pkg.scripts['docs:render-common'] = 'docskit render-common'; changed = true }
+    if (pkg.scripts['docs:split'] !== 'docskit split') { pkg.scripts['docs:split'] = 'docskit split'; changed = true }
+    if (pkg.scripts['docs:split-all'] !== 'docskit split-all') { pkg.scripts['docs:split-all'] = 'docskit split-all'; changed = true }
+    if (pkg.scripts['spec:split'] !== 'docskit split') { pkg.scripts['spec:split'] = 'docskit split'; changed = true }
+    if (pkg.scripts['spec:split:check'] !== 'docskit split --check') { pkg.scripts['spec:split:check'] = 'docskit split --check'; changed = true }
     
     if (!pkg.devDependencies) pkg.devDependencies = {}
     

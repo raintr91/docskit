@@ -1,0 +1,13 @@
+---
+description: Enforce deep compliance for all skills and rules
+alwaysApply: true
+---
+
+# Agent Deep Compliance Rule
+
+> [!CRITICAL] MANDATORY AGENT BEHAVIOR
+> When executing any command or skill (e.g. `/spec`, `/bqa-grill-docs`, `/dev-grill-docs`, `/api`, `/overview`, etc.):
+> 
+> 1. **DEEP SKILL CHECK**: You MUST read and strictly follow ALL rules, scope limitations, step workflows, and constraints specified in the corresponding `.cursor/skills/<skill-name>/SKILL.md`. Do NOT perform shallow or partial checks.
+> 2. **NO ASSUMPTIONS**: Do NOT skip steps or shortcut the defined workflow. Follow the load policy, index routing rules, and specOrigin branches exactly.
+> 3. **SELF-AUDIT CHECKLIST**: Before marking any task complete or replying to the user, you MUST verify your output against the "Verification Checklist" defined at the bottom of the active skill's `SKILL.md`.
