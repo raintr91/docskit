@@ -5,35 +5,33 @@ Tooling scripts cho **BE repo** có `docs/features/` + `docs/openapi/`.
 Chạy từ **repo root** bằng các `package.json` scripts (inject tự động bởi `docskit harness --type=be`):
 
 ```bash
-pnpm docs:render      # 01-backend-spec.yaml → generated/backend-spec.md
-pnpm openapi:render   # merge 02-openapi.yaml → docs/openapi/api.yaml + redocly lint
-pnpm openapi:lint     # alias cho openapi:render
-pnpm openapi:bundle   # openapi:render + redocly bundle → docs/public/openapi/openapi.yaml
-pnpm swagger:build    # copy Swagger UI assets → docs/public/swagger/
-pnpm swagger:dev      # openapi:bundle + swagger:build + docs:dev
+pnpm docs:render    # 01-backend-spec.yaml → generated/backend-spec.md
+pnpm openapi:render # merge 02-openapi.yaml → docs/openapi/api.yaml + redocly lint
+pnpm openapi:bundle # openapi:render + redocly bundle → docs/public/openapi/openapi.yaml
+pnpm openapi:build  # copy API UI assets → docs/public/api-ui/
+pnpm openapi:dev    # openapi:bundle + openapi:build + docs:dev
 ```
 
 ## Scripts
 
 | Script | Entry point | Mô tả |
 |--------|------------|--------|
-| `render-backend-spec.mjs` | `pnpm docs:render` | `docs/features/**/01-backend-spec.yaml` + `features/common/*.yaml` → `generated/*.md` |
-| `render-openapi.mjs` | `pnpm openapi:render` | `docs/openapi/base.yaml` + `docs/features/**/02-openapi.yaml` → `docs/openapi/api.yaml` + redocly lint |
-| `build-swagger-ui.mjs` | `pnpm swagger:build` | Copy Swagger UI static assets → `docs/public/swagger/` |
+| `render-backend-spec.mjs` | `pnpm docs:render` | `product/surfaces/**/01-backend-spec.yaml` → `generated/backend-spec.md` |
+| `render-openapi.mjs` | `pnpm openapi:render` | `docs/openapi/base.yaml` + `product/surfaces/**/02-openapi.yaml` → `docs/openapi/api.yaml` + redocly lint |
+| `build-openapi-ui.mjs` | `pnpm openapi:build` | Copy API UI static assets → `docs/public/api-ui/` |
 
 ## Sử dụng (repo consuming)
 
-Sau khi `docskit harness --type=be`, các scripts sau được tự động thêm vào `package.json`:
+Sau khi `docskit init` hoặc `docskit harness`, các scripts sau được tự động thêm vào `package.json`:
 
 ```json
 {
   "scripts": {
-    "docs:render":    "node node_modules/@platform/docskit/scripts/backend-api/render-backend-spec.mjs",
+    "docs:render":    "docskit render",
     "openapi:render": "node node_modules/@platform/docskit/scripts/backend-api/render-openapi.mjs",
-    "openapi:lint":   "pnpm openapi:render",
     "openapi:bundle": "pnpm openapi:render && redocly bundle docs/openapi/api.yaml -o docs/public/openapi/openapi.yaml",
-    "swagger:build":  "node node_modules/@platform/docskit/scripts/backend-api/build-swagger-ui.mjs",
-    "swagger:dev":    "pnpm openapi:bundle && pnpm swagger:build && pnpm docs:dev"
+    "openapi:build":  "node node_modules/@platform/docskit/scripts/backend-api/build-openapi-ui.mjs",
+    "openapi:dev":    "pnpm openapi:bundle && pnpm openapi:build && pnpm docs:dev"
   }
 }
 ```

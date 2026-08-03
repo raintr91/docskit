@@ -32,8 +32,8 @@ Doc hub: `platform/toolchain/UPDATE-SPEC-FLOW.md` · `platform/toolchain/FEATURE
 3. Emit matching `#update:*` tags; bump `specRevision`.
 4. If `featureStatus` was `wire` → `need-update`.
 5. Record harness notes when present.
-6. `docskit_bundle_split` / `docskit split -- <bundle>` (fallback `pnpm spec:split`)
-7. `docskit_bundle_check` / `docskit split --check -- <bundle>` (fallback `pnpm spec:split:check`)
+6. `docskit_bundle_split` / `docskit split -- <bundle>` (fallback `pnpm docs:split`)
+7. `docskit_bundle_check` / `docskit split --check -- <bundle>` (fallback `pnpm docs:check`)
 8. User runs `docs_render` / `docskit render` (manual; fallback `pnpm docs:render`)
 9. Follow-up per matrix: handoff FE `/prototype` or `/dev-grill-docs` / `/bqa-grill-docs` — do not assume sibling codegen.
 

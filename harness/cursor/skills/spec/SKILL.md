@@ -72,7 +72,7 @@ Prefer MCP/CLI when Docskit is installed:
 
 - `docskit_bundle_split` / `docskit split -- <bundle>`
 - `docs_render` / `docskit render …`
-- Local fallback only if package not installed: `pnpm spec:split` · `pnpm docs:render`
+- Local fallback only if package not installed: `pnpm docs:split` · `pnpm docs:render`
 
 ## Accelerators (optional)
 

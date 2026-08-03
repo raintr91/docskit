@@ -38,7 +38,7 @@ disable-model-invocation: true
 
 0. Tech debt: `#tech-debt:*` where `deferTo: bqa-grill-docs` (`grill-tech-debt.md`).
 1. Compare `design.zones/behavior/actions` vs `legacy.ui` vs common UI.
-2. Patch **bundle** (`design`, `review`, `spec` requirements) → `docskit_bundle_split` / `docskit split` (fallback `pnpm spec:split`).
+2. Patch **bundle** (`design`, `review`, `spec` requirements) → `docskit_bundle_split` / `docskit split` (fallback `pnpm docs:split`).
 3. Set `grillStatus.bqaFacts: done`.
 4. **Rule:** chưa `bqaFacts: done` → không thêm `openQuestions` mới.
 

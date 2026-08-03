@@ -429,7 +429,7 @@ function currentAssetHashes(
     if (sourceRel === path.join('extracts', 'extract-registry.docskit.json')) continue
     if (type === 'consumer' && !CONSUMER_ASSETS.has(sourceRel)) continue
     if (type === 'be' && !isBeAsset(sourceRel)) continue
-    
+
     for (const dir of dirs) {
       const rel = [dir, ...sourceRel.split(path.sep)].join('/')
       assets.set(rel, { source, hash: sha256(readFileSync(source)) })
@@ -472,11 +472,11 @@ function mergeExtractRegistry(
     )
     const current = existsSync(target)
       ? (JSON.parse(readFileSync(target, 'utf8')) as {
-          version: number
-          bundles: Record<string, string[]>
-        })
+        version: number
+        bundles: Record<string, string[]>
+      })
       : { version: 1, bundles: {} }
-    
+
     current.version = Math.max(current.version ?? 1, owned.version ?? 1)
     if (type === 'consumer') delete current.bundles['architecture-core']
     current.bundles = {
@@ -499,12 +499,12 @@ export function scaffoldProductSkeleton(root: string) {
   if (existsSync(templateComponentsDir)) {
     try {
       rmSync(templateComponentsDir, { recursive: true, force: true })
-    } catch {}
+    } catch { }
   }
 
   const destRoot = path.join(root, 'product')
   if (!existsSync(destRoot)) mkdirSync(destRoot, { recursive: true })
-  
+
   copyDir(sourceRoot, destRoot)
 
   // Also clean up components in the destination
@@ -512,7 +512,7 @@ export function scaffoldProductSkeleton(root: string) {
   if (existsSync(destComponentsDir)) {
     try {
       rmSync(destComponentsDir, { recursive: true, force: true })
-    } catch {}
+    } catch { }
   }
 }
 
@@ -521,7 +521,7 @@ export function scaffoldSchemas(root: string) {
   if (!existsSync(sourceRoot)) return
   const destRoot = path.join(root, 'schemas')
   if (!existsSync(destRoot)) mkdirSync(destRoot, { recursive: true })
-  
+
   copyDir(sourceRoot, destRoot)
 }
 
@@ -540,21 +540,19 @@ export function injectBackendScripts(root: string) {
 
     const pkgName = '@platform/docskit'
     const scriptsToInject: Record<string, string> = {
-      'docs:render':    `node node_modules/${pkgName}/scripts/backend-api/render-backend-spec.mjs`,
       'openapi:render': `node node_modules/${pkgName}/scripts/backend-api/render-openapi.mjs`,
-      'openapi:lint':   'pnpm openapi:render',
       'openapi:bundle': 'pnpm openapi:render && redocly bundle docs/openapi/api.yaml -o docs/public/openapi/openapi.yaml',
-      'swagger:build':  `node node_modules/${pkgName}/scripts/backend-api/build-swagger-ui.mjs`,
-      'swagger:dev':    'pnpm openapi:bundle && pnpm swagger:build && pnpm docs:dev',
+      'openapi:build':  `node node_modules/${pkgName}/scripts/backend-api/build-openapi-ui.mjs`,
+      'openapi:dev':    'pnpm openapi:bundle && pnpm openapi:build && pnpm docs:dev',
     }
     for (const [name, cmd] of Object.entries(scriptsToInject)) {
       if (!pkg.scripts[name]) { pkg.scripts[name] = cmd; changed = true }
     }
 
     const depsToInject: Record<string, string> = {
-      '@redocly/cli':   '^2.34.0',
+      '@redocly/cli': '^2.34.0',
       'swagger-ui-dist': '^5.32.6',
-      'yaml':           '^2.9.0',
+      'yaml': '^2.9.0',
     }
     for (const [dep, version] of Object.entries(depsToInject)) {
       if (!pkg.devDependencies[dep]) { pkg.devDependencies[dep] = version; changed = true }
@@ -582,11 +580,10 @@ function injectVitepressScripts(root: string) {
     if (pkg.scripts['docs:render-common'] !== 'docskit render-common') { pkg.scripts['docs:render-common'] = 'docskit render-common'; changed = true }
     if (pkg.scripts['docs:split'] !== 'docskit split') { pkg.scripts['docs:split'] = 'docskit split'; changed = true }
     if (pkg.scripts['docs:split-all'] !== 'docskit split-all') { pkg.scripts['docs:split-all'] = 'docskit split-all'; changed = true }
-    if (pkg.scripts['spec:split'] !== 'docskit split') { pkg.scripts['spec:split'] = 'docskit split'; changed = true }
-    if (pkg.scripts['spec:split:check'] !== 'docskit split --check') { pkg.scripts['spec:split:check'] = 'docskit split --check'; changed = true }
-    
+    if (pkg.scripts['docs:check'] !== 'docskit split --check') { pkg.scripts['docs:check'] = 'docskit split --check'; changed = true }
+
     if (!pkg.devDependencies) pkg.devDependencies = {}
-    
+
     const requiredDeps = {
       '@braintree/sanitize-url': '^7.1.2',
       'cytoscape': '^3.34.0',
@@ -605,7 +602,7 @@ function injectVitepressScripts(root: string) {
         changed = true
       }
     }
-    
+
     if (changed) {
       writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
     }
@@ -615,7 +612,7 @@ function injectVitepressScripts(root: string) {
 
   const vitepressDir = path.join(root, '.vitepress')
   if (!existsSync(vitepressDir)) mkdirSync(vitepressDir, { recursive: true })
-  
+
   const sourceVitepressDir = path.join(packageRoot(), 'engines', 'docs', 'vitepress')
   copyDir(sourceVitepressDir, vitepressDir, true)
 
@@ -626,7 +623,7 @@ function injectVitepressScripts(root: string) {
 function syncDocskitTemplates(root: string) {
   const templatesDir = path.join(root, '.docskit', 'templates')
   if (!existsSync(templatesDir)) mkdirSync(templatesDir, { recursive: true })
-  
+
   // Copy EJS templates
   const sourceEjsDir = path.join(packageRoot(), 'templates', 'shared', 'templates')
   if (existsSync(sourceEjsDir)) {
@@ -729,7 +726,7 @@ export function installHarness(opts: {
   }
   result.manifest = writeManifest(root, realRoot, nextManifest)
   result.registry = mergeExtractRegistry(root, realRoot, type, opts.targets)
-  
+
   if (type === 'docs') {
     scaffoldProductSkeleton(root)
     scaffoldSchemas(root)
@@ -930,7 +927,7 @@ function uninstallExtractRegistry(
     const currentBundles = current.bundles ?? {}
     const present = ownedKeys.filter((key) => key in currentBundles)
     if (present.length === 0) continue
-    
+
     if (dryRun) {
       results.push(`${target} (would remove ${present.length} docskit bundle key(s))`)
       continue
@@ -1011,12 +1008,12 @@ export function uninstallHarness(opts: {
       const present =
         existsSync(file) && lstatSync(file).isFile()
           ? new Set(
-              readFileSync(file, 'utf8')
-                .split(/\r?\n/)
-                .map((line) => line.trim())
-                .filter((line) => line && !line.startsWith('#'))
-                .map(canonicalGitignorePattern),
-            )
+            readFileSync(file, 'utf8')
+              .split(/\r?\n/)
+              .map((line) => line.trim())
+              .filter((line) => line && !line.startsWith('#'))
+              .map(canonicalGitignorePattern),
+          )
           : new Set<string>()
       for (const pattern of exclusiveIgnore) {
         if (present.has(canonicalGitignorePattern(pattern))) {
