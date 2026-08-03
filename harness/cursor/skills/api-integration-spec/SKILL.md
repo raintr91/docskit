@@ -1,18 +1,16 @@
 ---
 name: api-integration-spec
-description: >-
-  /api-integration-spec command for backend API contract without Portal FE base —
-  third-party partner APIs, public APIs, inbound/outbound webhooks. Use when there
-  is no ../portal/docs/features spec; source is provider docs, partner contract,
-  or legacy code.
+description: EXCLUSIVE /api-integration-spec — ONLY for backend integration contracts (partner APIs, webhooks). DO NOT merge multiple integrations into single markdown files.
 disable-model-invocation: true
 ---
 
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Do NOT perform shallow checks. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+
 # /api-integration-spec — Integration Contract (no Portal FE)
 
-**Không** đọc Portal `*.spec.yaml` / `testcases/*.yaml`. **Không** Laravel code.
-
-API trio output giống `/api-spec`.
+**Không** đọc Portal `*.spec.yaml` / `testcases/*.yaml`. **Không** code trực tiếp.
 
 Shared extracts: `.cursor/extracts/api-integration-spec.md`, `entity-relationship.md`, `call-external.md`, `agent-discipline.md`, `verify-gate.md`
 
@@ -35,17 +33,22 @@ Optional: ../legacy/... controller routes
 Optional: docs/integrations/{provider}/*.md (repo-local notes)
 ```
 
-## Output
+## STRICT OUTPUT & FOLDER STRUCTURE (PRODUCT/SURFACES ONLY)
+
+> [!CAUTION] NO GROSS FILES / NO MARKDOWN CREATION
+> - **NEVER** combine multiple integration endpoints into a single gross file.
+> - **NEVER** write `.md` files directly. Markdown is generated ONLY by `pnpm docs:render`.
+> - **EVERY** contract MUST be scoped under `product/surfaces/integrations/<provider>/<slug>/`.
 
 ```text
-docs/features/{slug}/
+product/surfaces/integrations/<provider>/<slug>/
 ├── 01-backend-spec.yaml    # feature.source.kind + integrationRefs
 ├── 02-openapi.yaml         # securitySchemes required
-├── 03-mock-data.yaml       # webhook samples, partner request/response
-└── generated/backend-spec.md   ← pnpm docs:render
+└── 03-mock-data.yaml       # webhook samples, partner request/response
 ```
 
-Slug ví dụ: `integrations/stripe/charge`, `partner/acme/v1-hotels`, `webhooks/ota/booking`.
+Slug ví dụ: `product/surfaces/integrations/stripe/charge`, `product/surfaces/integrations/acme/v1-hotels`, `product/surfaces/integrations/webhooks/booking`.
+
 
 ## Workflow
 
@@ -62,14 +65,10 @@ Slug ví dụ: `integrations/stripe/charge`, `partner/acme/v1-hotels`, `webhooks
 11. `openQuestions` thay vì đoán signature, retry, retention
 12. Update `.harness/progress.md` when present
 
-## Round 1 — do not add
+## Verification Checklist (Evidence Required)
+- [ ] **Folder Structure:** Created separate `docs/features/{slug}/` for EACH integration (No gross combined files).
+- [ ] **YAML Trio Generated:** Created `01-backend-spec.yaml`, `02-openapi.yaml`, and `03-mock-data.yaml` per folder.
+- [ ] **No Direct Markdown:** Did NOT write `.md` files directly.
+- [ ] **Strict YAML Syntax:** All strings with colons (`:`) in YAML files are double-quoted (`"..."`).
+- **DO NOT output fake checklists, i18n tables, or framework prose.**
 
-- `codegen` block, `#gen:*`, `codegen.commands`
-- `source.portalRefs` / portal testcase refs
-- Portal layout, FE model naming rules
-
-## Done
-
-- YAML trio + `source.kind` + `integrationRefs`
-- Ready for `/grill-integration-spec`
-- Member: `pnpm docs:render`

@@ -1,15 +1,16 @@
 ---
 name: grill-integration-spec
-description: >-
-  /grill-integration-spec command for auditing integration/partner/webhook backend
-  YAML after /api-integration-spec. No Portal FE cross-check. Verifies auth,
-  idempotency, OpenAPI security, codegen readiness, and api:gen:dry gates.
+description: EXCLUSIVE /grill-integration-spec — ONLY for auditing backend integration contracts under product/surfaces/integrations/. DO NOT generate Markdown reports.
 disable-model-invocation: true
 ---
 
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Do NOT perform shallow checks. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+
 # /grill-integration-spec — Integration Contract Audit
 
-After `/api-integration-spec`, before `/api-code`. No Laravel. **No Portal spec.**
+After `/api-integration-spec`, before `/api-code`. No code implementation directly.
 
 Shared extracts: `.cursor/extracts/api-integration-spec.md`, `api-codegen-readiness.md`, `api-codegen-tags.md`, `call-external.md`, `entity-relationship.md`, `agent-discipline.md`, `verify-gate.md`
 
@@ -19,44 +20,27 @@ Shared extracts: `.cursor/extracts/api-integration-spec.md`, `api-codegen-readin
 - OpenAPI `securitySchemes` + mock khớp `01-backend-spec.yaml`
 - Codegen-ready: `pnpm api:gen:dry` + `pnpm openapi:render`
 
-## Checklist
+## Workflow
 
-### Source & scope
+1. Resolve integration slug under `product/surfaces/integrations/<provider>/<slug>/`; read spec and YAML trio
+2. Audit auth, securitySchemes, idempotency, retry, and non-CRUD actions
+3. Enrich spec with codegen tags (`#gen:*`, `#manual-service`, `#call-external`)
+4. Run gates (repo root):
+   `pnpm api:gen:dry --spec product/surfaces/integrations/<provider>/<slug>/01-backend-spec.yaml --write-spec` and `pnpm openapi:render`
+5. Set `approval.status: reviewed` (or `approved`) in YAML
 
-- [ ] `feature.source.base: none` và `feature.source.kind` đúng
-- [ ] `portalRefs` rỗng — không claim portal sync
-- [ ] `integrationRefs[]` có ít nhất một nguồn hoặc `openQuestions` ghi rõ thiếu doc
-- [ ] `integrationBacklog` cho event/endpoint chưa ship (nếu pilot từng phần)
+## Out of scope
 
-### Auth & security
+- **NO PROSE / NO BQA REPORTS:** Do NOT output Markdown reports, BQA 3-Pillars reports, or framework-specific code snippets.
+- Do not scaffold code classes directly.
 
-- [ ] Mỗi endpoint có `auth.model` (hmac-signature, api-key, oauth, …)
-- [ ] OpenAPI `securitySchemes` + operation `security` khớp
-- [ ] Secrets chỉ env name — không hardcode trong YAML
+## Verification Checklist (Evidence Required)
+- [ ] **Target Location:** Audited `01-backend-spec.yaml` under `product/surfaces/integrations/...`.
+- [ ] **Auth & Idempotency Verified:** OpenAPI `securitySchemes` and dedup keys populated.
+- [ ] **Gates Executed:** `pnpm api:gen:dry --write-spec` and `pnpm openapi:render` both exit 0.
+- [ ] **Approval Updated:** `approval.status` set to `reviewed` (or `approved`) in YAML.
+- **DO NOT output fake checklists, i18n tables, or framework prose.**
 
-### Webhook / partner behavior
-
-- [ ] Idempotency / dedup key documented (`endpoint.idempotency` hoặc entity field)
-- [ ] Inbound: signature verify **before** business logic (decision hoặc notes)
-- [ ] Outbound: retry, timeout, `#call-external` + `externalCalls[]` nếu gọi ra ngoài
-- [ ] Partner error shape — không assume Portal `ApiResponse` nếu contract khác
-- [ ] Rate limit / versioning ghi trong spec hoặc `openQuestions`
-
-### Codegen
-
-- [ ] `api.endpoints[].action` set (`custom` cho webhook; CRUD nếu partner REST)
-- [ ] `codegen.module`, `profile` (`patch` thường cho webhook)
-- [ ] `#gen:*` + `#manual-service` / `#manual-action` cho handler body
-- [ ] Non-CRUD: `services[]` hoặc `externalCalls[]` + tags
-
-### Gates
-
-```bash
-pnpm api:gen:dry --spec docs/features/{slug}/01-backend-spec.yaml --write-spec
-pnpm openapi:render
-```
-
-- [ ] Both exit 0
 
 ## Guardrails
 

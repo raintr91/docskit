@@ -15,7 +15,14 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 
 **Extracts:** `extractBundle: dev-grill` → `codegen/readiness.md`, `platform-mark-detect.md`
 
+## Target / ID Resolution Rule
+
+- User prompt MAY specify a screen ID, function ID, or short slug (e.g. `CMP-ADM-000-001`, `W-AD-AUTH-001`, `login`).
+- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve target path under `product/surfaces/...`.
+- Do NOT demand full surface/module filesystem paths from the user.
+
 ## Load policy
+
 
 | Load | Do not load |
 |------|-------------|

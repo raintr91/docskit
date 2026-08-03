@@ -21,6 +21,11 @@ extractBundle: architecture-core
 - common is shared scope used by more than one surface.
 - API is **not** a surface; API belongs to architecture containers or function / API contract detail.
 
+## Target / ID Resolution Rule
+
+- User prompt MAY specify a Surface ID or Business Surface name (e.g. `Admin Portal`, `Customer Web`).
+- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve target surface directory under `product/surfaces/...`.
+
 ## Overview alignment
 When writing overview content, describe the surface in the same business sense:
 - who uses it
@@ -30,5 +35,11 @@ When writing overview content, describe the surface in the same business sense:
 
 ## Modifiers (If /legacy is used)
 Khi gọi kèm `/legacy` (vd: `/legacy /surfaces`):
-- Tham chiếu source từ `legacy-repos.local.json`.
-- Khảo cổ: truy vết và ánh xạ các client / app / integration cũ vào đúng business surface hiện tại, ghi nhận vào cùng thư mục đang thao tác nhưng tên file thêm tiền tố `legacy-` ở đầu (vd: `product/surfaces/legacy-surface.md` hoặc `product/surfaces/Customer App/legacy-surface.md`).
+- Tham chiếu source from `legacy-repos.local.json`.
+- Khảo cổ: truy vết và ánh xạ các client / app / integration cũ vào đúng business surface hiện tại, ghi nhận vào cùng thư mục đang thao tác tại `product/surfaces/[Tên Surface]/legacy-surface.md`.
+
+## Verification Checklist (Evidence Required)
+- [ ] **Target Surface Resolved:** Located or created surface folder under `product/surfaces/[Surface Name]`.
+- [ ] **Business Responsibilities:** Documented actors, channels, and scope cleanly.
+- **DO NOT output fake checklists, i18n tables, or framework prose.**
+

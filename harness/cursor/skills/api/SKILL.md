@@ -1,8 +1,6 @@
 ---
 name: api
-description: >-
-  /api router for backend workflow. Routes to /api-spec (contract) or /api-code
-  (implementation) based on context.
+description: EXCLUSIVE /api — Backend Router ONLY. Immediately routes to /api-spec or /api-integration-spec without generating gross files.
 disable-model-invocation: true
 ---
 

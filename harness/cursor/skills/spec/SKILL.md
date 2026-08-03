@@ -25,7 +25,14 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 **Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. product/overview / CTR → `product/architecture` children.
 
+## Target / ID Resolution Rule
+
+- User prompt MAY specify a screen ID, module ID, or slug (e.g. `CMP-ADM-000`, `W-AD-AUTH-001`, `login`).
+- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve the exact target folder under `product/surfaces/.../modules/CMP-*/<slug>/`.
+- Do NOT force the user to provide the full filesystem surface/module path if an ID or short slug is given.
+
 ## Workflow
+
 
 1. Confirm **module (`CMP-*`) exists**, its operational-area mapping is known, and the implementing `CTR-*` is identified — otherwise stop for lead/owner.
 2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance.

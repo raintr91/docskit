@@ -33,6 +33,11 @@ Tree + standards: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/g
 - API endpoint/contract belongs to Function detail.
 - One concern per edit.
 
+## Target / ID Resolution Rule
+
+- User prompt MAY specify an ID, Operational Area, Surface, or CMP ID (e.g. `CMP-ADM-000`, `Admin Portal`).
+- Agent MUST use `docskit_route`, `docskit_list_ids`, or `docskit_get_element` (or glob search) to resolve target paths under `product/surfaces/...` or `product/overview/`.
+
 ## After route
 
 Load the child skill + extract bundle `architecture-core`.
@@ -48,3 +53,9 @@ else: Glob/search under architecture/ and product/, then Read scoped Markdown
 When ArtifactGraph is missing, follow `/docskit` fallback evidence: continue
 with plain read tools and ID greps.
 ```
+
+## Verification Checklist (Evidence Required)
+- [ ] **ID Resolved:** Used `docskit_route` or `docskit_get_element` to locate target architectural elements.
+- [ ] **Child Skill Routed:** Directed to correct child skill (`/overview`, `/surfaces`, `/module`, `/spec`).
+- **DO NOT output fake checklists, i18n tables, or framework prose.**
+
