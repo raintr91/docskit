@@ -67,6 +67,6 @@ docs/
 └── public/
     ├── openapi/
     │   └── openapi.yaml              ← output (openapi:bundle)
-    └── swagger/
-        └── index.html                ← output (swagger:build)
+    └── api-ui/
+        └── index.html                ← output (openapi:build)
 ```

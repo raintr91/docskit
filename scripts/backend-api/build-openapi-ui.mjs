@@ -14,7 +14,7 @@ const openApiFile = join(repoRoot, 'docs/public/openapi/openapi.yaml')
 
 if (!existsSync(openApiFile)) {
   throw new Error(
-    'Missing docs/public/openapi/openapi.yaml. Run `pnpm openapi:bundle` before `pnpm openapi:build-ui`.'
+    'Missing docs/public/openapi/openapi.yaml. Run `pnpm openapi:bundle` before `pnpm openapi:build`.'
   )
 }
 

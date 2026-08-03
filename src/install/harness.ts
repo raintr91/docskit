@@ -1051,6 +1051,34 @@ export function uninstallHarness(opts: {
       result.deleted.push(file)
     }
   }
+  // Remove injected scripts and devDependencies from package.json
+  const pkgPath = path.join(root, 'package.json')
+  if (existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
+      let pkgChanged = false
+      const injectedScripts = [
+        'docs:build', 'docs:dev', 'docs:preview', 'docs:render', 'docs:render-common',
+        'docs:split', 'docs:split-all', 'docs:check',
+        'openapi:render', 'openapi:bundle', 'openapi:build', 'openapi:dev',
+        'openapi:lint', 'swagger:build', 'swagger:dev', 'spec:split', 'spec:split:check'
+      ]
+      if (pkg.scripts) {
+        for (const s of injectedScripts) {
+          if (s in pkg.scripts) {
+            delete pkg.scripts[s]
+            pkgChanged = true
+          }
+        }
+      }
+      if (pkgChanged) {
+        writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8')
+      }
+    } catch {
+      /* ignore invalid package.json */
+    }
+  }
+
   forgetInstall(root)
   pruneEmptyDirs(root, [...result.deleted.filter((p) => !p.includes(' entry: ')), manifestFile])
   return result
