@@ -50,14 +50,28 @@ product/surfaces/integrations/<provider>/<slug>/
 Slug ví dụ: `product/surfaces/integrations/stripe/charge`, `product/surfaces/integrations/acme/v1-hotels`, `product/surfaces/integrations/webhooks/booking`.
 
 
+## STRICT API REUSE & EXPLICIT URI NAMING RULES
+
+> [!IMPORTANT] API REUSE BEFORE DEFINING NEW ENDPOINTS
+> - **Search First:** Agent MUST search existing integration endpoints under `product/surfaces/integrations/` using `docskit_route` or glob.
+> - **Reuse Existing:** If an integration API endpoint already exists, reuse it instead of re-defining duplicate routes.
+
+> [!IMPORTANT] EXPLICIT ACTION SUFFIX URI NAMING (NO AMBIGUOUS RESTFUL PATHS)
+> - Do **NOT** rely on implicit RESTful HTTP methods alone to guess intent.
+> - Always append explicit action suffixes to URI paths for clarity and non-ambiguity:
+>   - Webhook inbound: `POST /api/v1/integrations/<provider>/webhook`
+>   - Inbound event action: `POST /api/v1/integrations/<provider>/{id}/sync` (or `/receive`)
+>   - Outbound partner API: `POST /api/v1/integrations/<provider>/create`, `PUT /api/v1/integrations/<provider>/{id}/update`
+
 ## Workflow
 
 1. Set `feature.source.kind`, `base: none`, `integrationRefs[]` — **empty** `portalRefs`
-2. `contexts.portalLayout: none`; document `contexts.auth` (API key, HMAC, OAuth)
-3. Inventory events/endpoints từ provider doc hoặc legacy code — mark `inferredFromCode` in `notes`
-4. Entities, idempotency keys, dedup, raw payload policy → `decisions` / `beOnlyRequirements`
-5. `api.endpoints` — thường `action: custom`; partner list có thể `search`/`detail`
-6. OpenAPI: `securitySchemes`, webhook request body schema, error codes partner-facing
+2. **Check API Reuse & Explicit URIs:** Check `product/surfaces/integrations/` for existing endpoints and apply explicit action suffixes.
+3. `contexts.portalLayout: none`; document `contexts.auth` (API key, HMAC, OAuth)
+4. Inventory events/endpoints từ provider doc hoặc legacy code — mark `inferredFromCode` in `notes`
+5. Entities, idempotency keys, dedup, raw payload policy → `decisions` / `beOnlyRequirements`
+6. `api.endpoints` — dùng explicit action URIs
+7. OpenAPI: `securitySchemes`, webhook request body schema, error codes partner-facing
 7. Mock: representative webhook JSON + ack response
 8. Domain tags only: `#webhook-inbound`, `#webhook-outbound`, `#partner-api`, `#public-api`, `#call-external`
 9. **No** `codegen`, **no** `#gen:*`, **no** `approval` beyond `draft` — grill adds

@@ -8,9 +8,9 @@ disable-model-invocation: true
 > - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
 > - Do NOT perform shallow checks. Verify your results against the **Verification Checklist** at the end of this skill before completing.
 
-# /grill-api-spec — Backend Contract Audit
+# /grill-api-spec — Backend Contract Audit (Pure Backend Technical)
 
-After `/api-spec`, before `/api-code`. Does not implement code directly.
+After `/api-spec`, before `/api-code`. **Pure Backend Technical Audit** (Database schemas, API endpoints, data types, securitySchemes, `#reuse-api` checks).
 
 Shared extracts: `.cursor/extracts/spec-evolution.md`, `api-spec-sync.md`, `entity-relationship.md`, `call-external.md`, `cross-entity-service.md`, `derived-data.md`, `agent-discipline.md`, `api-codegen-readiness.md`, `api-codegen-tags.md`, `verify-gate.md`
 
@@ -18,6 +18,7 @@ Shared extracts: `.cursor/extracts/spec-evolution.md`, `api-spec-sync.md`, `enti
 
 - Backend contract matches Portal `spec.yaml` + testcases (**skip Portal cross-check when `feature.source.base: none`** — use `/grill-integration-spec`)
 - OpenAPI and mock data align with `01-backend-spec.yaml`
+- Verify API reuse (`#reuse-api`) — skip generating duplicate contracts for existing APIs
 - Spec is **codegen-ready** for `pnpm api:gen:dry`
 - Hashtags and edge cases documented for implementation
 
@@ -25,7 +26,10 @@ Shared extracts: `.cursor/extracts/spec-evolution.md`, `api-spec-sync.md`, `enti
 
 1. Resolve feature slug under `product/surfaces/<surface>/modules/CMP-*/<slug>/` or `product/surfaces/common/yaml/<slug>/`; read spec and backend YAML trio
 2. Cross-check requirements vs endpoints, entities, permissions, validation, errors
-3. Enrich spec: `codegen`, `api.endpoints[].action`, `#gen:*` tags, `approval` (see `api-codegen-readiness.md`)
+3. Audit Engineering Hashtags & Templates:
+   - Verify `#call-external`, `#cross-service`, `#cross-entity-service`, `#derived-data`, `#tech-debt:*`.
+   - Check if backend service/DTO HBS codegen templates match endpoints.
+4. Enrich spec: `codegen`, `api.endpoints[].action`, `#gen:*` tags, `approval` (see `api-codegen-readiness.md`)
 4. Fix clear gaps in YAML/OpenAPI/mock **in scope**
 5. Run gates (repo root):
    `pnpm api:gen:dry --spec product/surfaces/<surface>/modules/CMP-*/<slug>/01-backend-spec.yaml --write-spec` and `pnpm openapi:render`

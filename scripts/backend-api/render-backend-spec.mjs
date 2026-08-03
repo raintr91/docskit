@@ -9,11 +9,17 @@ import {
 
 const projectRoot = process.cwd()
 const docsDir = path.join(projectRoot, 'docs')
+const surfacesDir = path.join(projectRoot, 'product', 'surfaces')
 const featuresDir = path.join(docsDir, 'features')
+
+export { renderFeatureBackendSpec, listBackendSpecFiles }
 
 async function main() {
   const started = Date.now()
-  const backendSpecs = await listBackendSpecFiles(featuresDir)
+  let backendSpecs = await listBackendSpecFiles(surfacesDir)
+  if (!backendSpecs.length) {
+    backendSpecs = await listBackendSpecFiles(featuresDir)
+  }
   const commonSpecs = await listCommonSpecFiles(path.join(featuresDir, 'common'))
 
   if (!backendSpecs.length && !commonSpecs.length) {
@@ -156,7 +162,9 @@ async function listEntries(dir) {
   }
 }
 
-main().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+if (process.argv[1] && process.argv[1].endsWith('render-backend-spec.mjs')) {
+  main().catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
+}

@@ -30,12 +30,17 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 | `bundle.spec` (api, entities, ui.routes) | Full trace module |
 | `codegen/*`, `legacy/legacy-api-migration.md`, `platform-mark-detect.md` | UX copy debates |
 
-## Workflow
+## Workflow (Technical & Engineering Only — No BQA Business Questions)
 
 1. Expect `grillStatus.bqaOpen: done` (or `bqaFacts` for requirement-only).
-2. Derive from design + legacy behaviors → write **`bundle.gen`** (or patch `ir/spec.yaml` then `pnpm spec:merge`):
+2. **Technical Review Only:** Focus strictly on Database tables, data types, API contracts, routing paths, hidden fields, composables, and codegen tags. Do **NOT** debate BQA business/UX copy rules.
+3. Derive from design + legacy behaviors → write **`bundle.gen`** (or patch `ir/spec.yaml` then `pnpm spec:merge`):
    - `codegen`, `tags`, `ui.filters`, `ui.columns`, `ui.composition`, `ui.testIds`
    - `api.endpoints[].action`
+   - **Component & HBS Template Check:** Verify if required UI components exist or if Handlebars (`.hbs`) codegen templates are available for rendering. Mark missing ones with `#needs-component` / `#needs-ui`.
+   - **Check API Reuse (`#reuse-api`):** Search `product/surfaces/common/yaml/` or sibling modules. If API exists, tag `#reuse-api` to prevent duplicate API generation.
+   - **Explicit Action Suffixes:** Ensure endpoints follow explicit naming (`/create`, `/{id}/update`, `/{id}/duplicate`, `/{id}/delete`, `/{id}/detail`). No ambiguous RESTful paths.
+   - **Hashtag Verification:** Verify and apply domain/engineering hashtags: `#call-external`, `#cross-service`, `#cross-entity-service`, `#derived-data`, `#tech-debt:*`.
 3. Giữ `#needs-component`, `#manual-composable`, `#skip-codegen`, `#wire-only`, `#phase-api`.
 4. List: `#gen:test-schema`, `#gen:test-service` · Create: `#gen:test-validation`
 5. **Common candidates** — scan columns, toolbar, filters, composables:

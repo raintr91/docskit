@@ -72,7 +72,7 @@ async function main() {
 function mergeOpenApi(target, fragment, source) {
   for (const [route, item] of Object.entries(fragment.paths ?? {})) {
     if (target.paths[route]) {
-      throw new Error(`Duplicate path ${route} when merging ${source}`)
+      throw new Error(`Duplicate path ${route} when merging ${source}. Check if this API is already defined in common or another module!`)
     }
     target.paths[route] = item
   }

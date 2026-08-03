@@ -33,7 +33,7 @@ const legacyRoot = cliFlag('legacy-root') ? path.resolve(cliFlag('legacy-root'))
 const writeIndex = !cliBool('no-index')
 const devAppBaseUrl = resolveDevAppBaseUrl(projectRoot)
 
-import { renderFeatureBackendSpec, listBackendSpecFiles } from '../scripts/backend-api/render-backend-spec.mjs'
+import { renderFeatureBackendSpec, listBackendSpecFiles } from '../../scripts/backend-api/render-backend-spec.mjs'
 
 async function main() {
   const started = Date.now()

@@ -17,6 +17,7 @@ Shared extracts: `.cursor/extracts/spec-evolution.md`, `api-spec-sync.md`, `enti
 Hashtags (read extract when tag present):
 - `#call-external` → `.cursor/extracts/call-external.md`
 - `#cross-entity-service` → `.cursor/extracts/cross-entity-service.md`
+- `#reuse-api` → Reuse existing API from Common/module. DO NOT generate new duplicate `01/02/03` YAML files if endpoint is tagged `#reuse-api`.
 
 ## Input
 
@@ -50,15 +51,35 @@ product/surfaces/common/yaml/<component-slug>/
 
 Member review: `pnpm docs:render` then `pnpm docs:dev`.
 
+## STRICT API REUSE & EXPLICIT URI NAMING RULES
+
+> [!IMPORTANT] API REUSE BEFORE DEFINING NEW ENDPOINTS
+> - **Search First:** Agent MUST search existing APIs under `product/surfaces/common/yaml/` or sibling modules using `docskit_route` / glob, or via `artifactgraph_analyze` / `artifactgraph_grill_check` when ArtifactGraph MCP is available.
+> - **Tag `#reuse-api`:** If an API endpoint already exists for a component/entity, tag it as `#reuse-api` in spec bundle and reference the existing API path.
+> - **SKIP YAML Generation:** Do **NOT** generate new `01-backend-spec.yaml` or `02-openapi.yaml` files for endpoints marked `#reuse-api`. Only generate YAML for NEW unique APIs.
+
+> [!IMPORTANT] EXPLICIT ACTION SUFFIX URI NAMING (NO AMBIGUOUS RESTFUL PATHS)
+> - Do **NOT** rely on implicit RESTful HTTP methods alone to guess intent (e.g. `GET /users/{id}` vs `PUT /users/{id}`).
+> - Always append explicit action suffixes to URI paths for clarity and non-ambiguity:
+>   - **Create:** `POST /api/v1/.../create`
+>   - **Update:** `PUT /api/v1/.../{id}/update`
+>   - **Duplicate:** `POST /api/v1/.../{id}/duplicate` (or `PUT`)
+>   - **Permissions:** `PUT /api/v1/.../{id}/permissions`
+>   - **Delete:** `DELETE /api/v1/.../{id}/delete`
+>   - **Detail:** `GET /api/v1/.../{id}/detail`
+>   - **List:** `GET /api/v1/.../list` (or `search`)
+
 ## Workflow (summary)
 
 1. Feature group, module prefix, Platform/Tenant, aggregates, pivot M-N, relationships
-2. Split endpoints by lifecycle, permission, pagination, payload weight into individual function slugs
-3. Reuse detail API for detail + edit initial data; `select-items` for dropdowns
-4. Request/response, validation, filters, errors; OpenAPI + mock from spec
-5. Record `openQuestions` instead of silent guesses; defer unmerged portal specs to `pendingTechDebt`
-6. Domain tags only (`#call-external`, `#cross-entity-service`) — **no** `#gen:*` or `codegen` block (grill adds those)
-7. Update `.harness/progress.md` when present
+2. **Check API Reuse:** Inspect `product/surfaces/common/yaml/` and module specs before defining endpoints.
+3. **Explicit URIs:** Apply explicit action suffixes (`/create`, `/{id}/update`, `/{id}/duplicate`, `/{id}/delete`, `/{id}/detail`).
+4. Split endpoints by lifecycle, permission, pagination, payload weight into individual function slugs
+5. Reuse detail API for detail + edit initial data; `select-items` for dropdowns
+6. Request/response, validation, filters, errors; OpenAPI + mock from spec
+7. Record `openQuestions` instead of silent guesses; defer unmerged portal specs to `pendingTechDebt`
+8. Domain tags only (`#call-external`, `#cross-entity-service`) — **no** `#gen:*` or `codegen` block (grill adds those)
+9. Update `.harness/progress.md` when present
 
 ## Verification Checklist (Evidence Required)
 - [ ] **Folder Location:**
