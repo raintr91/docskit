@@ -540,9 +540,9 @@ export function injectBackendScripts(root: string) {
 
     const pkgName = '@platform/docskit'
     const scriptsToInject: Record<string, string> = {
-      'openapi:render': `node node_modules/${pkgName}/scripts/backend-api/render-openapi.mjs`,
+      'openapi:render': `docskit openapi:render`,
       'openapi:bundle': 'pnpm openapi:render && redocly bundle docs/openapi/api.yaml -o docs/public/openapi/openapi.yaml',
-      'openapi:build':  `node node_modules/${pkgName}/scripts/backend-api/build-openapi-ui.mjs`,
+      'openapi:build':  `docskit openapi:build`,
       'openapi:dev':    'pnpm openapi:bundle && pnpm openapi:build && pnpm docs:dev',
     }
     for (const [name, cmd] of Object.entries(scriptsToInject)) {

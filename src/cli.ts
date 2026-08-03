@@ -732,6 +732,20 @@ async function main(): Promise<void> {
     await runNamedEngine('legacy_validate')
     return
   }
+  if (cmd === 'openapi:render') {
+    const script = path.join(packageRoot(), 'scripts', 'backend-api', 'render-openapi.mjs')
+    const { spawnSync } = await import('node:child_process')
+    const res = spawnSync(process.execPath, [script], { stdio: 'inherit' })
+    if (res.status !== 0) process.exit(res.status ?? 1)
+    return
+  }
+  if (cmd === 'openapi:build') {
+    const script = path.join(packageRoot(), 'scripts', 'backend-api', 'build-openapi-ui.mjs')
+    const { spawnSync } = await import('node:child_process')
+    const res = spawnSync(process.execPath, [script], { stdio: 'inherit' })
+    if (res.status !== 0) process.exit(res.status ?? 1)
+    return
+  }
 
   usage()
 }
