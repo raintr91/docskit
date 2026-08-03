@@ -1,7 +1,7 @@
 ---
 name: grill-with-docs
 extractBundle: grill-with-docs
-description: /grill-with-docs — reconcile BQA↔Dev; FE dry-gen remains a handoff.
+description: EXCLUSIVE /grill-with-docs — ONLY for reconciling BQA vs Dev conflicts. DO NOT trigger for standalone dev-grill or bqa-grill.
 disable-model-invocation: true
 ---
 

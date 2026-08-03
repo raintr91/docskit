@@ -49,6 +49,12 @@ behavior:
 
 YAML only per schema. No explanation. No markdown.
 
+## YAML Syntax & Escaping Rules
+
+- **ALWAYS quote colons in strings:** Any string containing `:` (e.g., `summary: "Case 1: Token..."`, `label: "Hàng nút: [Secondary]"`) MUST be wrapped in double quotes `"..."`.
+- **Multiline text:** Use `|` block scalar for multiline strings or list items containing formatting symbols.
+
 ## ir/spec.yaml
 
 `pnpm spec:split` merge `spec` + `gen` → `ir/spec.yaml` cho portal:gen. Dev-grill sửa `ir/spec.yaml` → `pnpm spec:merge` tách lại `gen`.
+

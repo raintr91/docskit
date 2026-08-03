@@ -1,7 +1,7 @@
 ---
 name: bqa-grill-docs
 extractBundle: bqa-grill
-description: /bqa-grill-docs — BA grill design+legacy in bundle.
+description: EXCLUSIVE /bqa-grill-docs — ONLY for BA/BQA UI acceptance criteria and open questions. DO NOT trigger for dev codegen tags.
 disable-model-invocation: true
 ---
 

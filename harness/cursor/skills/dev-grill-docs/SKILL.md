@@ -1,7 +1,7 @@
 ---
 name: dev-grill-docs
 extractBundle: dev-grill
-description: /dev-grill-docs — Docs-side dev grill for codegen tags + bundle.gen; execution hands off to FE.
+description: EXCLUSIVE /dev-grill-docs — ONLY for engineering codegen tags and bundle.gen. DO NOT trigger for BQA, BA, or UI design grills.
 disable-model-invocation: true
 ---
 
@@ -64,7 +64,8 @@ retries and report only actual `fileReads` / `contextBytes`.
 
 ## Out of scope
 
-UX prose, acceptance rewrite, implement UI, full E2E.
+- **NO PROSE / NO BQA REPORTS:** Do NOT output Markdown reports, BQA 3-Pillars reports, or framework-specific code snippets (FastAPI, Pydantic, Axios, i18n).
+- UX prose, acceptance rewrite, implement UI, full E2E.
 
 ## Handoff
 
@@ -73,9 +74,11 @@ UX prose, acceptance rewrite, implement UI, full E2E.
 - Legacy fact gap → `/update-spec-legacy`
 - Member chose promote common → `/platform-mark` same session or before `/prototype`
 
-## Verification Checklist
-- [ ] Verified `grillStatus.bqaOpen: done` before starting dev grill.
-- [ ] Derived `bundle.gen` correctly with codegen tags.
-- [ ] Set `grillStatus.dev: done` upon completion.
-- [ ] Checked recommendation gate for ArtifactGraph if available.
+## Verification Checklist (Evidence Required)
+- [ ] **Target Bundle Updated:** Must provide exact file path of updated `*.bundle.yaml` or `ir/spec.yaml`.
+- [ ] **Tags Generated:** Must list actual tags added (e.g. `#needs-component`, `#gen:test-validation`).
+- [ ] **Status Updated:** `grillStatus.dev` is set to `done` inside the YAML file.
+- [ ] **Split Command:** Executed `docskit split` or `pnpm spec:split` with zero errors.
+- **DO NOT output fake checklists or unrelated framework reports.**
+
 
