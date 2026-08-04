@@ -111,6 +111,13 @@ api:
         includes: []
       request: null
       response: FeatureEntityCollection
+      errorStorming:
+        - code: 401
+          tag: "#err:unauthorized"
+          reason: "User not authenticated"
+        - code: 403
+          tag: "#err:permission-denied"
+          reason: "User lacks permission to search features"
       tags: []
       externalCallRefs: []
       serviceRefs: []

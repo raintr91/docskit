@@ -32,22 +32,33 @@ disable-model-invocation: true
 | `yaml/common/*/ir/design.yaml` or bundle (common UI) | Generated `md/` (trừ session BA riêng) |
 | `*.test.yaml` | |
 
+> [!IMPORTANT] MANDATORY UI ERROR HANDLING BEHAVIOR SPECIFICATION
+> Agent MUST explicitly document 3 UI execution outcomes for EVERY user action / API call in `design.yaml`:
+> 1. **On Success (`200/201`):** Action feedback, state transition, toast/modal feedback, navigation.
+> 2. **On Common Global Error (`401/500/503`):** Default inheritance from `#ui-common:error-handler` (Global toast/redirect). Explicitly document `override: true` if UI requires custom behavior (e.g. Inline alert instead of global toast).
+> 3. **On Specific Error (`422/404/403/409`):**
+>    - **`422 Validation`:** Exact placement of inline field error messages (`errors: {field: [msg]}`).
+>    - **`404 Not Found`:** Empty state UI / 404 Component rendering.
+>    - **`403 IDOR` (`TENANT_IDOR_VIOLATION`):** Access blocked UI / Safety redirect.
+>    - **`409 Conflict`:** Specific modal/dialog copywriting for duplicate data or invalid state.
+
 ## Workflow
 
 **Step A — fact-lock** (`grillStatus.bqaFacts`)
 
 0. Tech debt: `#tech-debt:*` where `deferTo: bqa-grill-docs` (`grill-tech-debt.md`).
 1. Compare `design.zones/behavior/actions` vs `legacy.ui` vs common UI.
-2. Patch **bundle** (`design`, `review`, `spec` requirements) → `docskit_bundle_split` / `docskit split` (fallback `pnpm docs:split`).
-3. Set `grillStatus.bqaFacts: done`.
-4. **Rule:** chưa `bqaFacts: done` → không thêm `openQuestions` mới.
+2. **Audit UI Error Handling Flows:** Ensure every user action/API call in `design.yaml` has detailed specifications for Success, Common Global Error, and Specific Errors.
+3. Patch **bundle** (`design`, `review`, `spec` requirements) → `docskit_bundle_split` / `docskit split` (fallback `pnpm docs:split`).
+4. Set `grillStatus.bqaFacts: done`.
+5. **Rule:** chưa `bqaFacts: done` → không thêm `openQuestions` mới.
 
 **Step B — open-pass** (`grillStatus.bqaOpen`)
 
-5. Ask ≤5 focused batches: copy, layout, breadcrumb, delete dialogs, testId intent.
-6. Record decisions in `openQuestions` + tags.
-7. Set `grillStatus.bqaOpen: done`.
-8. User: `docs_render` / `docskit render` (fallback `pnpm docs:render`).
+6. Ask ≤5 focused batches: copy, layout, breadcrumb, delete dialogs, testId intent, error copywriting.
+7. Record decisions in `openQuestions` + tags.
+8. Set `grillStatus.bqaOpen: done`.
+9. User: `docs_render` / `docskit render` (fallback `pnpm docs:render`).
 
 ## Accelerators (optional)
 
@@ -80,6 +91,7 @@ retries and report only actual `fileReads` / `contextBytes`.
 
 ## Verification Checklist
 - [ ] Strict compliance with Load Policy (did not load out-of-scope files like codegen or legacy source code).
+- [ ] **UI Error Flow Detailed:** Every API call/user action in `design.yaml` has explicit On Success, On Common Error, and On Specific Error handling specified.
 - [ ] Step A completed with `grillStatus.bqaFacts: done` before Step B open questions.
 - [ ] `grillStatus.bqaOpen: done` updated after open questions resolved.
 - [ ] Executed bundle split and rendered docs.

@@ -63,6 +63,7 @@ product/surfaces/<surface>/modules/CMP-*/<slug>/ir/*.yaml          # read-only �
 ## Guardrails
 
 - Do not strip legacy evidence or unrelated blocks.
+- **Preserve Error Matrices:** When patching delta updates to actions or API endpoints, ensure UI Error Handling (`onSuccess`, `onCommonError`, `onSpecificError`) and API Hashtags (`#err:*`) are preserved and updated accordingly.
 - Do not add `codegen` / `gen:` without Dev alignment — hand off `/dev-grill-docs`.
 - Tags cleared only at `/wire` — not during this command.
 

@@ -32,6 +32,14 @@ spec:
         path: /feature/action
         request: FeatureRequest
         response: FeatureResponse
+        errorStorming:
+          - code: 401
+            tag: "#err:unauthorized"
+            reason: "User not authenticated"
+          - code: 422
+            tag: "#err:validation"
+            reason: "Invalid payload"
+            fields: ["example_field"]
   requests:
     FeatureRequest:
       fields:
@@ -65,7 +73,18 @@ design:
   patterns: []
   zones: []
   behavior: {}
-  actions: []
+  actions:
+    - id: feature.action
+      label: Execute Feature Action
+      trigger: button_click
+      apiRefs: [ feature.action ]
+      onSuccess:
+        - Show success toast
+      onCommonError:
+        override: false
+      onSpecificError:
+        - condition: "422 Validation"
+          notes: "Show inline validation errors"
 
 review:
   summary: Backend stub for portal wire

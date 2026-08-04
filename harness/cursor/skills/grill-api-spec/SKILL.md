@@ -14,28 +14,27 @@ After `/api-spec`, before `/api-code`. **Pure Backend Technical Audit** (Databas
 
 Shared extracts: `.cursor/extracts/spec-evolution.md`, `api-spec-sync.md`, `entity-relationship.md`, `call-external.md`, `cross-entity-service.md`, `derived-data.md`, `agent-discipline.md`, `api-codegen-readiness.md`, `api-codegen-tags.md`, `verify-gate.md`
 
-## Goal
-
 - Backend contract matches Portal `spec.yaml` + testcases (**skip Portal cross-check when `feature.source.base: none`** — use `/grill-integration-spec`)
 - OpenAPI and mock data align with `01-backend-spec.yaml`
 - Verify API reuse (`#reuse-api`) — skip generating duplicate contracts for existing APIs
 - Spec is **codegen-ready** for `pnpm api:gen:dry`
-- Hashtags and edge cases documented for implementation
+- Hashtags, Error Matrix (`#err:*`), and edge cases documented for implementation
 
 ## Workflow
 
 1. Resolve feature slug under `product/surfaces/<surface>/modules/CMP-*/<slug>/` or `product/surfaces/common/yaml/<slug>/`; read spec and backend YAML trio
 2. Cross-check requirements vs endpoints, entities, permissions, validation, errors
-3. Audit Engineering Hashtags & Templates:
+3. Audit Engineering & Error Hashtags:
    - Verify `#call-external`, `#cross-service`, `#cross-entity-service`, `#derived-data`, `#tech-debt:*`.
+   - **Verify Endpoint Error Storming Matrix (`#err:*`):** Ensure 404 (Not Found) & 403 (IDOR) exist for routes with `{id}`, 422 (Validation) exists for Form Submits, and 403 (Permission) exists for authed endpoints.
    - Check if backend service/DTO HBS codegen templates match endpoints.
 4. Enrich spec: `codegen`, `api.endpoints[].action`, `#gen:*` tags, `approval` (see `api-codegen-readiness.md`)
-4. Fix clear gaps in YAML/OpenAPI/mock **in scope**
-5. Run gates (repo root):
+5. Fix clear gaps in YAML/OpenAPI/mock **in scope**
+6. Run gates (repo root):
    `pnpm api:gen:dry --spec product/surfaces/<surface>/modules/CMP-*/<slug>/01-backend-spec.yaml --write-spec` and `pnpm openapi:render`
-6. Ask user only for product decisions; use codebase/Portal evidence otherwise
-7. Record handoff in `.harness/progress.md` when present — NOT in generated files
-8. Remind member: `pnpm docs:render` for review docs
+7. Ask user only for product decisions; use codebase/Portal evidence otherwise
+8. Record handoff in `.harness/progress.md` when present — NOT in generated files
+9. Remind member: `pnpm docs:render` for review docs
 
 ## Out of scope
 
@@ -44,6 +43,7 @@ Shared extracts: `.cursor/extracts/spec-evolution.md`, `api-spec-sync.md`, `enti
 
 ## Verification Checklist (Evidence Required)
 - [ ] **Target Location:** Audited `01-backend-spec.yaml` under `product/surfaces/...` directory.
+- [ ] **Error Matrix Audited:** Verified that all routes with `{id}` have 404 & 403 IDOR errors, POST/PUT routes have 422 Validation rules, and global errors are mapped via OpenAPI `$ref`.
 - [ ] **Codegen Tags Added:** Verified `#gen:*` tags and `action` populated on endpoints.
 - [ ] **Gates Executed:** `pnpm api:gen:dry --write-spec` and `pnpm openapi:render` both exit 0.
 - [ ] **Approval Updated:** `approval.status` set to `reviewed` (or `approved`) in YAML.

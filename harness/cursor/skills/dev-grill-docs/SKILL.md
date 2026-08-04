@@ -40,7 +40,7 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
    - **Component & HBS Template Check:** Verify if required UI components exist or if Handlebars (`.hbs`) codegen templates are available for rendering. Mark missing ones with `#needs-component` / `#needs-ui`.
    - **Check API Reuse (`#reuse-api`):** Search `product/surfaces/common/yaml/` or sibling modules. If API exists, tag `#reuse-api` to prevent duplicate API generation.
    - **Explicit Action Suffixes:** Ensure endpoints follow explicit naming (`/create`, `/{id}/update`, `/{id}/duplicate`, `/{id}/delete`, `/{id}/detail`). No ambiguous RESTful paths.
-   - **Hashtag Verification:** Verify and apply domain/engineering hashtags: `#call-external`, `#cross-service`, `#cross-entity-service`, `#derived-data`, `#tech-debt:*`.
+   - **Hashtag & Error Matrix Verification:** Verify and apply domain/engineering hashtags: `#call-external`, `#cross-service`, `#cross-entity-service`, `#derived-data`, `#tech-debt:*`, `#err:*` (`#err:validation`, `#err:idor-violation`, `#err:not-found`, `#err:permission-denied`).
 3. Giữ `#needs-component`, `#manual-composable`, `#skip-codegen`, `#wire-only`, `#phase-api`.
 4. List: `#gen:test-schema`, `#gen:test-service` · Create: `#gen:test-validation`
 5. **Common candidates** — scan columns, toolbar, filters, composables:
@@ -88,7 +88,7 @@ retries and report only actual `fileReads` / `contextBytes`.
 
 ## Verification Checklist (Evidence Required)
 - [ ] **Target Bundle Updated:** Must provide exact file path of updated `*.bundle.yaml` or `ir/spec.yaml`.
-- [ ] **Tags Generated:** Must list actual tags added (e.g. `#needs-component`, `#gen:test-validation`).
+- [ ] **Tags Generated:** Must list actual tags added (e.g. `#needs-component`, `#gen:test-validation`, `#err:validation`, `#err:idor-violation`).
 - [ ] **Status Updated:** `grillStatus.dev` is set to `done` inside the YAML file.
 - [ ] **Split Command:** Executed `docskit split` or `pnpm spec:split` with zero errors.
 - **DO NOT output fake checklists or unrelated framework reports.**

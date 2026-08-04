@@ -45,6 +45,27 @@ behavior:
   delete: { enabled: true, mode: confirm_dialog }
 ```
 
+## design.actions (MANDATORY UI Error Handling)
+
+```yaml
+actions:
+  - id: submit_form
+    label: Submit Form
+    trigger: button_click
+    apiRefs: [ feature.create ]
+    onSuccess:
+      - Navigate to list page
+      - Show success toast "Created successfully"
+    onCommonError:
+      override: false
+      notes: "Inherit #ui-common:error-handler (Global toast 500/401)"
+    onSpecificError:
+      - condition: "422 Validation"
+        notes: "Show inline field errors below inputs"
+      - condition: "403 IDOR"
+        notes: "Redirect to safety page, show warning"
+```
+
 ## Agent output (/spec)
 
 YAML only per schema. No explanation. No markdown.

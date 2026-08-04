@@ -63,6 +63,11 @@ Slug ví dụ: `product/surfaces/integrations/stripe/charge`, `product/surfaces/
 >   - Inbound event action: `POST /api/v1/integrations/<provider>/{id}/sync` (or `/receive`)
 >   - Outbound partner API: `POST /api/v1/integrations/<provider>/create`, `PUT /api/v1/integrations/<provider>/{id}/update`
 
+> [!IMPORTANT] INTEGRATION ERROR HANDLING & EXPLICIT ERROR MATRIX
+> - **Partner / Webhook Errors:** Document explicit error responses for integrations (`#err:unauthorized`, `#err:signature-invalid`, `#err:rate-limit`, `#err:validation`, `#err:system`).
+> - **Global Error Delegation:** Delegate standard 500/503/401 to global OpenAPI `$ref` schemas.
+> - **Explicit Partner Codes:** Provide partner-facing error code mappings in `01-backend-spec.yaml` and `02-openapi.yaml`.
+
 ## Workflow
 
 1. Set `feature.source.kind`, `base: none`, `integrationRefs[]` — **empty** `portalRefs`
@@ -71,17 +76,19 @@ Slug ví dụ: `product/surfaces/integrations/stripe/charge`, `product/surfaces/
 4. Inventory events/endpoints từ provider doc hoặc legacy code — mark `inferredFromCode` in `notes`
 5. Entities, idempotency keys, dedup, raw payload policy → `decisions` / `beOnlyRequirements`
 6. `api.endpoints` — dùng explicit action URIs
-7. OpenAPI: `securitySchemes`, webhook request body schema, error codes partner-facing
-7. Mock: representative webhook JSON + ack response
-8. Domain tags only: `#webhook-inbound`, `#webhook-outbound`, `#partner-api`, `#public-api`, `#call-external`
-9. **No** `codegen`, **no** `#gen:*`, **no** `approval` beyond `draft` — grill adds
-10. `integrationBacklog[]` cho event/endpoint defer (thay `pendingTechDebt` portal)
-11. `openQuestions` thay vì đoán signature, retry, retention
-12. Update `.harness/progress.md` when present
+7. **Integration Error Storming:** Document partner-facing error codes, validation failures, HMAC/Auth errors using `#err:*` tags.
+8. OpenAPI: `securitySchemes`, webhook request body schema, error codes partner-facing
+9. Mock: representative webhook JSON + ack response
+10. Domain tags only: `#webhook-inbound`, `#webhook-outbound`, `#partner-api`, `#public-api`, `#call-external`, `#err:*`
+11. **No** `codegen`, **no** `#gen:*`, **no** `approval` beyond `draft` — grill adds
+12. `integrationBacklog[]` cho event/endpoint defer (thay `pendingTechDebt` portal)
+13. `openQuestions` thay vì đoán signature, retry, retention
+14. Update `.harness/progress.md` when present
 
 ## Verification Checklist (Evidence Required)
 - [ ] **Folder Structure:** Created separate `docs/features/{slug}/` for EACH integration (No gross combined files).
 - [ ] **YAML Trio Generated:** Created `01-backend-spec.yaml`, `02-openapi.yaml`, and `03-mock-data.yaml` per folder.
+- [ ] **Error Matrix Documented:** Explicitly specified partner-facing error codes and `#err:*` tags in `01-backend-spec.yaml` and `02-openapi.yaml`.
 - [ ] **No Direct Markdown:** Did NOT write `.md` files directly.
 - [ ] **Strict YAML Syntax:** All strings with colons (`:`) in YAML files are double-quoted (`"..."`).
 - **DO NOT output fake checklists, i18n tables, or framework prose.**
