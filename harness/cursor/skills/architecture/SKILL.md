@@ -19,6 +19,8 @@ Tree + standards: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/g
 | Operational area / persona / business purpose | Overview | **`/overview`** |
 | Common scope / Cross-service / Database / Business processes | Surfaces / Modules | **`/business-process`**, **`/db-erd`**, **`/cross-service`** |
 | Business surfaces (who does what on which channel) | Surfaces | **`/surfaces`** |
+| Common UX/UI rules and patterns (Markdown) | Common | **`/common`** |
+| Common technical bundles for codegen (YAML) | Common | **`/common-spec`**, **`/grill-common-spec`** |
 | Module / CMP box | Module | **`/module`** |
 | Screen / API detail / CRUD | Function | **`/spec`** (grill with **`/spec-grill`** as needed) |
 | Where it runs / Physical infrastructure | Deploy | **`/deployment`** |

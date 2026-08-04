@@ -48,17 +48,18 @@ disable-model-invocation: true
 
 0. Tech debt: `#tech-debt:*` where `deferTo: bqa-grill-docs` (`grill-tech-debt.md`).
 1. Compare `design.zones/behavior/actions` vs `legacy.ui` vs common UI.
-2. **Audit UI Error Handling Flows:** Ensure every user action/API call in `design.yaml` has detailed specifications for Success, Common Global Error, and Specific Errors.
-3. Patch **bundle** (`design`, `review`, `spec` requirements) → `docskit_bundle_split` / `docskit split` (fallback `pnpm docs:split`).
-4. Set `grillStatus.bqaFacts: done`.
-5. **Rule:** chưa `bqaFacts: done` → không thêm `openQuestions` mới.
+2. **Cross-check Common Patterns:** Read Markdown rules in `product/surfaces/<surface>/common/patterns/` and `product/surfaces/common/patterns/` to ensure proposed UI and business flows comply with globally defined rules (e.g., Breadcrumb flow, Delete flow).
+3. **Audit UI Error Handling Flows:** Ensure every user action/API call in `design.yaml` has detailed specifications for Success, Common Global Error, and Specific Errors.
+4. Patch **bundle** (`design`, `review`, `spec` requirements) → `docskit_bundle_split` / `docskit split` (fallback `pnpm docs:split`).
+5. Set `grillStatus.bqaFacts: done`.
+6. **Rule:** chưa `bqaFacts: done` → không thêm `openQuestions` mới.
 
 **Step B — open-pass** (`grillStatus.bqaOpen`)
 
-6. Ask ≤5 focused batches: copy, layout, breadcrumb, delete dialogs, testId intent, error copywriting.
-7. Record decisions in `openQuestions` + tags.
-8. Set `grillStatus.bqaOpen: done`.
-9. User: `docs_render` / `docskit render` (fallback `pnpm docs:render`).
+7. Ask ≤5 focused batches: copy, layout, breadcrumb, delete dialogs, testId intent, error copywriting.
+8. Record decisions in `openQuestions` + tags.
+9. Set `grillStatus.bqaOpen: done`.
+10. User: `docs_render` / `docskit render` (fallback `pnpm docs:render`).
 
 ## Accelerators (optional)
 

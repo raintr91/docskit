@@ -3,11 +3,10 @@ import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { parse } from 'yaml'
 import { resolveDevAppBaseUrl } from './lib/load-dev-base-url.mjs'
-import { MD_NONE } from './lib/markdown-table.mjs'
+
 import { renderSpecMarkdown } from './lib/render-spec-markdown.mjs'
 import {
   bundleMarkdownOutputPath,
-  bundleSlug,
   renderBundleMarkdown
 } from './lib/render-bundle-markdown.mjs'
 
@@ -31,7 +30,7 @@ const defaultLegacyRoot = hasSurfaces ? path.resolve('product/surfaces') : featu
 const yamlRoot = cliFlag('yaml-root') ? path.resolve(cliFlag('yaml-root')) : defaultYamlRoot
 const mdRoot = cliFlag('md-root') ? path.resolve(cliFlag('md-root')) : defaultMdRoot
 const legacyRoot = cliFlag('legacy-root') ? path.resolve(cliFlag('legacy-root')) : defaultLegacyRoot
-const writeIndex = !cliBool('no-index')
+
 const devAppBaseUrl = resolveDevAppBaseUrl(projectRoot)
 
 import { renderFeatureBackendSpec, listBackendSpecFiles } from '../../scripts/backend-api/render-backend-spec.mjs'
@@ -52,14 +51,9 @@ async function main() {
     }
   }
 
-  const bundleMdLinks = []
   for (const bundleFile of bundles) {
     try {
       await renderBundleFeature(bundleFile)
-      const mdPath = bundleMarkdownOutputPath(bundleFile, docsDir, yamlRoot, mdRoot)
-      const rel = path.relative(docsDir, mdPath).split(path.sep).join('/')
-      const bundle = await readYaml(bundleFile)
-      bundleMdLinks.push(`- [${bundle.title ?? bundleSlug(bundleFile)}](/${rel.replace(/\.md$/, '')})`)
     } catch (error) {
       failed++
       console.error(`docs:render: FAIL ${path.relative(projectRoot, bundleFile)}: ${error.message ?? error}`)
@@ -81,7 +75,7 @@ async function main() {
     process.exit(1)
   }
 
-  if (writeIndex) await renderFeatureIndex(specs, bundleMdLinks)
+
 
   const elapsed = ((Date.now() - started) / 1000).toFixed(1)
   console.log(
@@ -128,23 +122,7 @@ async function renderBundleFeature(bundleFile) {
   )
 }
 
-async function renderFeatureIndex(specs, bundleMdLinks = []) {
-  const rows = []
 
-  for (const specFile of specs) {
-    const spec = await readYaml(specFile)
-    const output = featureOutputPaths(specFile, featureSlug(specFile))
-    rows.push(`- [${spec.title ?? featureSlug(specFile)}](${vitepressDocLink(specFile, output)})`)
-  }
-
-  rows.push(...bundleMdLinks)
-
-  await writeFile(
-    path.join(docsDir, 'common-ui', 'generated.md'),
-    `# Tài liệu tính năng đã render\n\n${rows.join('\n') || MD_NONE}\n`,
-    'utf8'
-  )
-}
 
 async function readYaml(file) {
   return parse(await readFile(file, 'utf8')) ?? {}
@@ -190,11 +168,7 @@ async function listBundleFiles(dir) {
   return files.sort()
 }
 
-function vitepressDocLink(specFile, output) {
-  const relativeDir = path.relative(docsDir, path.dirname(specFile)).split(path.sep).join('/')
-  const pagePath = output.specFile.replace(/\.md$/, '')
-  return `/${relativeDir}/generated/${pagePath}`
-}
+
 
 function featureSlug(specFile) {
   const basename = path.basename(specFile)

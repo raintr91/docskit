@@ -17,8 +17,8 @@ Same tier as feature Code — **not** C4 Context/Container.
 | MD | [`md/`](./md/) |
 
 ```bash
-pnpm docs:render:common
-pnpm spec:split:common
+docskit render
+docskit split -- <path>
 ```
 
 ## Patterns (UI / UX policy)

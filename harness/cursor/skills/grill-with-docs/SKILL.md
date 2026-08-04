@@ -17,11 +17,12 @@ disable-model-invocation: true
 
 0. Tech debt step 0 (`grill-tech-debt.md`).
 1. Resolve spec ↔ legacyEvidence ↔ design conflicts in **bundle**.
-2. **Reconcile API & Tech Decisions (`#reuse-api`):** Verify Dev technical decisions (DB tables, API routes, `#reuse-api` tags) against BQA business flows. Ensure duplicate APIs are tagged `#reuse-api`.
-3. Write/fix `bundle.gen` → `docskit_bundle_split` (fallback: `docskit split`).
-3. If ArtifactGraph is available, use `artifactgraph_allowlist_check` +
+2. **Reconcile Common Patterns:** Verify that the feature bundle inherits and complies with the common patterns specified by both BQA (business flows) and Dev (`#pattern` codegen tags).
+3. **Reconcile API & Tech Decisions (`#reuse-api`):** Verify Dev technical decisions (DB tables, API routes, `#reuse-api` tags) against BQA business flows. Ensure duplicate APIs are tagged `#reuse-api`.
+4. Write/fix `bundle.gen` → `docskit_bundle_split` (fallback: `docskit split`).
+5. If ArtifactGraph is available, use `artifactgraph_allowlist_check` +
    `artifactgraph_recommend_command` for `genDry`; never execute FE gen here.
-4. `docs_render` (fallback: `docskit render`).
+6. `docs_render` (fallback: `docskit render`).
 5. Handoff ID/path + recommendation to FE Codegenkit. Missing Codegenkit is a
    pending handoff, not a reason to invent a local shell fallback.
 

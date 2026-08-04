@@ -53,6 +53,12 @@ Member review: `pnpm docs:render` then `pnpm docs:dev`.
 
 ## STRICT API REUSE & EXPLICIT URI NAMING RULES
 
+> [!IMPORTANT] COMMON MIDDLEWARE & API RESOLUTION (MANDATORY)
+> Before authoring a new API spec, the Agent MUST:
+> 1. Scan `product/surfaces/<surface>/common/yaml/` and `product/surfaces/common/yaml/` for defined common middlewares or APIs.
+> 2. If the endpoint requires common cross-cutting logic (e.g. auth, rate-limit), inject `#middleware: <id>` instead of rewriting the logic.
+> 3. Verify `#reuse-api` before creating a new endpoint (see below).
+
 > [!IMPORTANT] API REUSE BEFORE DEFINING NEW ENDPOINTS
 > - **Search First:** Agent MUST search existing APIs under `product/surfaces/common/yaml/` or sibling modules using `docskit_route` / glob, or via `artifactgraph_analyze` / `artifactgraph_grill_check` when ArtifactGraph MCP is available.
 > - **Tag `#reuse-api`:** If an API endpoint already exists for a component/entity, tag it as `#reuse-api` in spec bundle and reference the existing API path.

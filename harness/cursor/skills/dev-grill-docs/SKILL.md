@@ -38,10 +38,11 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
    - `codegen`, `tags`, `ui.filters`, `ui.columns`, `ui.composition`, `ui.testIds`
    - `api.endpoints[].action`
    - **Component & HBS Template Check:** Verify if required UI components exist or if Handlebars (`.hbs`) codegen templates are available for rendering. Mark missing ones with `#needs-component` / `#needs-ui`.
+   - **Check Common Pattern Tags (`#pattern`):** Verify that all `#pattern` references in `design.patterns` map to valid, existing common bundles within the `common/yaml/` structure.
    - **Check API Reuse (`#reuse-api`):** Search `product/surfaces/common/yaml/` or sibling modules. If API exists, tag `#reuse-api` to prevent duplicate API generation.
    - **Explicit Action Suffixes:** Ensure endpoints follow explicit naming (`/create`, `/{id}/update`, `/{id}/duplicate`, `/{id}/delete`, `/{id}/detail`). No ambiguous RESTful paths.
    - **Hashtag & Error Matrix Verification:** Verify and apply domain/engineering hashtags: `#call-external`, `#cross-service`, `#cross-entity-service`, `#derived-data`, `#tech-debt:*`, `#err:*` (`#err:validation`, `#err:idor-violation`, `#err:not-found`, `#err:permission-denied`).
-3. Giữ `#needs-component`, `#manual-composable`, `#skip-codegen`, `#wire-only`, `#phase-api`.
+4. Giữ `#needs-component`, `#manual-composable`, `#skip-codegen`, `#wire-only`, `#phase-api`.
 4. List: `#gen:test-schema`, `#gen:test-service` · Create: `#gen:test-validation`
 5. **Common candidates** — scan columns, toolbar, filters, composables:
    - Prefer `artifactgraph_grill_check` / `artifactgraph_analyze` on `ir/spec.yaml` when MCP wired

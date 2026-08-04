@@ -53,6 +53,24 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 - Do not edit FE production code or Playwright.
 - Do not run `portal:gen` / `testcase:gen`.
 - Vague spec → `/bqa-grill-docs` before `/prototype`.
+
+### Common Pattern Resolution (MANDATORY)
+Before authoring a new Spec, you MUST:
+1. Scan `product/surfaces/<surface>/common/yaml/` and `product/surfaces/common/yaml/` for existing common bundles.
+2. Read `templates/shared/patterns/*.pattern.yaml` to identify which `commonSpecs` are associated with each pattern.
+3. Analyze the prompt to propose appropriate pattern tags:
+   - Screen has a delete button → `#pattern: delete-flow`
+   - Screen is a list/table → `#pattern: CRUD` + `common-list-page`, `common-pagination`
+   - Contains confirm/overwrite actions → reference `common-confirm-dialog`
+4. Inject references into the `design.patterns` of the bundle.yaml:
+   ```yaml
+   design:
+     inherits: admin-crud
+     patterns:
+       - "#pattern: CRUD"
+       - "#pattern: delete-flow"
+   ```
+
 - **STRICT API REUSE & `#reuse-api`:** Agent MUST search existing APIs under `product/surfaces/common/yaml/` or sibling modules before defining endpoints. Mark reused endpoints with `#reuse-api` in `bundle.yaml` so downstream `/api-spec` skips generating duplicate API YAML files.
 - **EXPLICIT ACTION SUFFIX URIs:** All API endpoints MUST use explicit action suffixes (`/create`, `/{id}/update`, `/{id}/duplicate`, `/{id}/delete`, `/{id}/detail`, `/list`). Never use ambiguous RESTful paths without action suffixes.
 - **MANDATORY UI & API ERROR HANDLING SPECIFICATION:**
