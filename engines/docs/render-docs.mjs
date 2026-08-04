@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { parse } from 'yaml'
