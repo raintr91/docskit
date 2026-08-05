@@ -6,8 +6,12 @@ disable-model-invocation: true
 ---
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
 > - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
-> - Do NOT perform a shallow check. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+> - Materialize `.harness/tasks/spec-<slug-or-id>-todo.md` from **every** Workflow step + optional Accelerator branches before other durable product writes. Mark `[x]` only with evidence.
+> - Write `.harness/tasks/spec-<slug-or-id>-plan.md` (quote each Verification Checklist line + plan) before authoring/patching the bundle.
+> - Do NOT perform a shallow check. Verify against the **Verification Checklist** via the harness TODO evidence.
+> - Protocol: `extracts/agent-execution-protocol.md` + host `AGENTS.md` / `agent-compliance`.
 
 # /spec — Function detail (design)
 
@@ -21,26 +25,26 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ## Scope
 
-**In:** Code bundle / `--id` under `product/surfaces/.../modules/CMP-*/<slug>`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
+**In:** Code bundle / `--id` under `product/surfaces/.../CMP-*/<slug>`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
 
 **Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. product/overview / CTR → `product/architecture` children.
 
 ## Target / ID Resolution Rule
 
 - User prompt MAY specify a screen ID, module ID, or slug (e.g. `CMP-ADM-000`, `W-AD-AUTH-001`, `login`).
-- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve the exact target folder under `product/surfaces/.../modules/CMP-*/<slug>/`.
+- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve the exact target folder under `product/surfaces/.../CMP-*/<slug>/`.
 - Do NOT force the user to provide the full filesystem surface/module path if an ID or short slug is given.
 
 ## Workflow
 
-
+0. Create/update `.harness/tasks/spec-<slug-or-id>-todo.md` (all steps below + Accelerator if/else items) and `.harness/tasks/spec-<slug-or-id>-plan.md`.
 1. Confirm **module (`CMP-*`) exists**, its operational-area mapping is known, and the implementing `CTR-*` is identified — otherwise stop for lead/owner.
-2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance.
-3. If new, draft from user bullets — create `*.bundle.yaml` with `specOrigin: requirement` under `product/surfaces/<surface>/modules/CMP-*/<slug>/`. Do NOT write Markdown.
+2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance. Unknown business facts → `#missing_info` (do not invent); hand off to `/bqa-grill-docs` or `/grill` as needed.
+3. If new, draft from user bullets only — create `*.bundle.yaml` with `specOrigin: requirement` under `product/surfaces/<surface>/CMP-*/<slug>/`. Do NOT write Markdown. Leave gaps empty or `#missing_info`.
 4. Incremental blocks per extracts when needed.
-5. Apply common UI / spec-split extracts.
+5. Apply **existing** common UI / spec-split extracts (consume only — do not invent or overwrite common SSOT; promote via `/common-spec` or confirmed grill).
 6. `pnpm spec:split -- <bundle>` then `pnpm docs:render` (**no** testcase MD emit).
-7. Update `.harness/progress.md` when present.
+7. Update `.harness/progress.md` when present; keep harness TODO in sync (`[x]` + evidence).
 8. Handoff plans: open **base-tests** → `/testcase` from acceptance.
 
 ## Output
@@ -56,9 +60,9 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ### Common Pattern Resolution (MANDATORY)
 Before authoring a new Spec, you MUST:
-1. Scan `product/surfaces/<surface>/common/yaml/` and `product/surfaces/common/yaml/` for existing common bundles.
+1. Scan `product/surfaces/<surface>/common/yaml/` and `product/surfaces/common/yaml/` for existing common bundles (**consume only** — do not create/overwrite common here).
 2. Read `templates/shared/patterns/*.pattern.yaml` to identify which `commonSpecs` are associated with each pattern.
-3. Analyze the prompt to propose appropriate pattern tags:
+3. From the prompt (structural cues only — not invented business fields), propose appropriate pattern tags:
    - Screen has a delete button → `#pattern: delete-flow`
    - Screen is a list/table → `#pattern: CRUD` + `common-list-page`, `common-pagination`
    - Contains confirm/overwrite actions → reference `common-confirm-dialog`
@@ -85,7 +89,7 @@ Khi người dùng gọi `... /legacy /spec`, Agent PHẢI:
 - Đọc source từ `legacy-repos.local.json` thay vì source hiện tại.
 - Trích xuất function logic từ source code cũ.
 - Viết/cập nhật `product/legacy-dynamics/{module}/_legacy.dynamics.yaml` (`portal-legacy-dynamics/v1`).
-- Viết `*.bundle.yaml` cho function đó vào `product/surfaces/<surface>/modules/CMP-*/<slug>/` với `specOrigin: legacy`.
+- Viết `*.bundle.yaml` cho function đó vào `product/surfaces/<surface>/CMP-*/<slug>/` với `specOrigin: legacy`.
 - **Không** tạo codegen tags. Hỗ trợ chạy validate: `legacy_dynamics_validate` / `pnpm legacy-dynamics:validate`.
 
 ## Tools (required after docskit init)
@@ -116,8 +120,10 @@ Deduplicate retries and report only actual `fileReads` / `contextBytes`.
 - Design bundle coherent · split + docs:render pass · plans handoff → `/testcase` on tests hub.
 
 ## Verification Checklist
-- [ ] Strict adherence to scope boundaries and module CMP mapping.
-- [ ] Output MUST be a `.bundle.yaml` file (Do NOT write `.md` directly).
+- [ ] Harness TODO + plan written under `.harness/tasks/spec-*` and kept in sync with evidence.
+- [ ] Strict adherence to scope boundaries and module CMP mapping (`product/surfaces/<surface>/CMP-*/<slug>/`).
+- [ ] No invented business fields/flows — gaps tagged `#missing_info` or left empty.
+- [ ] Common/DSL only consumed (not invented); output MUST be a `.bundle.yaml` (Do NOT write `.md` directly).
 - [ ] **YAML Syntax Check:** All strings with colons (`:`) or brackets (`[]`) are double-quoted (`"..."`) or block-escaped (`|`).
 - [ ] Executed `docskit split` / `pnpm spec:split` followed by `docs:render` with zero parse errors.
 - [ ] Handed off testcase plans to `base-tests` `/testcase`.

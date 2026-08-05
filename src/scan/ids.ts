@@ -126,14 +126,18 @@ export function indexIds(docsRoot: string): Map<string, HubId> {
       add(map, base, f) // ADR-001-arc42-toc slug form
     }
 
-    const cmpFolder = f.match(/[\\/]product[\\/]surfaces[\\/][^\\/]+[\\/]modules[\\/](CMP-\d+[-\w]*)[\\/]/i)
+    // Hub path: product/surfaces/<surface>/CMP-*/...
+    // Legacy: product/surfaces/<surface>/modules/CMP-*/...
+    const cmpFolder = f.match(
+      /[\\/]product[\\/]surfaces[\\/][^\\/]+[\\/](?:modules[\\/])?(CMP-[A-Za-z0-9][A-Za-z0-9_-]*)[\\/]/i,
+    )
     if (cmpFolder) {
       add(map, cmpFolder[1], f)
-      const short = cmpFolder[1].match(/^(CMP-\d+)/)
+      const short = cmpFolder[1].match(/^(CMP-[A-Za-z0-9]+)/)
       if (short) add(map, short[1], f)
     }
 
-    // Code folders: product/surfaces/.../modules/CMP-*/<slug>/code/{W|API|UI}-*
+    // Code folders: product/surfaces/.../CMP-*/<slug>/code/{W|API|UI}-*
     const codeFolder = f.match(/[\\/]code[\\/]((?:W|API|UI)-[A-Z]{2}-[A-Z0-9]+-\d{3})[\\/]/i)
     if (codeFolder) add(map, codeFolder[1], f)
   }

@@ -13,6 +13,10 @@ extractBundle: architecture-core
 - Show handoffs, decisions, exceptions, and outcomes.
 - A process can touch multiple surfaces or modules, but the primary lens is business action, not technical boundary.
 - Use `sequenceDiagram` when interactions between actors/surfaces matter; use `flowchart` when decision paths matter more.
+- **MANDATORY ERROR FLOWS IN DIAGRAMS:** When generating Mermaid `flowchart` or `sequenceDiagram`, Agent MUST explicitly model error paths and exception handling. This includes:
+  - Global error redirects (e.g., 401 Unauthorized redirect to login, 403 IDOR blocking).
+  - Validation failures (422) returning to the form state.
+  - Conflict exceptions (409) and their UI resolutions.
 - Do not describe the process as a service map unless the service boundary is the actual business concern.
 
 ## Modifiers (If /legacy is used)

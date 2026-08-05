@@ -6,8 +6,11 @@ disable-model-invocation: true
 ---
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
+> - Materialize `.harness/tasks/dev-grill-<slug-or-id>-todo.md` from every Workflow step + optional Accelerators before other durable writes.
+> - For `#missing_info` / open gaps: ArtifactGraph re-check → micro-scope → propose → **STOP for member confirm** before overwriting settled SSOT.
 > - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
-> - Do NOT perform a shallow check. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+> - Do NOT perform a shallow check. Verify against the **Verification Checklist** via harness TODO evidence.
 
 # /dev-grill-docs — Dev / codegen grill
 

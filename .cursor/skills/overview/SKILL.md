@@ -1,12 +1,17 @@
 ---
 name: overview
-description: /overview — Handles the Overview root folder (Operational areas and business surfaces).
+description: /overview — Handles the Overview root folder (Operational areas).
 disable-model-invocation: true
 extractBundle: architecture-core
 ---
+
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Do NOT perform a shallow check. Verify your results against the **Verification Checklist** at the end of this skill before completing.
+
 # /overview
 **Target Paths:** `product/overview/operational-areas/[Admin operations | Workforce operations | ...]`
-**Guidelines:** Focus on personas, operational areas, business surfaces, and high-level system purpose. Use `surface` to mean "who does what on which channel", not a project or repo.
+**Guidelines:** Focus on personas, operational areas, and high-level system purpose.
 
 ## Workflow / Luồng thực thi
 1. Kiểm tra xem thư mục `product/overview` đã tồn tại chưa. Nếu chưa, tạo mới.
@@ -14,17 +19,13 @@ extractBundle: architecture-core
    - Kiểm tra xem `product/overview/common` đã có chưa.
    - Nếu có, tiến hành cập nhật. Nếu chưa, tạo mới thư mục/file tương ứng rồi mới cập nhật.
 
-## Overview / Surfaces alignment
-- An overview may mention operational areas such as Admin operations, Workforce operations, or Integration operations.
-- Each operational area can point to one or more business surfaces.
-- Keep the wording aligned with the business meaning of surfaces:
-  - Admin Web: admin / engineer / supervisor / QA on Portal
-  - Line/HMI: operator / technician on the line
-  - Integration Gateway: PLC / MES / CMMS integration
-  - Common: shared scope across surfaces
-- Do not describe surfaces as projects, repos, or deployment units.
-
 ## Modifiers (If /legacy is used)
 Khi gọi kèm `/legacy` (vd: `/legacy /overview`):
 - Tham chiếu source từ `legacy-repos.local.json`.
-- Nhiệm vụ là "khảo cổ": map các actor/persona, systems, and channels cũ thành Operational Areas / business surfaces tương ứng, ghi nhận vào cùng thư mục đang thao tác nhưng tên file thêm tiền tố `legacy-` ở đầu (vd: `product/overview/legacy-overview.md`).
+- Nhiệm vụ là "khảo cổ": map các actor/persona và hệ thống con cũ thành Operational Areas tương ứng, ghi nhận vào cùng thư mục đang thao tác nhưng tên file thêm tiền tố `legacy-` ở đầu (vd: `product/overview/legacy-overview.md`).
+
+## Verification Checklist
+- [ ] Strictly verified presence/creation of `product/overview` directory structure.
+- [ ] Handled `common` modifier if passed.
+- [ ] Handled `/legacy` modifier by referencing `legacy-repos.local.json` and prepending `legacy-` to output filenames if applicable.
+

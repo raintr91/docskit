@@ -1,6 +1,6 @@
 ---
 description: Docskit docs spec/grill/update workflow
-globs: product/components/**/code/**, product/legacy-dynamics/**
+globs: product/surfaces/**, product/legacy-dynamics/**
 alwaysApply: false
 ---
 
@@ -8,10 +8,12 @@ alwaysApply: false
 
 Active commands: `/spec`, `/bqa-grill-docs`, `/dev-grill-docs`, `/grill-with-docs`, `/update-spec`, `/update-spec-legacy` — one per session.
 
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION
+> You MUST read and strictly enforce all guidelines in the target skill's `SKILL.md` file before starting any step in this pipeline.
+
 | Command | Skill |
 |---------|-------|
 | `/spec` | `.cursor/skills/spec/SKILL.md` |
-
 | `/bqa-grill-docs` | `.cursor/skills/bqa-grill-docs/SKILL.md` |
 | `/dev-grill-docs` | `.cursor/skills/dev-grill-docs/SKILL.md` |
 | `/grill-with-docs` | `.cursor/skills/grill-with-docs/SKILL.md` |
@@ -32,3 +34,4 @@ Shared: resolve skill `extractBundle` → `.cursor/extracts/extract-registry.jso
 
 - Render: `docs_render` / `docskit render` (pnpm fallback during transition)
 - **Không** prototype UI, backend, real API, full E2E/unit trong phase spec/grill.
+

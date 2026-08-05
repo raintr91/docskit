@@ -32,7 +32,7 @@ Tree + standards: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/g
 - Format: MD + Mermaid (`flowchart` / `sequenceDiagram`)
   - **MANDATORY ERROR FLOWS:** Any Mermaid diagram (node flowchart or sequence diagram) MUST explicitly model error paths and exception handling loops (e.g., Redirect on 401/403 IDOR, validation fail states).
 - Treat `Surfaces` as business surfaces, not projects or repos.
-- Product Code (`W-*`/`API-*`) stays in `product/surfaces/<surface>/modules/CMP-*/<slug>/code/`
+- Product Code (`W-*`/`API-*`) stays in `product/surfaces/<surface>/CMP-*/<slug>/code/`
 - API endpoint/contract belongs to Function detail.
 - One concern per edit.
 

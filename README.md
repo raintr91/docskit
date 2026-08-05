@@ -48,7 +48,7 @@ Docskit cung cấp bộ Agentic Skills toàn diện để hỗ trợ quá trình
 | `/grill` | Khảo sát / thẩm định đầu vào theo layer đích trước khi viết tài liệu. | (Không sinh file trực tiếp) |
 | `/overview` | Xử lý tài liệu tổng quan (Personas, Operational areas). | `product/overview/` |
 | `/surfaces` | Định nghĩa các bề mặt tương tác (Web, Gateway, HMI). | `product/surfaces/` |
-| `/module` | Xử lý tài liệu mức Module (nghiệp vụ, data model chung của một nhóm chức năng). | `product/surfaces/<surface>/modules/CMP-*/` |
+| `/module` | Xử lý tài liệu mức Module (nghiệp vụ, data model chung của một nhóm chức năng). | `product/surfaces/<surface>/CMP-*/` |
 | `/business-process` | Vẽ sơ đồ luồng quy trình nghiệp vụ (Architecture). | `architecture/03-business-process/FLOW-*.md` |
 | `/deployment` | Viết tài liệu Deployment View. | `architecture/07-deployment/` |
 

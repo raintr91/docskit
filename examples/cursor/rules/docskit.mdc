@@ -47,3 +47,8 @@ raw byte length. After the fallback completes, emit exactly one
 `docskit.missing-optional` JSON event per `runId` + optional pair conforming to
 `.cursor/schemas/docskit/missing-optional-event.schema.json`; deduplicate
 retries. Report only actual `fileReads` and `contextBytes`, never token estimates.
+
+## Links and Paths Rule
+
+- **Strictly Use Relative Links:** All Markdown files (`*.md`) and rule/guide documents MUST use relative paths for referencing other files (e.g. `[link](product/overview/personas.md)` or `[spec.yaml](../../templates/shared/spec.yaml)`).
+- **Never Use Absolute Paths:** Do not use absolute filesystem paths (such as `/home/...` or `file:///...`) under any circumstances, as they break when team members check out the repo on different machines.

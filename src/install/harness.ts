@@ -479,9 +479,17 @@ function mergeExtractRegistry(
 
     current.version = Math.max(current.version ?? 1, owned.version ?? 1)
     if (type === 'consumer') delete current.bundles['architecture-core']
+    // Registry source paths are authored as `.cursor/...`; rewrite to the
+    // install agent dir (e.g. `.agents/...` for Antigravity).
+    const localized: Record<string, string[]> = {}
+    for (const [name, paths] of Object.entries(bundles)) {
+      localized[name] = paths.map((p) =>
+        p.startsWith('.cursor/') ? `${dir}/${p.slice('.cursor/'.length)}` : p,
+      )
+    }
     current.bundles = {
       ...current.bundles,
-      ...bundles,
+      ...localized,
     }
     mkdirSync(path.dirname(target), { recursive: true })
     writeFileSync(target, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
@@ -523,6 +531,36 @@ export function scaffoldSchemas(root: string) {
   if (!existsSync(destRoot)) mkdirSync(destRoot, { recursive: true })
 
   copyDir(sourceRoot, destRoot)
+}
+
+/** Ensure `.harness/tasks/` exists for skill TODO/plan/proposal SSOT. */
+export function scaffoldHarnessState(root: string) {
+  const tasksDir = path.join(root, '.harness', 'tasks')
+  mkdirSync(tasksDir, { recursive: true })
+  const keep = path.join(tasksDir, '.gitkeep')
+  if (!existsSync(keep)) writeFileSync(keep, '', 'utf8')
+  const readme = path.join(root, '.harness', 'README.md')
+  if (!existsSync(readme)) {
+    writeFileSync(
+      readme,
+      [
+        '# Harness state',
+        '',
+        'SSOT for agent run tracking (all hosts).',
+        '',
+        '- `tasks/<skill-or-target>-todo.md` — live TODO from skill Workflow',
+        '- `tasks/<skill-or-target>-plan.md` — plan before durable authoring',
+        '- `tasks/<skill-or-target>-proposal.md` — grill proposals awaiting confirm',
+        '- `progress.md` — session handoff (optional)',
+        '- `feature_list.json` — scope list (optional)',
+        '',
+        'Host overlays (Antigravity `AGENTS.md`, Cursor rules) point here;',
+        'do not create a second task tracker under `.agents/tasks/`.',
+        '',
+      ].join('\n'),
+      'utf8',
+    )
+  }
 }
 
 /**
@@ -730,6 +768,7 @@ export function installHarness(opts: {
   if (type === 'docs') {
     scaffoldProductSkeleton(root)
     scaffoldSchemas(root)
+    scaffoldHarnessState(root)
     injectVitepressScripts(root)
     injectBackendScripts(root)
     syncDocskitTemplates(root)

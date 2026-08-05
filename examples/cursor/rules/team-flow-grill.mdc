@@ -1,6 +1,6 @@
 ---
 description: Docskit grill metadata — list/form/detail profiles
-globs: product/surfaces/**/*.yaml
+globs: product/surfaces/**
 alwaysApply: false
 ---
 

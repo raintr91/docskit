@@ -1,9 +1,16 @@
 ---
 name: dev-grill-docs
 extractBundle: dev-grill
-description: /dev-grill-docs — Docs-side dev grill for codegen tags + bundle.gen; execution hands off to FE.
+description: EXCLUSIVE /dev-grill-docs — ONLY for engineering codegen tags and bundle.gen. DO NOT trigger for BQA, BA, or UI design grills.
 disable-model-invocation: true
 ---
+
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
+> - Materialize `.harness/tasks/dev-grill-<slug-or-id>-todo.md` from every Workflow step + optional Accelerators before other durable writes.
+> - For `#missing_info` / open gaps: ArtifactGraph re-check → micro-scope → propose → **STOP for member confirm** before overwriting settled SSOT.
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Do NOT perform a shallow check. Verify against the **Verification Checklist** via harness TODO evidence.
 
 # /dev-grill-docs — Dev / codegen grill
 
@@ -11,7 +18,14 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 
 **Extracts:** `extractBundle: dev-grill` → `codegen/readiness.md`, `platform-mark-detect.md`
 
+## Target / ID Resolution Rule
+
+- User prompt MAY specify a screen ID, function ID, or short slug (e.g. `CMP-ADM-000-001`, `W-AD-AUTH-001`, `login`).
+- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve target path under `product/surfaces/...`.
+- Do NOT demand full surface/module filesystem paths from the user.
+
 ## Load policy
+
 
 | Load | Do not load |
 |------|-------------|
@@ -19,13 +33,19 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 | `bundle.spec` (api, entities, ui.routes) | Full trace module |
 | `codegen/*`, `legacy/legacy-api-migration.md`, `platform-mark-detect.md` | UX copy debates |
 
-## Workflow
+## Workflow (Technical & Engineering Only — No BQA Business Questions)
 
 1. Expect `grillStatus.bqaOpen: done` (or `bqaFacts` for requirement-only).
-2. Derive from design + legacy behaviors → write **`bundle.gen`** (or patch `ir/spec.yaml` then `pnpm spec:merge`):
+2. **Technical Review Only:** Focus strictly on Database tables, data types, API contracts, routing paths, hidden fields, composables, and codegen tags. Do **NOT** debate BQA business/UX copy rules.
+3. Derive from design + legacy behaviors → write **`bundle.gen`** (or patch `ir/spec.yaml` then `pnpm spec:merge`):
    - `codegen`, `tags`, `ui.filters`, `ui.columns`, `ui.composition`, `ui.testIds`
    - `api.endpoints[].action`
-3. Giữ `#needs-component`, `#manual-composable`, `#skip-codegen`, `#wire-only`, `#phase-api`.
+   - **Component & HBS Template Check:** Verify if required UI components exist or if Handlebars (`.hbs`) codegen templates are available for rendering. Mark missing ones with `#needs-component` / `#needs-ui`.
+   - **Check Common Pattern Tags (`#pattern`):** Verify that all `#pattern` references in `design.patterns` map to valid, existing common bundles within the `common/yaml/` structure.
+   - **Check API Reuse (`#reuse-api`):** Search `product/surfaces/common/yaml/` or sibling modules. If API exists, tag `#reuse-api` to prevent duplicate API generation.
+   - **Explicit Action Suffixes:** Ensure endpoints follow explicit naming (`/create`, `/{id}/update`, `/{id}/duplicate`, `/{id}/delete`, `/{id}/detail`). No ambiguous RESTful paths.
+   - **Hashtag & Error Matrix Verification:** Verify and apply domain/engineering hashtags: `#call-external`, `#cross-service`, `#cross-entity-service`, `#derived-data`, `#tech-debt:*`, `#err:*` (`#err:validation`, `#err:idor-violation`, `#err:not-found`, `#err:permission-denied`).
+4. Giữ `#needs-component`, `#manual-composable`, `#skip-codegen`, `#wire-only`, `#phase-api`.
 4. List: `#gen:test-schema`, `#gen:test-service` · Create: `#gen:test-validation`
 5. **Common candidates** — scan columns, toolbar, filters, composables:
    - Prefer `artifactgraph_grill_check` / `artifactgraph_analyze` on `ir/spec.yaml` when MCP wired
@@ -60,7 +80,8 @@ retries and report only actual `fileReads` / `contextBytes`.
 
 ## Out of scope
 
-UX prose, acceptance rewrite, implement UI, full E2E.
+- **NO PROSE / NO BQA REPORTS:** Do NOT output Markdown reports, BQA 3-Pillars reports, or framework-specific code snippets (FastAPI, Pydantic, Axios, i18n).
+- UX prose, acceptance rewrite, implement UI, full E2E.
 
 ## Handoff
 
@@ -68,3 +89,12 @@ UX prose, acceptance rewrite, implement UI, full E2E.
 - BQA↔Dev conflict → `/grill-with-docs`
 - Legacy fact gap → `/update-spec-legacy`
 - Member chose promote common → `/platform-mark` same session or before `/prototype`
+
+## Verification Checklist (Evidence Required)
+- [ ] **Target Bundle Updated:** Must provide exact file path of updated `*.bundle.yaml` or `ir/spec.yaml`.
+- [ ] **Tags Generated:** Must list actual tags added (e.g. `#needs-component`, `#gen:test-validation`, `#err:validation`, `#err:idor-violation`).
+- [ ] **Status Updated:** `grillStatus.dev` is set to `done` inside the YAML file.
+- [ ] **Split Command:** Executed `docskit split` or `pnpm spec:split` with zero errors.
+- **DO NOT output fake checklists or unrelated framework reports.**
+
+

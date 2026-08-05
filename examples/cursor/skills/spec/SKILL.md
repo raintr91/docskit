@@ -1,9 +1,17 @@
 ---
 name: spec
 extractBundle: spec-requirement
-description: /spec — author design bundle only (no testcase plans). Plans → base-tests /testcase.
+description: EXCLUSIVE /spec — ONLY for authoring design bundle (feature.bundle.yaml). DO NOT trigger for grill or testcase skills.
 disable-model-invocation: true
 ---
+
+> [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
+> - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
+> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
+> - Materialize `.harness/tasks/spec-<slug-or-id>-todo.md` from **every** Workflow step + optional Accelerator branches before other durable product writes. Mark `[x]` only with evidence.
+> - Write `.harness/tasks/spec-<slug-or-id>-plan.md` (quote each Verification Checklist line + plan) before authoring/patching the bundle.
+> - Do NOT perform a shallow check. Verify against the **Verification Checklist** via the harness TODO evidence.
+> - Protocol: `extracts/agent-execution-protocol.md` + host `AGENTS.md` / `agent-compliance`.
 
 # /spec — Function detail (design)
 
@@ -17,19 +25,26 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ## Scope
 
-**In:** Code bundle / `--id` under `product/surfaces/.../modules/CMP-*/<slug>`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
+**In:** Code bundle / `--id` under `product/surfaces/.../CMP-*/<slug>`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
 
 **Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. product/overview / CTR → `product/architecture` children.
 
+## Target / ID Resolution Rule
+
+- User prompt MAY specify a screen ID, module ID, or slug (e.g. `CMP-ADM-000`, `W-AD-AUTH-001`, `login`).
+- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve the exact target folder under `product/surfaces/.../CMP-*/<slug>/`.
+- Do NOT force the user to provide the full filesystem surface/module path if an ID or short slug is given.
+
 ## Workflow
 
+0. Create/update `.harness/tasks/spec-<slug-or-id>-todo.md` (all steps below + Accelerator if/else items) and `.harness/tasks/spec-<slug-or-id>-plan.md`.
 1. Confirm **module (`CMP-*`) exists**, its operational-area mapping is known, and the implementing `CTR-*` is identified — otherwise stop for lead/owner.
-2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance.
-3. If new, draft from user bullets — `*.bundle.yaml` with `specOrigin: requirement` under `<slug>/`.
+2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance. Unknown business facts → `#missing_info` (do not invent); hand off to `/bqa-grill-docs` or `/grill` as needed.
+3. If new, draft from user bullets only — create `*.bundle.yaml` with `specOrigin: requirement` under `product/surfaces/<surface>/CMP-*/<slug>/`. Do NOT write Markdown. Leave gaps empty or `#missing_info`.
 4. Incremental blocks per extracts when needed.
-5. Apply common UI / spec-split extracts.
+5. Apply **existing** common UI / spec-split extracts (consume only — do not invent or overwrite common SSOT; promote via `/common-spec` or confirmed grill).
 6. `pnpm spec:split -- <bundle>` then `pnpm docs:render` (**no** testcase MD emit).
-7. Update `.harness/progress.md` when present.
+7. Update `.harness/progress.md` when present; keep harness TODO in sync (`[x]` + evidence).
 8. Handoff plans: open **base-tests** → `/testcase` from acceptance.
 
 ## Output
@@ -42,7 +57,31 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 - Do not edit FE production code or Playwright.
 - Do not run `portal:gen` / `testcase:gen`.
 - Vague spec → `/bqa-grill-docs` before `/prototype`.
-- No arc42 chapter prose for a single function — stay C4/code-level.
+
+### Common Pattern Resolution (MANDATORY)
+Before authoring a new Spec, you MUST:
+1. Scan `product/surfaces/<surface>/common/yaml/` and `product/surfaces/common/yaml/` for existing common bundles (**consume only** — do not create/overwrite common here).
+2. Read `templates/shared/patterns/*.pattern.yaml` to identify which `commonSpecs` are associated with each pattern.
+3. From the prompt (structural cues only — not invented business fields), propose appropriate pattern tags:
+   - Screen has a delete button → `#pattern: delete-flow`
+   - Screen is a list/table → `#pattern: CRUD` + `common-list-page`, `common-pagination`
+   - Contains confirm/overwrite actions → reference `common-confirm-dialog`
+4. Inject references into the `design.patterns` of the bundle.yaml:
+   ```yaml
+   design:
+     inherits: admin-crud
+     patterns:
+       - "#pattern: CRUD"
+       - "#pattern: delete-flow"
+   ```
+
+- **STRICT API REUSE & `#reuse-api`:** Agent MUST search existing APIs under `product/surfaces/common/yaml/` or sibling modules before defining endpoints. Mark reused endpoints with `#reuse-api` in `bundle.yaml` so downstream `/api-spec` skips generating duplicate API YAML files.
+- **EXPLICIT ACTION SUFFIX URIs:** All API endpoints MUST use explicit action suffixes (`/create`, `/{id}/update`, `/{id}/duplicate`, `/{id}/delete`, `/{id}/detail`, `/list`). Never use ambiguous RESTful paths without action suffixes.
+- **MANDATORY UI & API ERROR HANDLING SPECIFICATION:**
+  - **UI Actions (`design.yaml`):** Agent MUST specify 3 execution outcomes for EVERY user action / API call: `onSuccess` (feedback, navigation), `onCommonError` (inherit `#ui-common:error-handler` or explicit `override: true`), and `onSpecificError` (inline `422` validation, `404` empty state, `403 IDOR` safety block, `409` conflict copy).
+  - **API Contract (`spec.yaml`):** MUST apply Endpoint Error Storming Matrix using `#err:*` tags. Detail/Update/Delete routes with `{id}` MUST have `#err:not-found` & `#err:idor-violation`. Form Submits MUST have `#err:validation` rules.
+- **CRITICAL:** Output MUST be a `.bundle.yaml` file. Do NOT generate Markdown (`.md`) files directly. Markdown is generated by `pnpm docs:render` (which consumes the split `ir/*.yaml`).
+- **STRICT YAML ESCAPING:** ALL string properties (e.g. `summary`, `label`, `review.layoutNotes`) containing colon (`:`), brackets (`[]`), or leading symbols MUST be quoted with double quotes (`"..."`) or written using YAML multiline block scalars (`|`). Never leave unquoted colons inside string values.
 - If a custom template/layout is required, specify the template name in the bundle YAML's `template` field (e.g., `template: breadcrumb-flow`). Do not edit the generated Markdown output directly.
 
 ## Modifiers (If /legacy is used)
@@ -50,7 +89,7 @@ Khi người dùng gọi `... /legacy /spec`, Agent PHẢI:
 - Đọc source từ `legacy-repos.local.json` thay vì source hiện tại.
 - Trích xuất function logic từ source code cũ.
 - Viết/cập nhật `product/legacy-dynamics/{module}/_legacy.dynamics.yaml` (`portal-legacy-dynamics/v1`).
-- Viết `*.bundle.yaml` cho function đó vào `product/surfaces/.../modules/CMP-*/<slug>/` với `specOrigin: legacy`.
+- Viết `*.bundle.yaml` cho function đó vào `product/surfaces/<surface>/CMP-*/<slug>/` với `specOrigin: legacy`.
 - **Không** tạo codegen tags. Hỗ trợ chạy validate: `legacy_dynamics_validate` / `pnpm legacy-dynamics:validate`.
 
 ## Tools (required after docskit init)
@@ -59,7 +98,7 @@ Prefer MCP/CLI when Docskit is installed:
 
 - `docskit_bundle_split` / `docskit split -- <bundle>`
 - `docs_render` / `docskit render …`
-- Local fallback only if package not installed: `pnpm spec:split` · `pnpm docs:render`
+- Local fallback only if package not installed: `pnpm docs:split` · `pnpm docs:render`
 
 ## Accelerators (optional)
 
@@ -79,3 +118,14 @@ Deduplicate retries and report only actual `fileReads` / `contextBytes`.
 ## Done
 
 - Design bundle coherent · split + docs:render pass · plans handoff → `/testcase` on tests hub.
+
+## Verification Checklist
+- [ ] Harness TODO + plan written under `.harness/tasks/spec-*` and kept in sync with evidence.
+- [ ] Strict adherence to scope boundaries and module CMP mapping (`product/surfaces/<surface>/CMP-*/<slug>/`).
+- [ ] No invented business fields/flows — gaps tagged `#missing_info` or left empty.
+- [ ] Common/DSL only consumed (not invented); output MUST be a `.bundle.yaml` (Do NOT write `.md` directly).
+- [ ] **YAML Syntax Check:** All strings with colons (`:`) or brackets (`[]`) are double-quoted (`"..."`) or block-escaped (`|`).
+- [ ] Executed `docskit split` / `pnpm spec:split` followed by `docs:render` with zero parse errors.
+- [ ] Handed off testcase plans to `base-tests` `/testcase`.
+
+

@@ -1,40 +1,28 @@
 ---
 name: grill-with-docs
 extractBundle: grill-with-docs
-description: /grill-with-docs — reconcile BQA↔Dev; FE dry-gen remains a handoff.
+description: EXCLUSIVE /grill-with-docs — ONLY for reconciling BQA vs Dev conflicts. DO NOT trigger for standalone dev-grill or bqa-grill.
 disable-model-invocation: true
 ---
 
 # /grill-with-docs — Reconcile + codegen gate
 
-**Mindset:** Spec Validation + Decision Resolution — **not** Interview / archaeology.
+## Mindset & Scope Alignment
 
-Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
-
-**Extracts:** `extractBundle: grill-with-docs` → `.cursor/extracts/grill/validation.md`
-
-## Load policy
-
-| Load | Do not load |
-|------|-------------|
-| `*.bundle.yaml`, `ir/design.yaml`, `ir/legacy.yaml` | Legacy repo source, `models/` |
-| `ir/spec.yaml` or `bundle.gen` (reconcile codegen) | Full module trace |
-| `*.test.yaml`, testcase YAML | `platform-repos` / `legacy-repos` full read |
-| `codegen/readiness.md`, `codegen/tags.md` | |
-
-## When to use
-
-- After `/bqa-grill-docs` + `/dev-grill-docs` when **contradiction** remains
-- **Not** default
+- **`/bqa-grill-docs`**: Business/BQA view (UI layout, copy, user action flows, acceptance criteria). **NO technical/API/database debates.**
+- **`/dev-grill-docs`**: Engineering/Dev view (Database tables, data types, API routes, `#reuse-api`, codegen tags).
+- **`/grill-with-docs`**: Merges and reconciles BOTH BQA Business requirements AND Dev Technical specifications when contradictions exist.
 
 ## Workflow
 
 0. Tech debt step 0 (`grill-tech-debt.md`).
 1. Resolve spec ↔ legacyEvidence ↔ design conflicts in **bundle**.
-2. Write/fix `bundle.gen` → `docskit_bundle_split` (fallback: `docskit split`).
-3. If ArtifactGraph is available, use `artifactgraph_allowlist_check` +
+2. **Reconcile Common Patterns:** Verify that the feature bundle inherits and complies with the common patterns specified by both BQA (business flows) and Dev (`#pattern` codegen tags).
+3. **Reconcile API & Tech Decisions (`#reuse-api`):** Verify Dev technical decisions (DB tables, API routes, `#reuse-api` tags) against BQA business flows. Ensure duplicate APIs are tagged `#reuse-api`.
+4. Write/fix `bundle.gen` → `docskit_bundle_split` (fallback: `docskit split`).
+5. If ArtifactGraph is available, use `artifactgraph_allowlist_check` +
    `artifactgraph_recommend_command` for `genDry`; never execute FE gen here.
-4. `docs_render` (fallback: `docskit render`).
+6. `docs_render` (fallback: `docskit render`).
 5. Handoff ID/path + recommendation to FE Codegenkit. Missing Codegenkit is a
    pending handoff, not a reason to invent a local shell fallback.
 

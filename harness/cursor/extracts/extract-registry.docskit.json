@@ -11,7 +11,8 @@
       ".cursor/extracts/tpl-cross-cutting.md"
     ],
     "docskit": [
-      ".cursor/extracts/docskit-phase-hooks.md"
+      ".cursor/extracts/docskit-phase-hooks.md",
+      ".cursor/extracts/agent-execution-protocol.md"
     ]
   }
 }
