@@ -6,7 +6,7 @@ Hub: `docs/templates/feature.bundle.yaml` · split: `pnpm spec:split`
 
 | Key | Purpose |
 |-----|---------|
-| `summary` | Phải trình bày dạng bullet. Gồm: **bối cảnh** (description phân tích sâu business, input, output) và **cách giải quyết** (tùy chọn, chỉ ghi kỹ thuật phức tạp như SSE/RabbitMQ, bỏ qua CRUD cơ bản). |
+| `summary` | Phải trình bày dạng bullet. Bắt buộc có các tiêu đề (chuẩn Arc42 business): **mục tiêu nghiệp vụ** (business_goals), **các bên liên quan** (stakeholders), **kịch bản người dùng** (user_journey), **bối cảnh** (description, input liên kết cross-page/module, output) và **cách giải quyết** (tùy chọn). Mục đích để 100% Non-tech Stakeholder hiểu và duyệt. |
 | `spec` | Design v1 — actors, requirements, `ui.routes`, `api`, `acceptance` |
 | `gen` | Dev-grill / portal:gen — `codegen`, `tags`, `ui.filters/columns/...` |
 | `legacy` | Legacy facts + evidence pointers |
@@ -15,7 +15,8 @@ Hub: `docs/templates/feature.bundle.yaml` · split: `pnpm spec:split`
 
 ## spec (design v1) — có
 
-- `actors`, `entities`, `relationships`, `requirements`
+- `actors`, `entities`, `relationships`
+- `requirements` (BẮT BUỘC chứa các gạch đầu dòng: Field Validations, State Machine, UI Permissions, Edge Cases)
 - `ui.routes`, `ui.toolbar` (intent, không gen columns)
 - `api` query/response contract
 - `acceptance`

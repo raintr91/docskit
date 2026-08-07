@@ -7,11 +7,14 @@ title: Feature title
 status: draft
 owner: portal-team
 summary: |
-  - bối cảnh:
-    - description: [Bullet points mô tả phân tích sâu bằng ngôn ngữ business bao trùm toàn page]
-    - input: [Dữ liệu đầu vào]
+  - mục tiêu nghiệp vụ (business_goals): [Nêu rõ vấn đề đang giải quyết và giá trị kinh tế/nghiệp vụ mang lại. Viết sâu sắc để Stakeholder hiểu rõ vì sao phải làm.]
+  - các bên liên quan (stakeholders): [Ai dùng, ai hưởng lợi, ai quản lý?]
+  - kịch bản người dùng (user_journey): [Kể câu chuyện người dùng trải qua các bước trên màn hình bằng ngôn ngữ đời thường.]
+  - bối cảnh (context):
+    - description: [Phân tích sâu luồng nghiệp vụ chi tiết]
+    - input: [Dữ liệu đầu vào. CHÚ Ý liên kết cross-page / cross-module nếu có]
     - output: [Kết quả đầu ra]
-  - cách giải quyết: [Tuỳ chọn. Mô tả kỹ hơn về kỹ thuật nếu có đề cập trong bối cảnh (VD: SSE, RabbitMQ...). KHÔNG ghi các action cơ bản UI/DB/CRUD vì đã có trong mô tả.]
+  - cách giải quyết (solution): [Tuỳ chọn. Ghi kỹ thuật phức tạp nếu có.]
 
 specOrigin: requirement # requirement | legacy
 
@@ -26,7 +29,10 @@ spec:
   actors: []
   entities: []
   relationships: []
-  requirements: []
+  requirements:
+    - "Field Validations: [Bắt buộc định nghĩa các rule dữ liệu: Required, Format, Max length, Range, Cross-field...]"
+    - "State Machine / Phân quyền: [Bắt buộc định nghĩa nếu có vòng đời trạng thái hoặc ẩn/hiện thành phần UI theo quyền]"
+    - "Edge Cases: [Bắt buộc định nghĩa ngoại lệ như lỗi luồng, data hỏng, concurrency]"
   ui:
     routes: []
   api:

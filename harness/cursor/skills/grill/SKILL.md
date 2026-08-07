@@ -46,7 +46,7 @@ For BA/UI or codegen grill on an existing bundle, prefer `/bqa-grill-docs`, `/de
 - `/cross-service`: caller/callee, sync/async, contract, retries, idempotency, events/messages, failure handling.
 - `/module`: module boundary, surfaces/functions inside, common scope, dependencies.
 - `/journey`: runtime flow across systems, handoffs, state transitions, recovery.
-- `/spec`: actors, fields, validations, routes/actions, API contract, edge cases, acceptance.
+- `/spec`: business value, user journey, actors, fields, validations, state machine, UI permissions, API contract, edge cases, acceptance.
 
 ## Question order
 

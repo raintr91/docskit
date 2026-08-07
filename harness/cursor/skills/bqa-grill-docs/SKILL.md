@@ -51,6 +51,7 @@ disable-model-invocation: true
 
 0. Create/update `TODO.md` ở root + plan. Tech debt: `#tech-debt:*` where `deferTo: bqa-grill-docs` (`grill-tech-debt.md`).
 1. Compare `design.zones/behavior/actions` vs `legacy.ui` vs common UI.
+2. **Audit Business & Stakeholder Focus:** Đảm bảo `summary` kể được câu chuyện nghiệp vụ theo chuẩn Arc42 (mục tiêu nghiệp vụ, kịch bản người dùng) bằng ngôn ngữ 100% Non-tech. Kiểm tra xem `spec.requirements` đã định nghĩa đủ: (1) Field Validations, (2) State Machine, (3) UI Permissions, (4) Edge Cases chưa. Nếu thiếu, reject & yêu cầu bổ sung.
 2. **Cross-check Common Patterns:** Read Markdown rules in `product/surfaces/<surface>/common/patterns/` and `product/surfaces/common/patterns/` to ensure proposed UI and business flows comply with globally defined rules (e.g., Breadcrumb flow, Delete flow).
 3. **Audit UI Error Handling Flows:** Ensure every user action/API call in `design.yaml` has detailed specifications for Success, Common Global Error, and Specific Errors.
 4. Patch **bundle** (`design`, `review`, `spec` requirements) → `docskit_bundle_split` / `docskit split` (fallback `pnpm docs:split`).

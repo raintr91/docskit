@@ -36,7 +36,7 @@ Doc hub: `platform/toolchain/PORTAL-CODEGEN.md`
 ## Workflow (Technical & Engineering Only — No BQA Business Questions)
 
 1. Expect `grillStatus.bqaOpen: done` (or `bqaFacts` for requirement-only).
-2. **Technical Review Only:** Focus strictly on Database tables, data types, API contracts, routing paths, hidden fields, composables, and codegen tags. Do **NOT** debate BQA business/UX copy rules.
+2. **Technical Review Only:** Ensure technical architecture and API contracts align strictly with the `summary.business_goals` and `user_journey` (Do NOT debate BQA business rules, but ensure dev output fulfills the business purpose). Focus strictly on Database tables, data types, API contracts, routing paths, hidden fields, composables, and codegen tags. Đảm bảo các `Edge Cases` và `Validations` ở tầng business được map đầy đủ với mã lỗi HTTP (`#err:*`).
 3. Derive from design + legacy behaviors → write **`bundle.gen`** (or patch `ir/spec.yaml` then `pnpm spec:merge`):
    - `codegen`, `tags`, `ui.filters`, `ui.columns`, `ui.composition`, `ui.testIds`
    - `api.endpoints[].action`
