@@ -1,6 +1,6 @@
 {
   "name": "@platform/docskit",
-  "version": "0.3.0",
+  "version": "0.3.5",
   "description": "Local MCP: docs hub & spec engine — architecture and bundle IR",
   "type": "module",
   "main": "./dist/index.js",
@@ -39,8 +39,8 @@
     "cli": "node bin/docskit.mjs",
     "dev": "tsx src/mcp/server.ts",
     "test": "npm run build && node --test test/*.test.mjs",
-    "harness:sync": "node scripts/sync-harness-examples.mjs",
-    "harness:check": "node scripts/sync-harness-examples.mjs --check"
+    "harness:sync": "npm run build && node scripts/sync-harness-examples.mjs",
+    "harness:check": "npm run build && node scripts/sync-harness-examples.mjs --check"
   },
   "engines": {
     "node": ">=22"

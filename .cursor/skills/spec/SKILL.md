@@ -6,12 +6,13 @@ disable-model-invocation: true
 ---
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
-> - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
-> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
-> - Materialize `.harness/tasks/spec-<slug-or-id>-todo.md` from **every** Workflow step + optional Accelerator branches before other durable product writes. Mark `[x]` only with evidence.
-> - Write `.harness/tasks/spec-<slug-or-id>-plan.md` (quote each Verification Checklist line + plan) before authoring/patching the bundle.
-> - Do NOT perform a shallow check. Verify against the **Verification Checklist** via the harness TODO evidence.
-> - Protocol: `extracts/agent-execution-protocol.md` + host `AGENTS.md` / `agent-compliance`.
+> - Physical interlocks: `AGENTS.md` + `SSOT_AGENT_PROTOCOL.md` (Đạo luật 1–7). Chat-only done = FAILED.
+> - ĐẠO LUẬT 1: First action **BẮT BUỘC** `Read` this entire `SKILL.md`. **TUYỆT ĐỐI KHÔNG** dựa trí nhớ.
+> - ĐẠO LUẬT 2: **BẮT BUỘC** `.harness/tasks/spec-<slug-or-id>-todo.md` bóc **toàn bộ Workflow + Accelerators** → `- [ ]`. **TUYỆT ĐỐI KHÔNG** chỉ copy Verification Checklist. **TUYỆT ĐỐI KHÔNG** gộp/tick hàng loạt.
+> - ĐẠO LUẬT 3–4: **BẮT BUỘC** `*-plan.md` (quote nguyên văn từng dòng Verification Checklist) trước khi write bundle; mọi kết quả bền ghi disk **NGAY** (No RAM).
+> - ĐẠO LUẬT 5: Data chỉ User prompt | ArtifactGraph. Thiếu → trống / `#missing_info`. **TUYỆT ĐỐI KHÔNG** bịa business.
+> - ĐẠO LUẬT 6–7: Grill Confirm trước khi vá gap; common/DSL chỉ `/common`|`/common-spec`|`/docs-mark`|Confirm — `/spec` chỉ consume.
+> - You MUST follow ALL Workflow steps below; verify via harness TODO evidence, not a static AGENTS checklist.
 
 # /spec — Function detail (design)
 

@@ -672,6 +672,48 @@ test('standalone package behavior', async (t) => {
     assert.equal(existsSync(path.join(outside, 'install-manifest.json')), false)
   })
 
+  await t.test('harness init generates per-agent overlays and tool names (not copy/rename)', () => {
+    const project = tempDir('harness-multi-agent')
+    installHarness({
+      projectRoot: project,
+      targets: ['cursor', 'claude', 'antigravity'],
+    })
+
+    // Cursor → mdc rules, no AGENTS.md; tools = Read/Write
+    assert.equal(existsSync(path.join(project, '.cursor', 'AGENTS.md')), false)
+    assert.ok(existsSync(path.join(project, '.cursor', 'rules', 'agent-compliance.mdc')))
+    const cursorCompliance = readFileSync(
+      path.join(project, '.cursor', 'rules', 'agent-compliance.mdc'),
+      'utf8',
+    )
+    assert.match(cursorCompliance, /`Read`/)
+    assert.match(cursorCompliance, /`Write`/)
+    assert.doesNotMatch(cursorCompliance, /\{\{DOC_SKIT_/)
+    assert.doesNotMatch(cursorCompliance, /view_file/)
+
+    // Claude → CLAUDE.md overlay + skills under .claude
+    assert.equal(existsSync(path.join(project, '.claude', 'AGENTS.md')), false)
+    const claudeOverlay = readFileSync(path.join(project, '.claude', 'CLAUDE.md'), 'utf8')
+    assert.match(claudeOverlay, /Claude Code/)
+    assert.match(claudeOverlay, /`Read`/)
+    assert.match(claudeOverlay, /`Write`/)
+    assert.ok(existsSync(path.join(project, '.claude', 'skills', 'spec', 'SKILL.md')))
+    const claudeSpec = readFileSync(
+      path.join(project, '.claude', 'skills', 'spec', 'SKILL.md'),
+      'utf8',
+    )
+    assert.match(claudeSpec, /Read/)
+    assert.doesNotMatch(claudeSpec, /view_file/)
+
+    // Antigravity → AGENTS.md with view_file / write_to_file under .agents
+    const agAgents = readFileSync(path.join(project, '.agents', 'AGENTS.md'), 'utf8')
+    assert.match(agAgents, /Antigravity/)
+    assert.match(agAgents, /`view_file`/)
+    assert.match(agAgents, /`write_to_file`/)
+    assert.ok(existsSync(path.join(project, '.agents', 'SSOT_AGENT_PROTOCOL.md')))
+    assert.ok(existsSync(path.join(project, '.agents', 'skills', 'spec', 'SKILL.md')))
+  })
+
   await t.test('consumer harness syncs only lightweight Docskit assets', () => {
     const project = tempDir('harness-consumer')
     const installed = installHarness({ projectRoot: project, type: 'consumer' })

@@ -24,6 +24,12 @@ import {
 } from './gitignore.js'
 import { forgetInstall, recordInstall } from './ledger.js'
 import { AGENT_DIRS, type AgentId } from './agents.js'
+import {
+  agentHarnessProfile,
+  profilesForTargets,
+  renderHarnessTemplate,
+  type AgentHarnessProfile,
+} from './agent-profile.js'
 
 export type { OwnedGitignoreEntry } from './gitignore.js'
 
@@ -411,28 +417,74 @@ function isBeAsset(sourceRel: string): boolean {
 }
 
 function harnessDirsForTargets(targets?: string[]): string[] {
-  const agentDirList =
-    targets?.flatMap((target) => AGENT_DIRS[target as AgentId] || []) || []
-  return agentDirList.length > 0 ? Array.from(new Set(agentDirList)) : ['.cursor']
+  return [...new Set(profilesForTargets(targets).flatMap((p) => p.dirs))]
 }
 
-function currentAssetHashes(
+const TEXT_HARNESS_EXT = new Set([
+  '.md',
+  '.mdc',
+  '.json',
+  '.txt',
+  '.yaml',
+  '.yml',
+  '.toml',
+])
+
+function isTextHarnessFile(rel: string): boolean {
+  return TEXT_HARNESS_EXT.has(path.extname(rel).toLowerCase())
+}
+
+/**
+ * Map a template-relative path to the destination path under one agent dir.
+ * AGENTS.md may become CLAUDE.md / GEMINI.md / omitted (Cursor → mdc only).
+ */
+export function mapTemplateRelForAgent(
+  sourceRelPosix: string,
+  profile: AgentHarnessProfile,
+  agentDir: string,
+): string | null {
+  if (sourceRelPosix === 'AGENTS.md') {
+    if (!profile.overlayFile) return null
+    return `${agentDir}/${profile.overlayFile}`
+  }
+  return [agentDir, ...sourceRelPosix.split('/')].join('/')
+}
+
+/** Build managed harness bytes per selected agent (generated, not copy/rename). */
+export function currentAssetHashes(
   type: DocskitHarnessType,
   targets?: string[],
-): Map<string, { source: string; hash: string }> {
+): Map<string, { content: Buffer; hash: string }> {
   const sourceRoot = path.join(packageRoot(), 'harness', 'cursor')
-  const assets = new Map<string, { source: string; hash: string }>()
-  const dirs = harnessDirsForTargets(targets)
+  const assets = new Map<string, { content: Buffer; hash: string }>()
+  const profiles = profilesForTargets(targets)
+
+  // One owner per agent dir (antigravity wins .gemini over bare gemini when both selected)
+  const byDir = new Map<string, AgentHarnessProfile>()
+  for (const profile of profiles) {
+    for (const dir of profile.dirs) {
+      const prev = byDir.get(dir)
+      if (!prev || profile.id === 'antigravity') {
+        byDir.set(dir, { ...profile, dirs: [dir] })
+      }
+    }
+  }
 
   for (const source of walk(sourceRoot)) {
     const sourceRel = path.relative(sourceRoot, source)
-    if (sourceRel === path.join('extracts', 'extract-registry.docskit.json')) continue
+    const sourceRelPosix = sourceRel.split(path.sep).join('/')
+    if (sourceRelPosix === 'extracts/extract-registry.docskit.json') continue
     if (type === 'consumer' && !CONSUMER_ASSETS.has(sourceRel)) continue
     if (type === 'be' && !isBeAsset(sourceRel)) continue
 
-    for (const dir of dirs) {
-      const rel = [dir, ...sourceRel.split(path.sep)].join('/')
-      assets.set(rel, { source, hash: sha256(readFileSync(source)) })
+    const raw = readFileSync(source)
+    for (const [agentDir, profile] of byDir) {
+      const rel = mapTemplateRelForAgent(sourceRelPosix, profile, agentDir)
+      if (!rel) continue
+      const content = isTextHarnessFile(sourceRelPosix)
+        ? Buffer.from(renderHarnessTemplate(raw.toString('utf8'), profile, agentDir), 'utf8')
+        : raw
+      assets.set(rel, { content, hash: sha256(content) })
     }
   }
   return assets
@@ -533,12 +585,10 @@ export function scaffoldSchemas(root: string) {
   copyDir(sourceRoot, destRoot)
 }
 
-/** Ensure `.harness/tasks/` exists for skill TODO/plan/proposal SSOT. */
+/** Ensure `.harness/` exists for tracking. */
 export function scaffoldHarnessState(root: string) {
-  const tasksDir = path.join(root, '.harness', 'tasks')
-  mkdirSync(tasksDir, { recursive: true })
-  const keep = path.join(tasksDir, '.gitkeep')
-  if (!existsSync(keep)) writeFileSync(keep, '', 'utf8')
+  const harnessDir = path.join(root, '.harness')
+  mkdirSync(harnessDir, { recursive: true })
   const readme = path.join(root, '.harness', 'README.md')
   if (!existsSync(readme)) {
     writeFileSync(
@@ -548,14 +598,12 @@ export function scaffoldHarnessState(root: string) {
         '',
         'SSOT for agent run tracking (all hosts).',
         '',
-        '- `tasks/<skill-or-target>-todo.md` — live TODO from skill Workflow',
-        '- `tasks/<skill-or-target>-plan.md` — plan before durable authoring',
-        '- `tasks/<skill-or-target>-proposal.md` — grill proposals awaiting confirm',
+        '- `TODO.md` (in project root) — live TODO from skill Workflow and detailed plan',
         '- `progress.md` — session handoff (optional)',
         '- `feature_list.json` — scope list (optional)',
         '',
         'Host overlays (Antigravity `AGENTS.md`, Cursor rules) point here;',
-        'do not create a second task tracker under `.agents/tasks/`.',
+        'do not create task trackers under `.agents/tasks/` or `.harness/tasks/`.',
         '',
       ].join('\n'),
       'utf8',
@@ -730,7 +778,7 @@ export function installHarness(opts: {
 
   for (const [rel, asset] of assets) {
     const target = resolveManagedPath(root, realRoot, rel)
-    const content = readFileSync(asset.source)
+    const content = asset.content
 
     if (existsSync(target)) {
       const currentHash = sha256(readFileSync(target))

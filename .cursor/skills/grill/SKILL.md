@@ -6,10 +6,11 @@ extractBundle: architecture-core
 ---
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
-> - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
-> - Materialize `.harness/tasks/grill-<layer-or-target>-todo.md` from every Workflow step before other durable writes.
-> - Do NOT author final layer SSOT unless the user explicitly asks. Proposals awaiting confirm → `.harness/tasks/grill-*-proposal.md` only.
-> - Protocol: `extracts/agent-execution-protocol.md` + host `AGENTS.md` / `agent-compliance`.
+> - Physical interlocks: `AGENTS.md` + `SSOT_AGENT_PROTOCOL.md` (Đạo luật 1–7).
+> - ĐẠO LUẬT 1: First action **BẮT BUỘC** `Read` this `SKILL.md`. **TUYỆT ĐỐI KHÔNG** dựa trí nhớ.
+> - ĐẠO LUẬT 2: **BẮT BUỘC** `.harness/tasks/grill-<layer-or-target>-todo.md` từ **Workflow + Accelerators** — **TUYỆT ĐỐI KHÔNG** checklist tĩnh.
+> - ĐẠO LUẬT 4+6: Summary/proposal ghi disk ngay; Hard Confirmation Gate — **TUYỆT ĐỐI KHÔNG** ghi đè product SSOT trước khi Member Confirm. Proposal → `*-proposal.md` only.
+> - ĐẠO LUẬT 5: **TUYỆT ĐỐI KHÔNG** bịa business để đóng gap — giữ `#missing_info` hoặc hỏi.
 
 # /grill
 

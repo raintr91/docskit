@@ -6,12 +6,13 @@ disable-model-invocation: true
 ---
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
-> - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
-> - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
-> - Materialize `.harness/tasks/spec-<slug-or-id>-todo.md` from **every** Workflow step + optional Accelerator branches before other durable product writes. Mark `[x]` only with evidence.
-> - Write `.harness/tasks/spec-<slug-or-id>-plan.md` (quote each Verification Checklist line + plan) before authoring/patching the bundle.
-> - Do NOT perform a shallow check. Verify against the **Verification Checklist** via the harness TODO evidence.
-> - Protocol: `extracts/agent-execution-protocol.md` + host `AGENTS.md` / `agent-compliance`.
+> - Physical interlocks: `AGENTS.md` + `SSOT_AGENT_PROTOCOL.md` (Đạo luật 1–7). Chat-only done = FAILED.
+> - ĐẠO LUẬT 1: First action **BẮT BUỘC** `{{DOC_SKIT_READ_TOOL}}` this entire `SKILL.md`. **TUYỆT ĐỐI KHÔNG** dựa trí nhớ.
+> - ĐẠO LUẬT 2: **BẮT BUỘC** `TODO.md` ở root bóc **toàn bộ Workflow + Accelerators** → `- [ ]`. **TUYỆT ĐỐI KHÔNG** chỉ copy Verification Checklist. **TUYỆT ĐỐI KHÔNG** gộp/tick hàng loạt.
+> - ĐẠO LUẬT 3–4: **BẮT BUỘC** gộp plan vào `TODO.md` (quote nguyên văn từng dòng Verification Checklist) trước khi write bundle; mọi kết quả bền ghi disk **NGAY** (No RAM).
+> - ĐẠO LUẬT 5: Data chỉ User prompt | ArtifactGraph. Thiếu → trống / `#missing_info`. **TUYỆT ĐỐI KHÔNG** bịa business.
+> - ĐẠO LUẬT 6–7: Grill Confirm trước khi vá gap; common/DSL chỉ `/common`|`/common-spec`|`/docs-mark`|Confirm — `/spec` chỉ consume.
+> - You MUST follow ALL Workflow steps below; verify via harness TODO evidence, not a static AGENTS checklist.
 
 # /spec — Function detail (design)
 
@@ -25,7 +26,7 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ## Scope
 
-**In:** Code bundle / `--id` under `product/surfaces/.../CMP-*/<slug>`, `pnpm spec:split`, `pnpm docs:render` (design MD only), harness notes.
+**In:** Code bundle / `--id` under `product/surfaces/.../CMP-*/<slug>`, `pnpm docs:split`, `pnpm docs:render` (design MD only), harness notes.
 
 **Out:** E2E plans → **`base-tests` `/testcase`**. UI → `/prototype` after grill-docs. product/overview / CTR → `product/architecture` children.
 
@@ -37,13 +38,13 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ## Workflow
 
-0. Create/update `.harness/tasks/spec-<slug-or-id>-todo.md` (all steps below + Accelerator if/else items) and `.harness/tasks/spec-<slug-or-id>-plan.md`.
+0. Create/update `TODO.md` ở root (all steps below + Accelerator if/else items + plan).
 1. Confirm **module (`CMP-*`) exists**, its operational-area mapping is known, and the implementing `CTR-*` is identified — otherwise stop for lead/owner.
 2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance. Unknown business facts → `#missing_info` (do not invent); hand off to `/bqa-grill-docs` or `/grill` as needed.
 3. If new, draft from user bullets only — create `*.bundle.yaml` with `specOrigin: requirement` under `product/surfaces/<surface>/CMP-*/<slug>/`. Do NOT write Markdown. Leave gaps empty or `#missing_info`.
 4. Incremental blocks per extracts when needed.
 5. Apply **existing** common UI / spec-split extracts (consume only — do not invent or overwrite common SSOT; promote via `/common-spec` or confirmed grill).
-6. `pnpm spec:split -- <bundle>` then `pnpm docs:render` (**no** testcase MD emit).
+6. `pnpm docs:split -- <bundle>` then `pnpm docs:render` (**no** testcase MD emit).
 7. Update `.harness/progress.md` when present; keep harness TODO in sync (`[x]` + evidence).
 8. Handoff plans: open **base-tests** → `/testcase` from acceptance.
 
@@ -120,12 +121,12 @@ Deduplicate retries and report only actual `fileReads` / `contextBytes`.
 - Design bundle coherent · split + docs:render pass · plans handoff → `/testcase` on tests hub.
 
 ## Verification Checklist
-- [ ] Harness TODO + plan written under `.harness/tasks/spec-*` and kept in sync with evidence.
+- [ ] Harness TODO + plan written under `TODO.md` ở root and kept in sync with evidence.
 - [ ] Strict adherence to scope boundaries and module CMP mapping (`product/surfaces/<surface>/CMP-*/<slug>/`).
 - [ ] No invented business fields/flows — gaps tagged `#missing_info` or left empty.
 - [ ] Common/DSL only consumed (not invented); output MUST be a `.bundle.yaml` (Do NOT write `.md` directly).
 - [ ] **YAML Syntax Check:** All strings with colons (`:`) or brackets (`[]`) are double-quoted (`"..."`) or block-escaped (`|`).
-- [ ] Executed `docskit split` / `pnpm spec:split` followed by `docs:render` with zero parse errors.
+- [ ] Executed `docskit split` / `pnpm docs:split` followed by `docs:render` with zero parse errors.
 - [ ] Handed off testcase plans to `base-tests` `/testcase`.
 
 

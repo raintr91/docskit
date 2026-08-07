@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
 > - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
-> - Materialize `.harness/tasks/common-<slug>-todo.md` from Workflow before durable writes.
+> - Materialize `TODO.md` at root from Workflow before durable writes.
 > - This skill is an **allowed** human-invoked path to create/update common Markdown rules. Do not run it as a side-effect of `/spec`.
 > - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
 

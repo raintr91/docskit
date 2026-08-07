@@ -1,25 +1,24 @@
 ---
-description: Enforce deep compliance for all skills and rules
+description: Enforce physical interlocks for all Docskit skills
 alwaysApply: true
 ---
 
-# Agent Deep Compliance Rule
+# Agent Deep Compliance — Physical Interlocks
 
-> [!CRITICAL] MANDATORY AGENT BEHAVIOR
-> When executing any command or skill (e.g. `/spec`, `/bqa-grill-docs`, `/dev-grill-docs`, `/api`, `/overview`, `/grill`, etc.):
->
-> 1. **PRE-FLIGHT READ:** First action MUST be a file-read tool on the target skill's `SKILL.md`. Never rely on memory.
-> 2. **HARNESS TODO:** Before other durable product writes, create/update `.harness/tasks/<skill-or-target>-todo.md` from every Workflow step + optional Accelerator branches (`if available / else fallback`). Mark `[x]` only with physical evidence. Never batch-check.
-> 3. **PLAN BEFORE AUTHORING:** Before writing/patching product YAML/Markdown, write `.harness/tasks/<skill-or-target>-plan.md` quoting each Verification Checklist line with a plan for that line.
-> 4. **PHYSICAL DURABLE OUTPUT:** Durable results MUST hit disk immediately. Chat-only completion is not done. Grill proposals stay under `.harness/tasks/` until the member confirms — then write product SSOT.
-> 5. **DATA ORIGIN:** Business data only from user prompt or ArtifactGraph evidence. Gaps → empty or `#missing_info`. No invented business fields/flows. Structural pattern tags implied by the prompt are OK; inventing common/DSL is not.
-> 6. **DSL / COMMON REGISTRY:** Create/update common SSOT only via `/common`, `/common-spec`, or explicit grill confirmation. `/spec` consumes existing common only.
-> 7. **DEEP SKILL CHECK & ISOLATION:** Read and follow ALL of the target `SKILL.md`. Execute EXCLUSIVELY that skill — never merge sibling skills.
-> 8. **NO FAKE / HALLUCINATED REPORTS:** Do NOT invent Markdown reports when the skill requires YAML/bundle edits.
-> 9. **EVIDENCE-BASED VERIFICATION:** Map the Verification Checklist to `.harness/tasks/*-todo.md` with concrete paths/diffs/CLI output.
+> [!CRITICAL]
+> Đây là **KHÓA VẬT LÝ**, không phải checklist nhắc nhở.
+> Đồng bộ với `AGENTS.md` + `SSOT_AGENT_PROTOCOL.md`.
+> **CẤM** dùng danh sách dưới đây như Verification Checklist cố định thay cho TODO bóc từ `SKILL.md` Workflow + Accelerators.
 
-## Path SSOT
+Khi chạy bất kỳ skill (`/spec`, `/grill`, `/bqa-grill-docs`, …):
 
-`product/surfaces/<surface>/CMP-*/<slug>/` — no `modules/` segment.
+1. **PRE-FLIGHT:** Hành động ĐẦU TIÊN **BẮT BUỘC** tool `Read` lên `SKILL.md` dưới `.cursor/skills/`. **TUYỆT ĐỐI KHÔNG** dựa trí nhớ.
+2. **TODO VẬT LÝ:** **BẮT BUỘC** tạo/cập nhật `TODO.md` ở thư mục root bằng cách bóc **toàn bộ Workflow + Accelerators** thành `- [ ]`. (Ghi đè hoàn toàn nếu chuyển sang skill mới, cập nhật tiếp status nếu đang chat dở skill cũ). **TUYỆT ĐỐI KHÔNG** tạo trong `.harness/tasks/`. **TUYỆT ĐỐI KHÔNG** chỉ copy Verification Checklist. **TUYỆT ĐỐI KHÔNG** gộp bước / tick hàng loạt. Ghi đè `[x]` bằng `Write` chỉ khi có evidence.
+3. **PLAN VẬT LÝ:** Trước khi ghi product YAML/MD, **BẮT BUỘC** gộp plan vào `TODO.md` (ở thư mục root). Trích dẫn nguyên văn từng dòng Verification Checklist + kế hoạch từng dòng ngay trong `TODO.md`. **TUYỆT ĐỐI KHÔNG** tạo thêm file plan rời (`*-plan.md`).
+4. **NO RAM CACHING:** Mọi kết quả bền **BẮT BUỘC** `Write` ngay. **KHÔNG ĐƯỢC PHÉP** giữ trên chat/RAM. Grill proposal chưa Confirm → thảo luận trực tiếp trên chat, **TUYỆT ĐỐI KHÔNG** tạo file `*-proposal.md`, **TUYỆT ĐỐI KHÔNG** ghi đè product SSOT trước khi chốt.
+5. **ZERO BUSINESS HALLUCINATION:** Data chỉ từ (1) User prompt (2) ArtifactGraph registry. **TUYỆT ĐỐI KHÔNG** bịa field/validation/DB/flow. Thiếu → trống hoặc `#missing_info`. **CẤM** thông minh đột xuất.
+6. **GRILL HARD GATE:** ArtifactGraph re-check → micro-scope → đề xuất (Recommended) → **STOP hỏi Member**. **TUYỆT ĐỐI KHÔNG** tự ghi SSOT trước Confirm.
+7. **DSL / COMMON:** Người quyết định. Agent chỉ `/common`, `/common-spec`, `/docs-mark`, hoặc Confirm sau grill. `/spec` chỉ consume. **TUYỆT ĐỐI KHÔNG** sáng tác/ghi đè common.
+8. **ISOLATION:** Chỉ skill được gọi. **TUYỆT ĐỐI KHÔNG** merge sibling. **TUYỆT ĐỐI KHÔNG** fake Markdown reports khi skill yêu cầu YAML.
 
-Full wording: `extracts/agent-execution-protocol.md`.
+**Path:** `product/surfaces/<surface>/CMP-*/<slug>/` (không `modules/`).

@@ -7,7 +7,7 @@ extractBundle: architecture-core
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
 > - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
-> - Materialize `.harness/tasks/module-<cmp-id>-todo.md` from Workflow before durable writes.
+> - Materialize `TODO.md` at root from Workflow before durable writes.
 > - Path SSOT: `product/surfaces/<surface>/CMP-*/` (no `modules/` segment).
 > - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
 > - Do NOT perform shallow checks. Verify against the **Verification Checklist** via harness TODO evidence.

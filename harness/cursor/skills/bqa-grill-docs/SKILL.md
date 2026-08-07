@@ -7,8 +7,8 @@ disable-model-invocation: true
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
 > - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
-> - Materialize `.harness/tasks/bqa-grill-<slug-or-id>-todo.md` from every Workflow step + optional Accelerators before other durable writes.
-> - For `#missing_info` / open gaps: ArtifactGraph re-check → micro-scope → propose (Recommended) → **STOP for member confirm** before patching settled SSOT. Unconfirmed proposals → `.harness/tasks/*-proposal.md`.
+> - Materialize `TODO.md` ở root from every Workflow step + optional Accelerators before other durable writes.
+> - For `#missing_info` / open gaps: ArtifactGraph re-check → micro-scope → propose (Recommended) on **Chat Thread** → **STOP for member confirm** before patching settled SSOT and updating **Artifact Registry**.
 > - You MUST read and strictly comply with ALL workflow steps, rules, and load policies below.
 > - Do NOT perform a shallow check. Verify against the **Verification Checklist** via harness TODO evidence.
 
@@ -49,7 +49,7 @@ disable-model-invocation: true
 
 **Step A — fact-lock** (`grillStatus.bqaFacts`)
 
-0. Create/update `.harness/tasks/bqa-grill-<slug-or-id>-todo.md` + plan. Tech debt: `#tech-debt:*` where `deferTo: bqa-grill-docs` (`grill-tech-debt.md`).
+0. Create/update `TODO.md` ở root + plan. Tech debt: `#tech-debt:*` where `deferTo: bqa-grill-docs` (`grill-tech-debt.md`).
 1. Compare `design.zones/behavior/actions` vs `legacy.ui` vs common UI.
 2. **Cross-check Common Patterns:** Read Markdown rules in `product/surfaces/<surface>/common/patterns/` and `product/surfaces/common/patterns/` to ensure proposed UI and business flows comply with globally defined rules (e.g., Breadcrumb flow, Delete flow).
 3. **Audit UI Error Handling Flows:** Ensure every user action/API call in `design.yaml` has detailed specifications for Success, Common Global Error, and Specific Errors.
@@ -94,10 +94,10 @@ retries and report only actual `fileReads` / `contextBytes`.
 → `/dev-grill-docs`
 
 ## Verification Checklist
-- [ ] Harness TODO under `.harness/tasks/bqa-grill-*` kept in sync with evidence.
+- [ ] Harness TODO under `TODO.md` ở root kept in sync with evidence.
 - [ ] Strict compliance with Load Policy (did not load out-of-scope files like codegen or legacy source code).
 - [ ] **UI Error Flow Detailed:** Every API call/user action in `design.yaml` has explicit On Success, On Common Error, and On Specific Error handling specified.
-- [ ] `#missing_info` / proposals used the hard confirmation gate (no silent overwrite of settled SSOT).
+- [ ] `#missing_info` / proposals used the hard confirmation gate (no silent overwrite of settled SSOT), updated Artifact Registry after confirm.
 - [ ] Step A completed with `grillStatus.bqaFacts: done` before Step B open questions.
 - [ ] `grillStatus.bqaOpen: done` updated after open questions resolved.
 - [ ] Executed bundle split and rendered docs.

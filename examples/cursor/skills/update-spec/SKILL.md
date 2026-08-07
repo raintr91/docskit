@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 > [!CRITICAL] MANDATORY AGENT INSTRUCTION BEFORE EXECUTION
 > - Pre-flight: re-read this entire `SKILL.md` via a file-read tool (do not rely on memory).
-> - Materialize `.harness/tasks/update-spec-<slug-or-id>-todo.md` from Workflow before durable writes; plan before patching the bundle.
+> - Materialize `TODO.md` at root from Workflow before durable writes; plan before patching the bundle.
 > - Path SSOT: `product/surfaces/<surface>/CMP-*/<slug>/` (no `modules/` segment). Gaps → `#missing_info`, do not invent business data.
 > - Protocol: `extracts/agent-execution-protocol.md` + host `AGENTS.md` / `agent-compliance`.
 
