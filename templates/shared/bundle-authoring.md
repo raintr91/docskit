@@ -6,6 +6,7 @@ Hub: `docs/templates/feature.bundle.yaml` · split: `pnpm spec:split`
 
 | Key | Purpose |
 |-----|---------|
+| `summary` | Phải trình bày dạng bullet. Gồm: **bối cảnh** (description phân tích sâu business, input, output) và **cách giải quyết** (tùy chọn, chỉ ghi kỹ thuật phức tạp như SSE/RabbitMQ, bỏ qua CRUD cơ bản). |
 | `spec` | Design v1 — actors, requirements, `ui.routes`, `api`, `acceptance` |
 | `gen` | Dev-grill / portal:gen — `codegen`, `tags`, `ui.filters/columns/...` |
 | `legacy` | Legacy facts + evidence pointers |

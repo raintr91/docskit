@@ -6,7 +6,12 @@ id: role-domain-function
 title: Feature title
 status: draft
 owner: portal-team
-summary: Short business summary for BA, QA, dev, and AI.
+summary: |
+  - bối cảnh:
+    - description: [Bullet points mô tả phân tích sâu bằng ngôn ngữ business bao trùm toàn page]
+    - input: [Dữ liệu đầu vào]
+    - output: [Kết quả đầu ra]
+  - cách giải quyết: [Tuỳ chọn. Mô tả kỹ hơn về kỹ thuật nếu có đề cập trong bối cảnh (VD: SSE, RabbitMQ...). KHÔNG ghi các action cơ bản UI/DB/CRUD vì đã có trong mô tả.]
 
 specOrigin: requirement # requirement | legacy
 

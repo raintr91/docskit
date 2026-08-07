@@ -10,7 +10,7 @@ disable-model-invocation: true
 > - ĐẠO LUẬT 1: First action **BẮT BUỘC** `{{DOC_SKIT_READ_TOOL}}` this entire `SKILL.md`. **TUYỆT ĐỐI KHÔNG** dựa trí nhớ.
 > - ĐẠO LUẬT 2: **BẮT BUỘC** `TODO.md` ở root bóc **toàn bộ Workflow + Accelerators** → `- [ ]`. **TUYỆT ĐỐI KHÔNG** chỉ copy Verification Checklist. **TUYỆT ĐỐI KHÔNG** gộp/tick hàng loạt.
 > - ĐẠO LUẬT 3–4: **BẮT BUỘC** gộp plan vào `TODO.md` (quote nguyên văn từng dòng Verification Checklist) trước khi write bundle; mọi kết quả bền ghi disk **NGAY** (No RAM).
-> - ĐẠO LUẬT 5: Data chỉ User prompt | ArtifactGraph. Thiếu → trống / `#missing_info`. **TUYỆT ĐỐI KHÔNG** bịa business.
+> - ĐẠO LUẬT 5: Data lấy từ User prompt | ArtifactGraph. **BẮT BUỘC brainstorm bổ sung text business (bối cảnh bài toán, input, output, mô tả chức năng màn hình theo ngôn ngữ business) cho đội Non-tech hiểu.** Các quy tắc cốt lõi (core rules) nếu thiếu → `#missing_info`.
 > - ĐẠO LUẬT 6–7: Grill Confirm trước khi vá gap; common/DSL chỉ `/common`|`/common-spec`|`/docs-mark`|Confirm — `/spec` chỉ consume.
 > - You MUST follow ALL Workflow steps below; verify via harness TODO evidence, not a static AGENTS checklist.
 
@@ -41,7 +41,7 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 0. Create/update `TODO.md` ở root (all steps below + Accelerator if/else items + plan).
 1. Confirm **module (`CMP-*`) exists**, its operational-area mapping is known, and the implementing `CTR-*` is identified — otherwise stop for lead/owner.
 2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance. Unknown business facts → `#missing_info` (do not invent); hand off to `/bqa-grill-docs` or `/grill` as needed.
-3. If new, draft from user bullets only — create `*.bundle.yaml` with `specOrigin: requirement` under `product/surfaces/<surface>/CMP-*/<slug>/`. Do NOT write Markdown. Leave gaps empty or `#missing_info`.
+3. If new, draft from user bullets. **CRITICAL: BẮT BUỘC brainstorm và bổ sung phần business text thật chi tiết (bối cảnh bài toán, input, output, mô tả chức năng màn hình bằng ngôn ngữ business) để đội Non-tech đọc hiểu, thay vì chỉ ra output thuần technical UI.** Nếu thông tin được cung cấp quá ít không đủ để brainstorm, **BẮT BUỘC tạo câu hỏi (questionnaire/ask_question tool)** để hỏi user lấy thêm thông tin. (Lưu ý: Agent phải tự phân tích và đề xuất sẵn các phương án/giải pháp hợp lý nhất vào các lựa chọn của câu hỏi để gợi ý cho user, và luôn kèm theo phương án "Other/Khác" để user tự nhập). Create `*.bundle.yaml` with `specOrigin: requirement` under `product/surfaces/<surface>/CMP-*/<slug>/`. Do NOT write Markdown. Hard business rules missing → `#missing_info`.
 4. Incremental blocks per extracts when needed.
 5. Apply **existing** common UI / spec-split extracts (consume only — do not invent or overwrite common SSOT; promote via `/common-spec` or confirmed grill).
 6. `pnpm docs:split -- <bundle>` then `pnpm docs:render` (**no** testcase MD emit).
@@ -123,7 +123,7 @@ Deduplicate retries and report only actual `fileReads` / `contextBytes`.
 ## Verification Checklist
 - [ ] Harness TODO + plan written under `TODO.md` ở root and kept in sync with evidence.
 - [ ] Strict adherence to scope boundaries and module CMP mapping (`product/surfaces/<surface>/CMP-*/<slug>/`).
-- [ ] No invented business fields/flows — gaps tagged `#missing_info` or left empty.
+- [ ] Brainstormed and supplemented business text (context, input, output, functional description) for Non-tech team. Core business rules/facts missing tagged `#missing_info`.
 - [ ] Common/DSL only consumed (not invented); output MUST be a `.bundle.yaml` (Do NOT write `.md` directly).
 - [ ] **YAML Syntax Check:** All strings with colons (`:`) or brackets (`[]`) are double-quoted (`"..."`) or block-escaped (`|`).
 - [ ] Executed `docskit split` / `pnpm docs:split` followed by `docs:render` with zero parse errors.
