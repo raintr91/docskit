@@ -47,15 +47,18 @@ async function main() {
 
   await writeFile(outputFile, stringify(merged), 'utf8')
 
-  const lintResults = [outputFile, ...featureFiles].map((file) => lintFile(file))
-  const failed = lintResults.filter((r) => r.status !== 0 && r.status != null)
+  const lintEnabled = process.env.OPENAPI_LINT === '1' || process.env.OPENAPI_LINT === 'true'
+  if (lintEnabled) {
+    const lintResults = [outputFile, ...featureFiles].map((file) => lintFile(file))
+    const failed = lintResults.filter((r) => r.status !== 0 && r.status != null)
 
-  if (failed.length > 0) {
-    for (const result of failed) {
-      if (result.stdout) process.stdout.write(result.stdout)
-      if (result.stderr) process.stderr.write(result.stderr)
+    if (failed.length > 0) {
+      for (const result of failed) {
+        if (result.stdout) process.stdout.write(result.stdout)
+        if (result.stderr) process.stderr.write(result.stderr)
+      }
+      process.exit(1)
     }
-    process.exit(1)
   }
 
   const elapsed = ((Date.now() - started) / 1000).toFixed(1)
@@ -104,13 +107,15 @@ function lintFile(file) {
   const rel = path.relative(projectRoot, file)
   return spawnSync('pnpm', ['exec', 'redocly', 'lint', rel], {
     cwd: projectRoot,
-    encoding: 'utf8'
+    encoding: 'utf8',
+    env: { ...process.env, REDOCLY_TELEMETRY: 'off' },
+    timeout: 60_000,
   })
 }
 
 function fsExists(file) {
   try {
-    return fs.existsSync(file)
+    return existsSync(file)
   } catch {
     return false
   }

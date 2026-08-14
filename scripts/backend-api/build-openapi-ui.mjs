@@ -4,10 +4,10 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 
-const require = createRequire(import.meta.url)
+const require = createRequire(join(process.cwd(), 'package.json'))
 const swaggerUiDist = require('swagger-ui-dist')
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..')
+const repoRoot = process.cwd()
 const sourceDir = swaggerUiDist.getAbsoluteFSPath()
 const targetDir = join(repoRoot, 'docs/public/api-ui')
 const openApiFile = join(repoRoot, 'docs/public/openapi/openapi.yaml')
