@@ -31,6 +31,43 @@ export function buildIrFromBundle(bundle) {
   return { spec, legacy, design, designSpec, gen }
 }
 
+function restoreComments(sourceYaml, generatedYaml) {
+  let result = generatedYaml
+  const lines = sourceYaml.split('\n')
+  
+  for (const line of lines) {
+    const match = line.match(/^([^#]+?)\s+#(.+)$/)
+    if (!match) continue
+    
+    const codePart = match[1].trimEnd()
+    const commentPart = match[2]
+    
+    const trimmedCode = codePart.trimStart()
+    if (!trimmedCode) continue 
+    
+    let safeCode = trimmedCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    
+    const kvMatch = trimmedCode.match(/^(-\s+)?([a-zA-Z0-9_-]+):\s*(.+)$/)
+    if (kvMatch) {
+      const prefix = kvMatch[1] || ''
+      const key = kvMatch[2]
+      let val = kvMatch[3].trim()
+      if ((val.startsWith("'") && val.endsWith("'")) || (val.startsWith('"') && val.endsWith('"'))) {
+        val = val.slice(1, -1)
+      }
+      const safePrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const safeKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const safeVal = val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      safeCode = `${safePrefix}${safeKey}:\\s*['"]?${safeVal}['"]?`
+    }
+    
+    const replaceRegex = new RegExp(`(^|\\n)(\\s*${safeCode}\\s*)(?!\\s*#)(\\r?\\n|$)`, 'g')
+    result = result.replace(replaceRegex, `$1$2#${commentPart}$3`)
+  }
+  
+  return result
+}
+
 /**
  * @param {string} bundlePath
  * @param {{ dryRun?: boolean }} [options]
@@ -39,7 +76,8 @@ export async function splitBundleFile(bundlePath, options = {}) {
   const absolute = path.resolve(bundlePath)
   const dir = path.dirname(absolute)
   const irDir = path.join(dir, 'ir')
-  const bundle = parse(await readFile(absolute, 'utf8')) ?? {}
+  const rawYaml = await readFile(absolute, 'utf8')
+  const bundle = parse(rawYaml) ?? {}
 
   if (!bundle.id) {
     throw new Error(`Bundle missing id: ${bundlePath}`)
@@ -50,9 +88,15 @@ export async function splitBundleFile(bundlePath, options = {}) {
 
   if (!options.dryRun) {
     await mkdir(irDir, { recursive: true })
+    
+    const specYaml = restoreComments(
+      rawYaml, 
+      stringify(spec, yamlOpts)
+    )
+
     await writeFile(
       path.join(irDir, 'spec.yaml'),
-      `# Generated from ${path.basename(bundlePath)} — pnpm spec:split\n${stringify(spec, yamlOpts)}`,
+      `# Generated from ${path.basename(bundlePath)} — pnpm spec:split\n${specYaml}`,
       'utf8'
     )
     await writeFile(
@@ -76,7 +120,8 @@ export async function splitBundleFile(bundlePath, options = {}) {
 export async function checkSplitBundle(bundlePath) {
   const absolute = path.resolve(bundlePath)
   const irDir = path.join(path.dirname(absolute), 'ir')
-  const bundle = parse(await readFile(absolute, 'utf8')) ?? {}
+  const rawYaml = await readFile(absolute, 'utf8')
+  const bundle = parse(rawYaml) ?? {}
   const expected = buildIrFromBundle(bundle)
   const files = ['spec', 'legacy', 'design']
   const mismatches = []
@@ -90,9 +135,20 @@ export async function checkSplitBundle(bundlePath) {
       mismatches.push(`${name}.yaml missing`)
       continue
     }
-    const expStr = stringify(expected[name], { lineWidth: 0 }).trim()
+    const expStr = name === 'spec' 
+      ? restoreComments(rawYaml, stringify(expected[name], { lineWidth: 0 })).trim()
+      : stringify(expected[name], { lineWidth: 0 }).trim()
+    
+    // We should also strip the first line `# Generated...` if we compare actual string but we parse actual so comments are gone in actual.
+    // Wait, the original check uses `stringify(actual)` which will not have comments anyway,
+    // so if we add comments to expected[spec], it will mismatch with actual because actual lost comments when parsed!
+    // But actual was parsed without comments, so `stringify(actual)` has no comments.
+    // If we want check to pass, we should compare without comments. 
+    // Let's just compare the plain stringify for check logic, it's safer.
+    
+    const plainExpStr = stringify(expected[name], { lineWidth: 0 }).trim()
     const actStr = stringify(actual, { lineWidth: 0 }).trim()
-    if (expStr !== actStr) mismatches.push(`${name}.yaml out of sync with bundle`)
+    if (plainExpStr !== actStr) mismatches.push(`${name}.yaml out of sync with bundle`)
   }
 
   return { ok: mismatches.length === 0, mismatches }
@@ -105,7 +161,8 @@ export async function checkSplitBundle(bundlePath) {
 export async function mergeBundleFile(bundlePath, options = {}) {
   const absolute = path.resolve(bundlePath)
   const irDir = path.join(path.dirname(absolute), 'ir')
-  const bundle = parse(await readFile(absolute, 'utf8')) ?? {}
+  const rawYaml = await readFile(absolute, 'utf8')
+  const bundle = parse(rawYaml) ?? {}
 
   const specIr = parse(await readFile(path.join(irDir, 'spec.yaml'), 'utf8')) ?? {}
   const legacyIr = parse(await readFile(path.join(irDir, 'legacy.yaml'), 'utf8')) ?? {}
@@ -131,7 +188,11 @@ export async function mergeBundleFile(bundlePath, options = {}) {
   bundle.design = designSection
 
   if (!options.dryRun) {
-    await writeFile(absolute, stringify(bundle, { lineWidth: 0 }), 'utf8')
+    const mergedYaml = restoreComments(
+      rawYaml, 
+      stringify(bundle, { lineWidth: 0 })
+    )
+    await writeFile(absolute, mergedYaml, 'utf8')
   }
 
   return { bundlePath: absolute, bundle }

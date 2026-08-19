@@ -629,7 +629,7 @@ export function injectBackendScripts(root: string) {
       'openapi:render': `docskit openapi:render`,
       'openapi:bundle': 'pnpm openapi:render && REDOCLY_TELEMETRY=off pnpm exec redocly bundle docs/openapi/api.yaml -o docs/public/openapi/openapi.yaml',
       'openapi:build':  `docskit openapi:build`,
-      'openapi:dev':    'pnpm openapi:bundle && pnpm openapi:build && pnpm docs:dev',
+      'openapi:dev':    'pnpm openapi:bundle && pnpm openapi:build && npx -y serve docs/public -l 4174 --no-clipboard',
     }
     for (const [name, cmd] of Object.entries(scriptsToInject)) {
       if (!pkg.scripts[name]) { pkg.scripts[name] = cmd; changed = true }
