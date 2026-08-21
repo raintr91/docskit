@@ -32,16 +32,22 @@ Tree: [`platform/guide/SYSTEM-DOC-STRUCTURE.md`](../../../platform/guide/SYSTEM-
 
 ## Target / ID Resolution Rule
 
-- User prompt MAY specify a screen ID, module ID, or slug (e.g. `CMP-ADM-000`, `W-AD-AUTH-001`, `login`).
-- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve the exact target folder under `product/surfaces/.../CMP-*/<slug>/`.
-- Do NOT force the user to provide the full filesystem surface/module path if an ID or short slug is given.
+- User prompt MAY specify a screen ID, module ID, slug (e.g. `CMP-ADM-000`, `W-AD-AUTH-001`, `login`), or Draft ID (e.g., `1-1`, `2-1-1`).
+- If a Draft ID is provided, Agent MUST split it into numeric segments (e.g., `1-1-1` -> `01/01/01/`) to resolve the exact numeric target folder.
+- Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve the exact target folder under `product/surfaces/.../CMP-*/<numeric-path>/`.
+- Do NOT force the user to provide the full filesystem surface/module path if an ID, Draft ID or short slug is given.
 
 ## Workflow
 
 0. Create/update `TODO.md` ở root (all steps below + Accelerator if/else items + plan).
 1. Confirm **module (`CMP-*`) exists**, its operational-area mapping is known, and the implementing `CTR-*` is identified — otherwise stop for lead/owner.
 2. If bundle exists, verify gaps: actors, fields, validations, routes, actions, API contracts, edge cases, acceptance. Unknown business facts → `#missing_info` (do not invent); hand off to `/bqa-grill-docs` or `/grill` as needed.
-3. If new, draft from user bullets. **CRITICAL: BẮT BUỘC brainstorm 2 mảng: (1) Mặt Business cho Stakeholder (Chuẩn Arc42: Mục tiêu nghiệp vụ, Các bên liên quan, Kịch bản người dùng - bằng ngôn ngữ đời thường 100% Non-tech); (2) Mặt Kỹ thuật cho Dev/QA (Bắt buộc định nghĩa Field Validations, State Machine, UI Permissions, Edge Cases).** (Lưu ý phần input: mô tả rõ lấy thông tin từ màn hình/function nào của cùng/khác module). Nếu thông tin quá ít không đủ brainstorm, **BẮT BUỘC tạo câu hỏi (ask_question tool)** kèm đề xuất để hỏi user. Create `*.bundle.yaml` with `specOrigin: requirement` under `product/surfaces/<surface>/CMP-*/<slug>/`. Do NOT write Markdown. Hard business rules missing → `#missing_info`.
+3. If new, draft from user bullets. **CRITICAL: BẮT BUỘC brainstorm 2 mảng: (1) Mặt Business cho Stakeholder (Chuẩn Arc42: Mục tiêu nghiệp vụ, Các bên liên quan, Kịch bản người dùng - bằng ngôn ngữ đời thường 100% Non-tech); (2) Mặt Kỹ thuật cho Dev/QA (Bắt buộc định nghĩa Field Validations, State Machine, UI Permissions, Edge Cases).** (Lưu ý phần input: mô tả rõ lấy thông tin từ màn hình/function nào của cùng/khác module). Nếu thông tin quá ít không đủ brainstorm, **BẮT BUỘC tạo câu hỏi (ask_question tool)** kèm đề xuất để hỏi user. Hard business rules missing → `#missing_info`.
+   - **Draft ID Mapping:** Nếu có Draft ID (`1-1-1`, `2-1-2`), padding số 0 vào từng đốt (`01-01-01`, `02-01-02`).
+   - **Bundle ID:** Lắp tiền tố của module cha với các đốt vừa pad (vd: Module `CMP-ADM-002` + `02-01-02` -> `id: cmp-adm-002-02-01-02`).
+   - **Numeric Folder Path:** Cấu trúc thư mục BẮT BUỘC phản ánh chính xác các đốt số, KHÔNG ĐƯỢC chứa text. Draft ID có 3 đốt (vd `2-1-2`) thì sinh đúng 3 cấp thư mục: `02/01/02/`.
+   - **Bundle Name:** File `.bundle.yaml` BẮT BUỘC phải mang tên chức năng (textual slug), vd: `login.bundle.yaml`. Do đó path cuối cùng sẽ là: `product/surfaces/<surface>/CMP-*/02/01/02/login.bundle.yaml`.
+   - **Textual Info:** Tất cả các mô tả (cluster-name, submodule-name, function-name) phải được ghi vào các trường YAML (title, name, summary, sidebar, breadcrumb), KHÔNG đưa vào đường dẫn vật lý. Create this `*.bundle.yaml` with `specOrigin: requirement`. Do NOT write Markdown.
 4. Incremental blocks per extracts when needed.
 5. Apply **existing** common UI / spec-split extracts (consume only — do not invent or overwrite common SSOT; promote via `/common-spec` or confirmed grill).
 6. `pnpm docs:split -- <bundle>` then `pnpm docs:render` (**no** testcase MD emit).

@@ -23,6 +23,7 @@ extractBundle: architecture-core
 ## Target / ID Resolution Rule
 
 - User prompt MAY specify a CMP ID or Module name (e.g. `CMP-ADM-000`, `CMP-123`).
+- **Numeric Hierarchical IDs:** Cấu trúc thư mục con (chứa các function/sub-module) BẮT BUỘC phải dùng ID phân cấp thuần số (ví dụ: `01/01/02/`). KHÔNG ĐƯỢC chứa tên chữ (textual slug) trong đường dẫn thư mục con của module.
 - Agent MUST use `docskit_route` or `docskit_get_element` (or glob search) to resolve target surface and module folder under `product/surfaces/...`.
 - Do NOT demand full surface filesystem paths from the user if a CMP ID is given.
 
